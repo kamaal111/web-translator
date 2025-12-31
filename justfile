@@ -15,6 +15,10 @@ run: build
 
 # Run dev server
 dev: prepare
+    #!/usr/bin/env zsh
+
+    export DEBUG="true"
+
     bun run dev
 
 # Build the Docker image
