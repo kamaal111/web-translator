@@ -1,5 +1,4 @@
 import type { Hono } from 'hono';
-import yaml from 'js-yaml';
 import z from 'zod';
 
 import type { HonoContext, HonoEnvironment } from '../../context';
@@ -37,7 +36,7 @@ function yamlSpecHandler(app: Hono<HonoEnvironment>) {
     const rawData: unknown = await response.json();
     const spec = OpenAPISpecSchema.parse(rawData);
     const transformedSpec = transformNullableToUnion(spec);
-    const formattedSpec = yaml.dump(transformedSpec, { indent: 2 });
+    const formattedSpec = Bun.YAML.stringify(transformedSpec, null, 2);
 
     return c.text(formattedSpec, 200, { 'Content-Type': 'text/yaml' });
   };

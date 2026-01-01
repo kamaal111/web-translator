@@ -6,12 +6,16 @@ default:
     just --list --unsorted
 
 # Run the Docker container
-run: build
-    #!/bin/sh
-
-    docker stop {{ CONTAINER_NAME }} || true
-    docker rm {{ CONTAINER_NAME }} || true
+run: build stop delete
     docker run -dp {{ PORT }}:{{ PORT }} --name {{ CONTAINER_NAME }} {{ CONTAINER_NAME }}
+
+# Stop Docker container
+stop:
+    docker stop {{ CONTAINER_NAME }} || true
+
+# Delete Docker container
+delete:
+    docker rm {{ CONTAINER_NAME }} || true
 
 # Run dev server
 dev: prepare
