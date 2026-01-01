@@ -1,3 +1,5 @@
+import { arrays } from '@kamaalio/kamaal';
+
 import Project from '../../models/project';
 import type { ProjectsRepository } from './types';
 
@@ -10,9 +12,13 @@ class ProjectsInMemoryRepository implements ProjectsRepository {
 
   async createProject() {
     const createdProject = new Project();
-    this.projectsContainer.push(createdProject);
+    this.setProjects(arrays.appended(this.projectsContainer, createdProject));
 
     return createdProject;
+  }
+
+  private setProjects(projects: Project[]) {
+    this.projectsContainer = projects;
   }
 }
 

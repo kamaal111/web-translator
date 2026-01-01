@@ -5,18 +5,17 @@ import { secureHeaders } from 'hono/secure-headers';
 import { showRoutes } from 'hono/dev';
 import { etag } from 'hono/etag';
 
-import { injectRequestContext, type HonoEnvironment } from './context';
+import { injectRequestContext, type HonoEnvironment, type InjectedContext } from './context';
 import { loggingMiddleware } from './middleware/logging';
 import { HEALTH_ROUTER_NAME, healthRouter } from './health';
 import env from './env';
 import { docsRouter } from './docs';
 import { PROJECTS_ROUTE_NAME, projectsRouter } from './projects';
-import { FileStorageDatabase, type Database } from './db';
 
 const { DEBUG } = env;
 const REQUEST_ID_HEADER_NAME = 'wt-request-id';
 
-async function createApp(overrides?: { database: Database }) {
+function createApp(overrides?: Partial<InjectedContext>) {
   const app = new Hono<HonoEnvironment>();
 
   app
@@ -25,7 +24,7 @@ async function createApp(overrides?: { database: Database }) {
     .use(secureHeaders())
     .use(loggingMiddleware())
     .use(etag())
-    .use(injectRequestContext({ db: overrides?.database ?? (await FileStorageDatabase.setup('file-storage')) }))
+    .use(injectRequestContext(overrides))
     .route(HEALTH_ROUTER_NAME, healthRouter)
     .route(PROJECTS_ROUTE_NAME, projectsRouter)
     .route('/', docsRouter(app));
@@ -37,6 +36,6 @@ async function createApp(overrides?: { database: Database }) {
   return app;
 }
 
-const app = await createApp();
+const app = createApp();
 
 export default app;

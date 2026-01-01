@@ -1,0 +1,34 @@
+import path from 'node:path';
+
+import { betterAuth } from 'better-auth';
+import { drizzleAdapter } from 'better-auth/adapters/drizzle';
+import { bearer, jwt } from 'better-auth/plugins';
+
+import { drizzleDatabase, type DrizzleDatabase } from '../db';
+import env from '../env';
+import { APP_API_BASE_PATH, ONE_DAY_IN_SECONDS } from '../constants';
+import { ROUTE_NAME } from './constants';
+
+const { BETTER_AUTH_SESSION_EXPIRY_DAYS, BETTER_AUTH_SESSION_UPDATE_AGE_DAYS, BETTER_AUTH_URL, JWT_EXPIRY_DAYS } = env;
+const EXPIRES_IN = ONE_DAY_IN_SECONDS * BETTER_AUTH_SESSION_EXPIRY_DAYS;
+const UPDATE_AGE = ONE_DAY_IN_SECONDS * BETTER_AUTH_SESSION_UPDATE_AGE_DAYS;
+const JWT_EXPIRATION_TIME = `${JWT_EXPIRY_DAYS}d`;
+const BASE_PATH = path.join(APP_API_BASE_PATH, ROUTE_NAME);
+const TRUSTED_ORIGINS = ['web-translator://'];
+
+export type Auth = ReturnType<typeof betterAuth>;
+
+const createAuth = (database: DrizzleDatabase) =>
+  betterAuth({
+    database: drizzleAdapter(database, { provider: 'pg' }),
+    emailAndPassword: { enabled: true, requireEmailVerification: false },
+    trustedOrigins: TRUSTED_ORIGINS,
+    session: { expiresIn: EXPIRES_IN, updateAge: UPDATE_AGE },
+    basePath: BASE_PATH,
+    plugins: [
+      bearer(),
+      jwt({ jwt: { issuer: BETTER_AUTH_URL, audience: BETTER_AUTH_URL, expirationTime: JWT_EXPIRATION_TIME } }),
+    ],
+  }) as Auth;
+
+export const auth = createAuth(drizzleDatabase);

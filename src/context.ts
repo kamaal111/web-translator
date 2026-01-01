@@ -1,10 +1,12 @@
 import type { Context, Input, Next } from 'hono';
 import type { RequestIdVariables } from 'hono/request-id';
 
-import type { Database } from './db';
+import { PostgresDatabase, type Database } from './db';
+import { auth, type Auth } from './auth';
 
-interface InjectedContext {
+export interface InjectedContext {
   db: Database;
+  auth: Auth;
 }
 
 type HonoVariables = RequestIdVariables & InjectedContext;
@@ -19,9 +21,10 @@ export type HonoContext<I extends Input = Record<string, unknown>, P extends str
   I
 >;
 
-export function injectRequestContext({ db }: InjectedContext) {
+export function injectRequestContext(injects?: Partial<InjectedContext>) {
   return async (c: HonoContext, next: Next) => {
-    c.set('db', db);
+    c.set('db', injects?.db ?? new PostgresDatabase());
+    c.set('auth', injects?.auth ?? auth);
     await next();
   };
 }
