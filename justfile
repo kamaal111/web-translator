@@ -1,92 +1,38 @@
-set export
-set dotenv-load
-
-CONTAINER_NAME := "web-translator"
-PORT := "3000"
-BETTER_AUTH_URL := "http://127.0.0.1:" + PORT
-AUTH_CONFIG := "src/auth/better-auth.ts"
-AUTH_SCHEMA := "src/db/schema/better-auth.ts"
-
 # List available commands
 [group('meta')]
 default:
     just --list --unsorted
 
-# Run the Docker container
-[group('container')]
-run: build stop delete
-    #!/usr/bin/env zsh
-
-    docker run -dp {{ PORT }}:{{ PORT }} -e DATABASE_URL=$DATABASE_URL -e BETTER_AUTH_URL={{ BETTER_AUTH_URL }} \
-        -e BETTER_AUTH_SECRET=$BETTER_AUTH_SECRET --name {{ CONTAINER_NAME }} {{ CONTAINER_NAME }}
-
-# Stop Docker container
-[group('container')]
-stop:
-    docker stop {{ CONTAINER_NAME }} || true
-
-# Delete Docker container
-[group('container')]
-delete:
-    docker rm {{ CONTAINER_NAME }} || true
-
-# Delete image
-[group('container')]
-delete-image:
-    docker image rm -f {{ CONTAINER_NAME }} || true
-
-# Build the Docker image
-[group('container')]
-build:
-    docker build --pull -t {{ CONTAINER_NAME }} .
-
-# Start services
-[group('container')]
-start-services:
-    docker compose up -d
-
-# Stop services
-[group('container')]
-stop-services:
-    docker compose down
+# Run the server Docker container
+[group('server')]
+run-server:
+    just server/run
 
 # Run dev server
-[group('development')]
-dev: prepare start-services migrate
-    #!/usr/bin/env zsh
-
-    export DEBUG="true"
-
-    bun run dev
-
-# Prepare project for development
-[group('development')]
-prepare: install-modules
-
-# Install modules
-[group('development')]
-install-modules:
-    bun install
+[group('server')]
+dev-server: start-services
+    just server/dev
 
 # Generate authentication database tables
-[group('database')]
-make-auth-tables: prepare
-    bunx @better-auth/cli generate --config {{ AUTH_CONFIG }} --output {{ AUTH_SCHEMA }} --yes
+[group('server')]
+make-auth-tables:
+    just server/make-auth-tables
 
 # Generate migrations
-[group('database')]
-make-migrations: prepare
-    bunx drizzle-kit generate
+[group('server')]
+make-migrations:
+    just server/make-migrations
 
 # Run database migrations
-[group('database')]
+[group('server')]
 migrate:
-    bunx drizzle-kit migrate
+    just server/migrate
 
 # Run tests
 [group('testing')]
 test:
-    bun run test
+    just server/test
+
 
 # Format code with Prettier
 [group('quality')]
@@ -106,15 +52,32 @@ lint:
 # Type check
 [group('quality')]
 typecheck:
-    bun run typecheck
+    just server/typecheck
 
 # Run all quality checks
 [group('quality')]
-quality: format-check lint typecheck
+quality: prepare format-check lint
 
 # Run all verification checks
 [group('quality')]
-ready: prepare quality test build-delete
+ready: quality
+    just server/ready
 
-[private]
-build-delete: build delete-image
+# Start services
+[group('container')]
+start-services:
+    docker compose up -d
+
+# Stop services
+[group('container')]
+stop-services:
+    docker compose down
+
+# Prepare project for development
+[group('development')]
+prepare: install-modules
+
+# Install modules
+[group('development')]
+install-modules:
+    bun install

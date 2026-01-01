@@ -1,0 +1,95 @@
+set export
+set dotenv-load
+
+CONTAINER_NAME := "web-translator"
+PORT := "3000"
+BETTER_AUTH_URL := "http://127.0.0.1:" + PORT
+AUTH_CONFIG := "src/auth/better-auth.ts"
+AUTH_SCHEMA := "src/db/schema/better-auth.ts"
+
+# List available commands
+[group('meta')]
+default:
+    just --list --unsorted
+
+# Run the Docker container
+[group('container')]
+run: build stop delete
+    #!/usr/bin/env zsh
+
+    docker run -dp {{ PORT }}:{{ PORT }} -e DATABASE_URL=$DATABASE_URL -e BETTER_AUTH_URL={{ BETTER_AUTH_URL }} \
+        -e BETTER_AUTH_SECRET=$BETTER_AUTH_SECRET --name {{ CONTAINER_NAME }} {{ CONTAINER_NAME }}
+
+# Stop Docker container
+[group('container')]
+stop:
+    docker stop {{ CONTAINER_NAME }} || true
+
+# Delete Docker container
+[group('container')]
+delete:
+    docker rm {{ CONTAINER_NAME }} || true
+
+# Delete image
+[group('container')]
+delete-image:
+    docker image rm -f {{ CONTAINER_NAME }} || true
+
+# Build the Docker image
+[group('container')]
+build:
+    docker build --pull -t {{ CONTAINER_NAME }} .
+
+# Run dev server
+[group('development')]
+dev: prepare migrate
+    #!/usr/bin/env zsh
+
+    export DEBUG="true"
+
+    bun run dev
+
+# Prepare project for development
+[group('development')]
+prepare: install-modules
+
+# Install modules
+[group('development')]
+install-modules:
+    bun install
+
+# Generate authentication database tables
+[group('database')]
+make-auth-tables: prepare
+    bunx @better-auth/cli generate --config {{ AUTH_CONFIG }} --output {{ AUTH_SCHEMA }} --yes
+
+# Generate migrations
+[group('database')]
+make-migrations: prepare
+    bunx drizzle-kit generate
+
+# Run database migrations
+[group('database')]
+migrate:
+    bunx drizzle-kit migrate
+
+# Run tests
+[group('testing')]
+test:
+    bun run test
+
+# Type check
+[group('quality')]
+typecheck:
+    bun run typecheck
+
+# Run all quality checks
+[group('quality')]
+quality: prepare typecheck
+
+# Run all verification checks
+[group('quality')]
+ready: prepare quality test build-delete
+
+[private]
+build-delete: build delete-image
