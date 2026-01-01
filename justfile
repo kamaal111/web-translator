@@ -3,6 +3,11 @@
 default:
     just --list --unsorted
 
+# Run dev web server
+[group('web')]
+dev-web:
+    just web/dev
+
 # Run the server Docker container
 [group('server')]
 run-server:
