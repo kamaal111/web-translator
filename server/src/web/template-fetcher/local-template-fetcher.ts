@@ -4,6 +4,9 @@ import path from 'node:path';
 import BaseTemplateFetcher from './base-template-fetcher';
 import { TEMPLATE_NAMES_MAPPED_TO_TEMPLATE, type TemplateName } from './constants';
 import type { TemplateFetcher } from './types';
+import env from '../../env';
+
+const { DEBUG } = env;
 
 class LocalTemplateFetcher extends BaseTemplateFetcher implements TemplateFetcher {
   readonly rootPath: string;
@@ -28,7 +31,9 @@ class LocalTemplateFetcher extends BaseTemplateFetcher implements TemplateFetche
     assert(await templateFile.exists());
 
     const templateText = await templateFile.text();
-    this.cachedTemplates[name] = templateText;
+    if (!DEBUG) {
+      this.cachedTemplates[name] = templateText;
+    }
 
     return templateText;
   }
