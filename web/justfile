@@ -8,6 +8,16 @@ default:
 dev: prepare
     bun run dev
 
+# Build assets
+[group('development')]
+build output="dist": prepare
+    BUILD_OUTPUT={{output}} bun run build
+
+# Build and watch assets
+[group('development')]
+build-watch output="dist": prepare
+    BUILD_OUTPUT={{output}} bun run build:watch
+
 # Prepare project for development
 [group('development')]
 prepare: install-modules
@@ -28,4 +38,4 @@ quality: prepare typecheck
 
 # Run all verification checks
 [group('quality')]
-ready: quality
+ready: quality build

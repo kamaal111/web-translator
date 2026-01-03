@@ -3,6 +3,7 @@ import z from 'zod';
 const EnvSchema = z.object({
   DEBUG: z.coerce.boolean().default(false),
   DATABASE_URL: z.string(),
+  WEB_ASSETS_ROOT: z.string().default('static'),
 
   // Auth
   BETTER_AUTH_SECRET: z.string().nonempty(),
