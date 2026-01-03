@@ -13,7 +13,7 @@ dev-web:
     just web/dev
 
 # Build web assets
-build-web:
+build-web output="dist":
     just web/build
 
 # Build and watch web assets
@@ -22,7 +22,7 @@ build-watch-web output="dist":
 
 # Build web assets for server
 build-for-server:
-    just build-watch-web "../{{ SERVER_ASSETS_PATH }}"
+    just build-web "../{{ SERVER_ASSETS_PATH }}"
 
 # Build and watch web assets for server
 build-watch-for-server:

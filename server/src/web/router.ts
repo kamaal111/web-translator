@@ -12,11 +12,9 @@ const webRouter = new Hono<HonoEnvironment>();
 
 const templateFetcher = new LocalTemplateFetcher(WEB_ASSETS_ROOT);
 
-webRouter
-  .get('/', async c => {
-    const template = await templateFetcher.get(TEMPLATE_NAMES.INDEX);
-    return c.html(template);
-  })
-  .use('/*', serveStatic({ root: WEB_ASSETS_ROOT }));
+webRouter.use('*', serveStatic({ root: WEB_ASSETS_ROOT })).get('*', async c => {
+  const template = await templateFetcher.get(TEMPLATE_NAMES.INDEX);
+  return c.html(template);
+});
 
 export default webRouter;
