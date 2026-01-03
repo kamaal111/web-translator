@@ -14,7 +14,7 @@ dev-web:
 
 # Build web assets
 build-web output="dist":
-    just web/build
+    just web/build {{ output }}
 
 # Build and watch web assets
 build-watch-web output="dist":

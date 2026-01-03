@@ -4,11 +4,15 @@ import tailwindcss from '@tailwindcss/vite';
 import { defineConfig } from 'vite';
 import react from '@vitejs/plugin-react';
 
+import etags from './vitest/etags';
+
+const outDir = process.env.BUILD_OUTPUT || 'dist';
+
 export default defineConfig({
-  plugins: [react({ babel: { plugins: [['babel-plugin-react-compiler']] } }), tailwindcss()],
+  plugins: [react({ babel: { plugins: [['babel-plugin-react-compiler']] } }), tailwindcss(), etags({ outDir })],
   resolve: { alias: { '@': path.resolve(__dirname, 'src') } },
   build: {
-    outDir: process.env.BUILD_OUTPUT || 'dist',
+    outDir,
     emptyOutDir: true,
     rolldownOptions: {
       input: {

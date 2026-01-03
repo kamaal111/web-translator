@@ -1,12 +1,5 @@
 {
   "name": "web-translator",
-  "private": true,
-  "scripts": {
-    "format": "prettier --write .",
-    "format:check": "prettier --check .",
-    "lint": "eslint .",
-    "prepare": "husky"
-  },
   "devDependencies": {
     "@eslint/js": "^9.39.2",
     "@kamaalio/prettier-config": "^0.1.2",
@@ -32,5 +25,12 @@
     ],
     "**/*": "prettier --write --ignore-unknown"
   },
-  "prettier": "@kamaalio/prettier-config"
+  "prettier": "@kamaalio/prettier-config",
+  "private": true,
+  "scripts": {
+    "format": "prettier --write .",
+    "format:check": "prettier --check .",
+    "lint": "eslint .",
+    "prepare": "husky"
+  }
 }
