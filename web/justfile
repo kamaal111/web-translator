@@ -16,3 +16,16 @@ prepare: install-modules
 [group('development')]
 install-modules:
     bun install
+
+# Type check
+[group('quality')]
+typecheck:
+    bun run typecheck
+
+# Run all quality checks
+[group('quality')]
+quality: prepare typecheck
+
+# Run all verification checks
+[group('quality')]
+ready: quality

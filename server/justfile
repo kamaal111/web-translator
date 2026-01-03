@@ -89,7 +89,7 @@ quality: prepare typecheck
 
 # Run all verification checks
 [group('quality')]
-ready: prepare quality test build-delete
+ready: quality test build-delete
 
 [private]
 build-delete: build delete-image

@@ -58,6 +58,7 @@ lint:
 [group('quality')]
 typecheck:
     just server/typecheck
+    just web/typecheck
 
 # Run all quality checks
 [group('quality')]
@@ -67,6 +68,7 @@ quality: prepare format-check lint
 [group('quality')]
 ready: quality
     just server/ready
+    just web/ready
 
 # Start services
 [group('container')]
