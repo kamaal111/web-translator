@@ -29,7 +29,7 @@ build-watch-for-server:
     just build-watch-web "../{{ SERVER_ASSETS_PATH }}"
 
 # Run the server Docker container
-run-server:
+run-server: build-for-server
     just server/run
 
 # Run dev server

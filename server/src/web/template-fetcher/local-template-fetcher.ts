@@ -28,7 +28,7 @@ class LocalTemplateFetcher extends BaseTemplateFetcher implements TemplateFetche
 
     const templatePath = path.join(this.rootPath, template);
     const templateFile = Bun.file(templatePath);
-    assert(await templateFile.exists());
+    assert(await templateFile.exists(), `Expected template file with path ${template} to exist`);
 
     const templateText = await templateFile.text();
     if (!DEBUG) {
