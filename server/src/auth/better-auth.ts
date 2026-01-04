@@ -6,7 +6,7 @@ import { bearer, jwt } from 'better-auth/plugins';
 
 import { drizzleDatabase, type DrizzleDatabase } from '../db';
 import env from '../env';
-import { APP_API_BASE_PATH, ONE_DAY_IN_SECONDS } from '../constants';
+import { APP_API_BASE_PATH, ONE_DAY_IN_SECONDS } from '../constants/common';
 import { ROUTE_NAME } from './constants';
 
 const { BETTER_AUTH_SESSION_EXPIRY_DAYS, BETTER_AUTH_SESSION_UPDATE_AGE_DAYS, BETTER_AUTH_URL, JWT_EXPIRY_DAYS } = env;
@@ -32,3 +32,6 @@ const createAuth = (database: DrizzleDatabase) =>
   }) as Auth;
 
 export const auth = createAuth(drizzleDatabase);
+
+export const JWKS_PATH = '/jwks';
+export const JWKS_URL = new URL(path.join(BETTER_AUTH_URL, BASE_PATH, JWKS_PATH));

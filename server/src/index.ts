@@ -9,8 +9,9 @@ import { injectRequestContext, type HonoEnvironment, type InjectedContext } from
 import { HEALTH_ROUTER_NAME, healthRouter } from './health';
 import env from './env';
 import { DOCS_ROUTE_NAME, docsRouter } from './docs';
-import { PROJECTS_ROUTE_NAME, projectsRouter } from './projects';
 import { WEB_ROUTE_NAME, webRouter } from './web';
+import { APP_API_BASE_PATH } from './constants/common';
+import { appApiRouter } from './app-api';
 
 const { DEBUG } = env;
 const REQUEST_ID_HEADER_NAME = 'wt-request-id';
@@ -25,7 +26,7 @@ export function createApp(overrides?: Partial<InjectedContext>) {
     .use(etag())
     .use(injectRequestContext(overrides))
     .route(HEALTH_ROUTER_NAME, healthRouter)
-    .route(PROJECTS_ROUTE_NAME, projectsRouter)
+    .route(APP_API_BASE_PATH, appApiRouter)
     .route(DOCS_ROUTE_NAME, docsRouter(app))
     .route(WEB_ROUTE_NAME, webRouter);
 
