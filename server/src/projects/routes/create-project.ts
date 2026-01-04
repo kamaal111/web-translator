@@ -3,6 +3,7 @@ import { describeRoute, resolver } from 'hono-openapi';
 
 import type { HonoContext } from '../../context';
 import { getDatabase } from '../../context/database';
+import { OPENAPI_TAG } from '../constants';
 
 type CreateProjectInput = { out: undefined };
 
@@ -12,6 +13,7 @@ const createProjectRoute = [
   '/',
   describeRoute({
     description: 'Create project',
+    tags: [OPENAPI_TAG],
     responses: {
       200: {
         description: 'Successful response',

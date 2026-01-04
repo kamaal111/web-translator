@@ -2,6 +2,7 @@ import z from 'zod';
 import { describeRoute, resolver, validator } from 'hono-openapi';
 
 import type { HonoContext } from '../../context';
+import { OPENAPI_TAG } from '../constants';
 
 type StringsParams = z.infer<typeof StringsParamsSchema>;
 
@@ -15,6 +16,7 @@ const stringsRoute = [
   '/:projectId/v/:versionId/strings',
   describeRoute({
     description: 'Get strings',
+    tags: [OPENAPI_TAG],
     responses: {
       200: {
         description: 'Successful response',

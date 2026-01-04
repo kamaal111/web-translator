@@ -32,6 +32,10 @@ build-watch-for-server:
 run-server: build-for-server
     just server/run
 
+# Build the Docker image
+build-server:
+    just server/build
+
 # Run dev server
 dev-server: start-services build-for-server
     just server/dev
