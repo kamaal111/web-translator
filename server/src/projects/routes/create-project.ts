@@ -2,6 +2,7 @@ import z from 'zod';
 import { describeRoute, resolver } from 'hono-openapi';
 
 import type { HonoContext } from '../../context';
+import { getDatabase } from '../../context/database';
 
 type CreateProjectInput = { out: undefined };
 
@@ -21,7 +22,7 @@ const createProjectRoute = [
     },
   }),
   async (c: HonoContext<CreateProjectInput>) => {
-    const db = c.get('db');
+    const db = getDatabase(c);
     const project = await db.projects.createProject();
     console.log('project', project);
     return c.json({});

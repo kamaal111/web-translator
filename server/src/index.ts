@@ -6,7 +6,6 @@ import { showRoutes } from 'hono/dev';
 import { etag } from 'hono/etag';
 
 import { injectRequestContext, type HonoEnvironment, type InjectedContext } from './context';
-import { loggingMiddleware } from './middleware/logging';
 import { HEALTH_ROUTER_NAME, healthRouter } from './health';
 import env from './env';
 import { DOCS_ROUTE_NAME, docsRouter } from './docs';
@@ -16,14 +15,13 @@ import { WEB_ROUTE_NAME, webRouter } from './web';
 const { DEBUG } = env;
 const REQUEST_ID_HEADER_NAME = 'wt-request-id';
 
-function createApp(overrides?: Partial<InjectedContext>) {
+export function createApp(overrides?: Partial<InjectedContext>) {
   const app = new Hono<HonoEnvironment>();
 
   app
     .use(requestId({ headerName: REQUEST_ID_HEADER_NAME }))
     .use(compress())
     .use(secureHeaders())
-    .use(loggingMiddleware())
     .use(etag())
     .use(injectRequestContext(overrides))
     .route(HEALTH_ROUTER_NAME, healthRouter)

@@ -4,6 +4,7 @@ const EnvSchema = z.object({
   DEBUG: z.coerce.boolean().default(false),
   DATABASE_URL: z.string(),
   WEB_ASSETS_ROOT: z.string().default('static'),
+  LOG_LEVEL: z.string().default('info'),
 
   // Auth
   BETTER_AUTH_SECRET: z.string().nonempty(),

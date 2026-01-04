@@ -33,7 +33,7 @@ run-server: build-for-server
     just server/run
 
 # Run dev server
-dev-server: start-services
+dev-server: start-services build-for-server
     just server/dev
 
 # Generate authentication database tables

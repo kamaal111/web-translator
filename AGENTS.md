@@ -1,43 +1,69 @@
 # Repository Guidelines
 
+## Critical Development Rules
+
+- **NEVER claim a task is done until ALL checks from `just ready` pass** (format, lint, typecheck, tests, build)
+  - **ALWAYS run `just ready` from the root directory before finishing any task**
+  - **If `just ready` fails, you MUST fix all errors before saying you're done**
+  - This is NON-NEGOTIABLE - no exceptions
+- **NEVER run dev servers yourself** (e.g., `bun run dev`, `just dev-server`) - they run in background and are difficult to kill
+- **ALWAYS use justfile commands** when available for debugging and development tasks (check `just` to list available commands)
+- **When making breaking changes to interfaces/types, find and update ALL usages including tests**
+
 ## Project Structure & Module Organization
 
-- `index.ts`: Server entry. Uses Hono Bun adapter `serve` and mounts the app.
-- `src/index.ts`: Hono application (routes, middleware, handlers).
-- `index.test.ts`: Unit tests using `bun:test`.
-- `README.md`: Quick start and common commands.
-- Add new modules under `src/` (e.g., `src/routes/translate.ts`).
+The project is a monorepo with the following structure:
+
+- `server/`: Backend application (Bun, Hono, Drizzle, Better Auth).
+  - `src/index.ts`: Server entry point.
+  - `src/db/`: Database schema and configuration.
+  - `src/auth/`: Authentication configuration.
+- `web/`: Frontend application (Vite, React, Tailwind).
+  - `src/main.tsx`: Frontend entry point.
+  - `src/pages/`: Application pages.
+  - `src/components/`: Reusable UI components.
+- `justfile`: Root command runner.
+- `package.json`: Root dependencies (linting, formatting) and workspace configuration.
 
 ## Build, Test, and Development Commands
 
-- Install deps: `bun install`
-- Dev server (HMR): `bun --hot ./index.ts` or `bun run dev`
-- Tests: `bun test` (coverage: `bun test --coverage`)
-- Optional bundle (when adding frontend/assets): `bun build <entry.ts|entry.html>`
+**ALWAYS use `just` commands from the root directory.**
+
+- **Start Development:** `just dev` (Runs server and web in parallel)
+- **Run Tests:** `just test` (Runs server tests; web tests are currently not configured)
+- **Database Migrations:**
+  - Apply migrations: `just migrate`
+  - Generate migrations: `just make-migrations`
+- **Quality Check:** `just ready` (Runs format, lint, typecheck, tests, and build for both server and web)
+- **Docker:**
+  - Run server in Docker: `just run-server`
 
 ## Coding Style & Naming Conventions
 
-- Language: TypeScript, ESM modules.
-- Indentation: 2 spaces; max line length ~100 chars.
-- Naming: `camelCase` for vars/functions, `PascalCase` for types/classes, `kebab-case` for filenames.
-- Exports: prefer named exports; default export for the Hono app is acceptable.
-- Lint/format: If you use a formatter, match existing style; avoid unrelated reformat-only changes.
+- **Language:** TypeScript, ESM modules.
+- **Indentation:** 2 spaces; max line length ~100 chars.
+- **Naming:**
+  - Variables/Functions: `camelCase`
+  - Types/Classes/Components: `PascalCase`
+  - Filenames: `kebab-case` (e.g., `user-profile.tsx`, `auth-service.ts`)
+- **Frontend (Web):**
+  - Use Functional Components with Hooks.
+  - Styling: Tailwind CSS (v4).
+  - UI Library: Radix UI Themes.
+- **Backend (Server):**
+  - Framework: Hono.
+  - Database: Drizzle ORM.
+- **Lint/Format:** Run `just format` to fix formatting issues. Match existing style.
 
 ## Testing Guidelines
 
-- Framework: `bun:test` with `import { test, expect } from "bun:test"`.
-- Location: co-locate tests or place at repo root using `*.test.ts` (current: `index.test.ts`).
-- Scope: cover route behavior and edge cases; use `app.request("/path")` for handlers.
-- Run locally: `bun test` before pushing.
-
-## Commit & Pull Request Guidelines
-
-- Commits: concise, imperative subject (e.g., "add translate route"). Prefer Conventional Commits (`feat:`, `fix:`, `chore:`) when practical.
-- PRs: include a clear summary, rationale, and testing notes. Link issues. Add screenshots for user-facing changes.
-- Keep PRs focused; avoid mixed refactors and features.
+- **Framework:** `bun:test` (Server).
+- **Location:** Co-locate tests or use `__tests__` directories.
+- **Scope:** Cover route behavior, database interactions, and edge cases.
+- **Dependency Injection:** Use `createApp({ db, auth, logger })` pattern in server tests to override dependencies.
+- **Run Tests:** `just test` (or `just server/test`).
 
 ## Security & Configuration Tips
 
-- Environment: Bun auto-loads `.env`; avoid `dotenv`. Do not commit secrets.
-- Server: defaults to port `3000`. Configure via env vars if needed.
-- Dependencies: prefer Bun primitives (`Bun.file`, `bun:sqlite`) and Hono for routing; avoid adding heavy frameworks.
+- **Server Port:** Defaults to `3000`.
+- **Dependencies:** Prefer Bun primitives (`Bun.file`, `bun:sqlite`) and Hono for routing. Avoid adding heavy frameworks unless necessary.

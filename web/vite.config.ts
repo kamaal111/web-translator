@@ -15,6 +15,7 @@ export default defineConfig({
     outDir,
     emptyOutDir: true,
     rolldownOptions: {
+      treeshake: true,
       input: {
         main: path.resolve(__dirname, 'index.html'),
       },
