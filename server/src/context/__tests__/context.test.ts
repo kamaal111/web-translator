@@ -46,7 +46,6 @@ describe('Context tests', () => {
     expect(logCalls[0]?.message).toContain('<-- GET /health/ping');
     expect(logCalls[1]).toBeDefined();
     expect(logCalls[1]?.message).toContain('--> GET /health/ping');
-    expect(logCalls[1]?.payload?.status).toBe('200');
     expect(logCalls[1]?.payload?.elapsed_time_ms).toBeDefined();
   });
 

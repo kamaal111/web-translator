@@ -1,5 +1,7 @@
+import ConfigurationsContextProvider from './configurations-context';
+
 function DataProviders({ children }: React.PropsWithChildren) {
-  return <>{children}</>;
+  return <ConfigurationsContextProvider>{children}</ConfigurationsContextProvider>;
 }
 
 export default DataProviders;
