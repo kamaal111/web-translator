@@ -6,6 +6,7 @@ import type { HonoContext } from '../../context';
 import { getHeadersWithJwtAfterAuth, handleAuthRequest } from '../utils/request';
 import { TokenHeadersDescription } from '../schemas/headers';
 import { ErrorResponseSchema } from '../../schemas/error';
+import { OPENAPI_TAG } from '../constants';
 
 type EmailPasswordSignUp = z.infer<typeof EmailPasswordSignUpSchema>;
 type SignUpInput = { out: { json: EmailPasswordSignUp } };
@@ -43,12 +44,24 @@ const EmailPasswordSignUpSchema = z
     }),
   })
   .describe('Email password sign up payload')
-  .meta({ ref: 'EmailPasswordSignUp' });
+  .meta({
+    ref: 'EmailPasswordSignUp',
+    title: 'Email Password Sign Up',
+    description: 'Request body for signing up with email and password',
+    example: {
+      email: 'john.doe@example.com',
+      password: 'SecurePassword123!',
+      name: 'John Doe',
+      callbackURL: 'https://example.com/dashboard',
+    },
+  });
 
 const signUpRoute = [
   '/sign-up/email',
   describeRoute({
+    summary: 'Sign up with email and password',
     description: 'Create a new user account with email and password',
+    tags: [OPENAPI_TAG],
     responses: {
       201: {
         description: 'Account created successfully',
