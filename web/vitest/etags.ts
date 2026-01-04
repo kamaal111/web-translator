@@ -12,10 +12,11 @@ const HASH_ENCODING: BufferEncoding = 'hex';
 type EtagsOptions = { outDir?: string } | undefined;
 
 function etags(options?: EtagsOptions): PluginOption {
+  const outDir = options?.outDir ?? DEFAULT_OUT_DIR;
+
   return {
     name: 'generate-etags',
     closeBundle: async () => {
-      const outDir = options?.outDir ?? DEFAULT_OUT_DIR;
       const content = await fs.readdir(outDir, { recursive: true, withFileTypes: true });
       const etagsEntries = await Promise.all(content.map(mapDirentToEtagEntry(outDir)));
       const etags = Object.fromEntries(etagsEntries.filter(entry => entry != null));

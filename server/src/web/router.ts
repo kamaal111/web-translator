@@ -19,7 +19,7 @@ for (const routeName of WEB_ROUTES) {
   webRouter.get(routeName, async c => {
     const templateName = TEMPLATE_NAMES.INDEX;
     const template = await templateFetcher.get(templateName);
-    return c.html(template);
+    return c.html(template.replace('{{ WebTranslatorContext }}', JSON.stringify({})));
   });
 }
 
