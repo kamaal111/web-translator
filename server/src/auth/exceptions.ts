@@ -1,6 +1,6 @@
 import type { ContentfulStatusCode } from 'hono/utils/http-status';
 
-import { APIException } from '../exceptions';
+import { APIException, NotFound } from '../exceptions';
 import type { HonoContext } from '../context';
 
 const CODE_TO_STATUS: Record<string, ContentfulStatusCode> = {
@@ -14,3 +14,5 @@ export class BetterAuthException extends APIException {
     super(c, CODE_TO_STATUS[code] ?? 500, { message, code, headers });
   }
 }
+
+export class SessionNotFound extends NotFound {}

@@ -9,8 +9,7 @@ import { BetterAuthException } from '../exceptions';
 import { APIException, Unauthorized } from '../../exceptions';
 import env from '../../env';
 import { APP_API_BASE_PATH, ONE_DAY_IN_SECONDS } from '../../constants/common';
-import { ROUTE_NAME } from '../constants';
-import { TOKEN_ROUTE_NAME } from '../routes/token';
+import { ROUTE_NAME, TOKEN_ROUTE_NAME } from '../constants';
 import { decodeJwt, type JWTPayload } from 'jose';
 
 const { BETTER_AUTH_URL, JWT_EXPIRY_DAYS, BETTER_AUTH_SESSION_UPDATE_AGE_DAYS } = env;
@@ -97,4 +96,24 @@ export async function getHeadersWithJwtAfterAuth(c: HonoContext, sessionToken: s
   headers.set('set-session-update-age', sessionUpdateAgeSeconds.toString());
 
   return headers;
+}
+
+export async function parseTokenResponseAndCreateHeaders(
+  response: Response,
+  sessionToken: string | null = null,
+): Promise<{ token: string; headers: Headers }> {
+  const jsonResponse: unknown = await response.json();
+  const responseData = TokenResponseSchema.parse(jsonResponse);
+  if (!responseData.token) {
+    throw new Error('Token not found in response');
+  }
+
+  const headers = createHeadersWithJwt(responseData.token);
+  if (sessionToken) {
+    headers.set('set-session-token', sessionToken);
+    const sessionUpdateAgeSeconds = ONE_DAY_IN_SECONDS * BETTER_AUTH_SESSION_UPDATE_AGE_DAYS;
+    headers.set('set-session-update-age', sessionUpdateAgeSeconds.toString());
+  }
+
+  return { token: responseData.token, headers };
 }

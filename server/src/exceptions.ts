@@ -36,3 +36,12 @@ export class Unauthorized extends APIException {
     });
   }
 }
+
+export class NotFound extends APIException {
+  constructor(c: HonoContext, options?: { message?: string }) {
+    super(c, 404, {
+      message: options?.message ?? 'Not found',
+      code: 'NOT_FOUND',
+    });
+  }
+}
