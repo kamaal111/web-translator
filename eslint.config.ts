@@ -20,4 +20,20 @@ export default defineConfig([
     ],
     languageOptions: { ecmaVersion: 2020, globals: { ...globals.node, ...globals.browser } },
   },
+  {
+    files: ['**/*.{ts,mts,cts,tsx}'],
+    plugins: {
+      '@typescript-eslint': tseslint.plugin,
+    },
+    languageOptions: {
+      parser: tseslint.parser,
+      parserOptions: {
+        projectService: true,
+        tsconfigRootDir: import.meta.dirname,
+      },
+    },
+    rules: {
+      '@typescript-eslint/no-deprecated': 'error',
+    },
+  },
 ]);

@@ -3,7 +3,6 @@ set dotenv-load
 
 CONTAINER_NAME := "web-translator"
 PORT := "3000"
-BETTER_AUTH_URL := "http://127.0.0.1:" + PORT
 AUTH_CONFIG := "src/auth/better-auth.ts"
 AUTH_SCHEMA := "src/db/schema/better-auth.ts"
 
@@ -15,7 +14,7 @@ default:
 run: build stop delete
     #!/usr/bin/env zsh
 
-    docker run -dp {{ PORT }}:{{ PORT }} -e DATABASE_URL=$DATABASE_URL -e BETTER_AUTH_URL={{ BETTER_AUTH_URL }} \
+    docker run -dp {{ PORT }}:{{ PORT }} -e DATABASE_URL=$DATABASE_URL \
         -e BETTER_AUTH_SECRET=$BETTER_AUTH_SECRET --name {{ CONTAINER_NAME }} {{ CONTAINER_NAME }}
 
 # Stop Docker container
