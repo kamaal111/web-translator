@@ -3,7 +3,7 @@ import type { RequestIdVariables } from 'hono/request-id';
 import pino from 'pino';
 
 import { PostgresDatabase, type Database } from '../db';
-import { auth, type Auth } from '../auth';
+import { auth, type Auth, type SessionResponse } from '../auth';
 import env from '../env';
 import { getLogger } from './logging';
 import type { Logger } from './types';
@@ -17,7 +17,7 @@ export interface InjectedContext {
   logEvents: Record<string, Record<string, string>>[];
 }
 
-type HonoVariables = RequestIdVariables & InjectedContext;
+export type HonoVariables = RequestIdVariables & InjectedContext & { session?: SessionResponse };
 
 export interface HonoEnvironment {
   Variables: HonoVariables;

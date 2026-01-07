@@ -32,3 +32,6 @@ const createAuth = (database: DrizzleDatabase) =>
   }) as Auth;
 
 export const auth = createAuth(drizzleDatabase);
+
+export const JWKS_PATH = '/jwks';
+export const JWKS_URL = new URL(path.join(BETTER_AUTH_URL, BASE_PATH, JWKS_PATH));
