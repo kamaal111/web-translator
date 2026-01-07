@@ -4,7 +4,7 @@ import { betterAuth } from 'better-auth';
 import { drizzleAdapter } from 'better-auth/adapters/drizzle';
 import { bearer, jwt } from 'better-auth/plugins';
 
-import { drizzleDatabase, type DrizzleDatabase } from '../db';
+import type { DrizzleDatabase } from '../db';
 import env from '../env';
 import { APP_API_BASE_PATH, ONE_DAY_IN_SECONDS } from '../constants/common';
 import { ROUTE_NAME } from './constants';
@@ -18,8 +18,8 @@ const TRUSTED_ORIGINS = ['web-translator://'];
 
 export type Auth = ReturnType<typeof betterAuth>;
 
-const createAuth = (database: DrizzleDatabase) =>
-  betterAuth({
+export function createAuth(database: DrizzleDatabase) {
+  return betterAuth({
     database: drizzleAdapter(database, { provider: 'pg' }),
     emailAndPassword: { enabled: true, requireEmailVerification: false },
     trustedOrigins: TRUSTED_ORIGINS,
@@ -30,8 +30,7 @@ const createAuth = (database: DrizzleDatabase) =>
       jwt({ jwt: { issuer: BETTER_AUTH_URL, audience: BETTER_AUTH_URL, expirationTime: JWT_EXPIRATION_TIME } }),
     ],
   }) as Auth;
-
-export const auth = createAuth(drizzleDatabase);
+}
 
 export const JWKS_PATH = '/jwks';
 export const JWKS_URL = new URL(path.join(BETTER_AUTH_URL, BASE_PATH, JWKS_PATH));

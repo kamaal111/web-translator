@@ -26,8 +26,8 @@ const TokenResponseSchema = z.object({
 
 export async function handleAuthRequest<Schema extends z.ZodType>(
   c: HonoContext,
-  options: { responseSchema: Schema },
-): Promise<{ jsonResponse: z.infer<Schema>; sessionToken: string }> {
+  options: { responseSchema: Schema; requireSessionToken?: boolean },
+): Promise<{ jsonResponse: z.infer<Schema>; sessionToken: string | null }> {
   const request = await makeNewRequest(c);
   const response = await c.get('auth').handler(request);
   const jsonResponse: unknown = await response.json();
@@ -46,14 +46,16 @@ export async function handleAuthRequest<Schema extends z.ZodType>(
 
   const validatedResponse = options.responseSchema.parse(jsonResponse);
   const sessionToken = getValueFromSetCookie(response.headers, 'better-auth.session_token');
-  if (!sessionToken) {
+
+  const requireToken = options.requireSessionToken ?? true;
+  if (!sessionToken && requireToken) {
     throw new APIException(c, 500, {
       message: 'Failed to retrieve session token from authentication response',
       code: 'MISSING_SESSION_TOKEN',
     });
   }
 
-  return { jsonResponse: validatedResponse, sessionToken };
+  return { jsonResponse: validatedResponse, sessionToken: sessionToken ?? null };
 }
 
 function createHeadersWithJwt(jwt: string | undefined): Headers {

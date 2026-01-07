@@ -45,3 +45,12 @@ export class NotFound extends APIException {
     });
   }
 }
+
+export class ServerInternal extends APIException {
+  constructor(c: HonoContext, options?: { message?: string }) {
+    super(c, 500, {
+      message: options?.message ?? 'Internal server error',
+      code: 'SERVER_INTERNAL',
+    });
+  }
+}

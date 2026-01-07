@@ -9,6 +9,11 @@
 - **NEVER run dev servers yourself** (e.g., `bun run dev`, `just dev-server`) - they run in background and are difficult to kill
 - **ALWAYS use justfile commands** when available for debugging and development tasks (check `just` to list available commands)
 - **When making breaking changes to interfaces/types, find and update ALL usages including tests**
+- **ALWAYS add helpful error logs** for debugging purposes using `getLogger(c).error()` (server) or appropriate logging mechanism
+  - Log internal errors with detailed context before throwing exceptions
+  - Use structured logging: pass additional context as second parameter (e.g., `getLogger(c).error('message', { userId, requestData })`)
+  - NEVER leak internal error details to API responses - use generic error messages for exceptions
+  - Use `getLogger(c)` from `context/logging` for server-side logging
 
 ## Project Structure & Module Organization
 

@@ -2,8 +2,8 @@ import type { Context, Input, Next } from 'hono';
 import type { RequestIdVariables } from 'hono/request-id';
 import pino from 'pino';
 
-import { PostgresDatabase, type Database } from '../db';
-import { auth, type Auth, type SessionResponse } from '../auth';
+import { createDrizzleDatabase, PostgresDatabase, type Database } from '../db';
+import { type Auth, type SessionResponse, createAuth } from '../auth';
 import env from '../env';
 import { getLogger } from './logging';
 import type { Logger } from './types';
@@ -31,7 +31,7 @@ export type HonoContext<I extends Input = Record<string, unknown>, P extends str
 
 const { DEBUG, LOG_LEVEL } = env;
 
-const pinoLogger = pino({
+const defaultPinoLogger = pino({
   level: LOG_LEVEL,
   transport: DEBUG
     ? {
@@ -44,8 +44,11 @@ const pinoLogger = pino({
       }
     : undefined,
 });
+const defaultDrizzleDatabase = createDrizzleDatabase();
+const defaultPostgresDatabase = new PostgresDatabase(defaultDrizzleDatabase);
+const defaultAuth = createAuth(defaultDrizzleDatabase);
 
-function defaultLogger(c: HonoContext): Logger {
+function makeDefaultLogger(c: HonoContext): Logger {
   const basePayload = (c: HonoContext) => {
     const payload: Record<string, string> = {
       request_id: c.get('requestId'),
@@ -65,16 +68,16 @@ function defaultLogger(c: HonoContext): Logger {
 
   return {
     info: (message: string, payload?: Record<string, string>) => {
-      pinoLogger.info({ ...basePayload(c), ...payload }, message);
+      defaultPinoLogger.info({ ...basePayload(c), ...payload }, message);
     },
     error: (message: string, payload?: Record<string, string>) => {
-      pinoLogger.error({ ...basePayload(c), ...payload }, message);
+      defaultPinoLogger.error({ ...basePayload(c), ...payload }, message);
     },
     warn: (message: string, payload?: Record<string, string>) => {
-      pinoLogger.warn({ ...basePayload(c), ...payload }, message);
+      defaultPinoLogger.warn({ ...basePayload(c), ...payload }, message);
     },
     debug: (message: string, payload?: Record<string, string>) => {
-      pinoLogger.debug({ ...basePayload(c), ...payload }, message);
+      defaultPinoLogger.debug({ ...basePayload(c), ...payload }, message);
     },
   };
 }
@@ -91,10 +94,10 @@ export function injectRequestContext(injects?: Partial<InjectedContext>) {
   return async (c: HonoContext, next: Next) => {
     const startTime = performance.now();
     c.set('logEvents', []);
-    c.set('logger', injects?.logger ?? defaultLogger(c));
+    c.set('logger', injects?.logger ?? makeDefaultLogger(c));
     getLogger(c).info(`<-- ${c.req.method} ${c.req.path}`);
-    c.set('db', injects?.db ?? new PostgresDatabase());
-    c.set('auth', injects?.auth ?? auth);
+    c.set('db', injects?.db ?? defaultPostgresDatabase);
+    c.set('auth', injects?.auth ?? defaultAuth);
     await next();
     logEvents(c);
     const elapsedTimeInMs = Math.floor(performance.now() - startTime);

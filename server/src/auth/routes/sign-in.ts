@@ -4,6 +4,8 @@ import z from 'zod';
 import { AuthResponseSchema } from '../schemas/responses';
 import type { HonoContext } from '../../context';
 import { getHeadersWithJwtAfterAuth, handleAuthRequest } from '../utils/request';
+import { ServerInternal } from '../../exceptions';
+import { getLogger } from '../../context/logging';
 import { TokenHeadersDescription } from '../schemas/headers';
 import { ErrorResponseSchema } from '../../schemas/error';
 import { OPENAPI_TAG } from '../constants';
@@ -64,6 +66,10 @@ const signInRoute = [
   validator('json', EmailPasswordSignInSchema),
   async (c: HonoContext<SignInInput>) => {
     const { jsonResponse, sessionToken } = await handleAuthRequest(c, { responseSchema: AuthResponseSchema });
+    if (!sessionToken) {
+      getLogger(c).error('Sign-in failed: no session token returned from better-auth');
+      throw new ServerInternal(c);
+    }
     const headers = await getHeadersWithJwtAfterAuth(c, sessionToken);
 
     return c.json(jsonResponse, { status: 200, headers });

@@ -1,3 +1,4 @@
 export type { Database } from './types';
 export { default as InMemoryDatabase } from './in-memory';
-export { default as PostgresDatabase, type DrizzleDatabase, drizzleDatabase } from './postgres';
+export { default as PostgresDatabase } from './postgres';
+export { type DrizzleDatabase, createDrizzleDatabase } from './drizzle';

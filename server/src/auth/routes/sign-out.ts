@@ -22,7 +22,7 @@ const signOutRoute = [
     },
   }),
   async (c: HonoContext<SignOutInput>) => {
-    await handleAuthRequest(c, { responseSchema: SignOutResponseSchema });
+    await handleAuthRequest(c, { responseSchema: SignOutResponseSchema, requireSessionToken: false });
 
     return c.body(null, 204);
   },
