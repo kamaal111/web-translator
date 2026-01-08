@@ -1,4 +1,5 @@
 SERVER_ASSETS_PATH := "server/static"
+OUTPUT_SCHEMA_FILEPATH := "web/src/openapi.yaml"
 
 # List available commands
 default:
@@ -79,6 +80,7 @@ quality: prepare format-check lint
 
 # Run all verification checks
 ready: quality start-services
+    just download-spec
     just server/ready
     just web/ready
 
@@ -89,6 +91,11 @@ start-services:
 # Stop services
 stop-services:
     docker compose down
+
+# Download OpenAPI specification
+download-spec:
+    just server/download-spec ../{{ OUTPUT_SCHEMA_FILEPATH }}
+    just format
 
 # Prepare project for development
 prepare: install-modules

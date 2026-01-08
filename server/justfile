@@ -64,6 +64,10 @@ migrate:
 test:
     bun run test
 
+# Download OpenAPI spec
+download-spec output_schema_filepath: prepare
+    bun run scripts/download-openapi-spec.ts "{{ output_schema_filepath }}"
+
 # Type check
 typecheck:
     bun run typecheck

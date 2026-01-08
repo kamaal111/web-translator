@@ -6,9 +6,9 @@ import type { HonoContext } from '../../context';
 import { getHeadersWithJwtAfterAuth, handleAuthRequest } from '../utils/request';
 import { ServerInternal } from '../../exceptions';
 import { getLogger } from '../../context/logging';
-import { TokenHeadersDescription } from '../schemas/headers';
 import { ErrorResponseSchema } from '../../schemas/error';
 import { OPENAPI_TAG } from '../constants';
+import { TokenHeadersDescription } from '../schemas/headers';
 
 type EmailPasswordSignUp = z.infer<typeof EmailPasswordSignUpSchema>;
 type SignUpInput = { out: { json: EmailPasswordSignUp } };

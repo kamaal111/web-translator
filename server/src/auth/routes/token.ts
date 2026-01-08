@@ -4,11 +4,11 @@ import { describeRoute, resolver } from 'hono-openapi';
 import { OPENAPI_TAG, TOKEN_ROUTE_NAME } from '../constants';
 import type { HonoContext } from '../../context';
 import { ErrorResponseSchema } from '../../schemas/error';
-import { TokenHeadersDescription } from '../schemas/headers';
 import { makeNewRequest } from '../../utils/request';
 import { SessionNotFound } from '../exceptions';
 import { parseTokenResponseAndCreateHeaders } from '../utils/request';
 import { getAuth } from '../../context/auth';
+import { TokenHeadersDescription } from '../schemas/headers';
 
 const TokenResponseSchema = z
   .object({

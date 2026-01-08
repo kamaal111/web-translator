@@ -34,12 +34,17 @@ function yamlSpecHandler(app: Hono<HonoEnvironment>) {
     });
     const response = await app.request(requestInit);
     const rawData: unknown = await response.json();
-    const spec = OpenAPISpecSchema.parse(rawData);
-    const transformedSpec = transformNullableToUnion(spec);
-    const formattedSpec = Bun.YAML.stringify(transformedSpec, null, 2);
+    const formattedSpec = jsonSpecToYaml(rawData);
 
     return c.text(formattedSpec, 200, { 'Content-Type': 'text/yaml' });
   };
+}
+
+export function jsonSpecToYaml(jsonSpec: unknown) {
+  const spec = OpenAPISpecSchema.parse(jsonSpec);
+  const transformedSpec = transformNullableToUnion(spec);
+
+  return Bun.YAML.stringify(transformedSpec, null, 2);
 }
 
 function transformNullableToUnion(obj: unknown): unknown {
