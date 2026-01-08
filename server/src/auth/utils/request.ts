@@ -11,6 +11,7 @@ import env from '../../env';
 import { APP_API_BASE_PATH, ONE_DAY_IN_SECONDS } from '../../constants/common';
 import { ROUTE_NAME, TOKEN_ROUTE_NAME } from '../constants';
 import { decodeJwt, type JWTPayload } from 'jose';
+import { getAuth } from '../../context/auth';
 
 const { BETTER_AUTH_URL, JWT_EXPIRY_DAYS, BETTER_AUTH_SESSION_UPDATE_AGE_DAYS } = env;
 const TOKEN_URL = path.join(BETTER_AUTH_URL, APP_API_BASE_PATH, ROUTE_NAME, TOKEN_ROUTE_NAME);
@@ -29,7 +30,7 @@ export async function handleAuthRequest<Schema extends z.ZodType>(
   options: { responseSchema: Schema; requireSessionToken?: boolean },
 ): Promise<{ jsonResponse: z.infer<Schema>; sessionToken: string | null }> {
   const request = await makeNewRequest(c);
-  const response = await c.get('auth').handler(request);
+  const response = await getAuth(c).handler(request);
   const jsonResponse: unknown = await response.json();
   const exceptionResult = BetterAuthExceptionSchema.safeParse(jsonResponse);
   if (exceptionResult.success) {
@@ -83,7 +84,7 @@ function createHeadersWithJwt(jwt: string | undefined): Headers {
 export async function getHeadersWithJwtAfterAuth(c: HonoContext, sessionToken: string): Promise<Headers> {
   const tokenRequestHeaders = new Headers({ Authorization: `Bearer ${sessionToken}` });
   const tokenRequest = new Request(TOKEN_URL, { method: 'GET', headers: tokenRequestHeaders });
-  const response = await c.get('auth').handler(tokenRequest);
+  const response = await getAuth(c).handler(tokenRequest);
   if (!response.ok) {
     getLogger(c).error('Failed to retrieve JWT from token endpoint');
     throw new Unauthorized(c);

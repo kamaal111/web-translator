@@ -1,6 +1,5 @@
-import type { Database } from '../db';
-import type { HonoContext } from '.';
+import type { GetHonoContextVar, HonoContext } from '.';
 
-export function getDatabase(c: HonoContext): Database {
+export function getDatabase(c: HonoContext): GetHonoContextVar<'db'> {
   return c.get('db');
 }

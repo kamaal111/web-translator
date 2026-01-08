@@ -10,6 +10,8 @@ import { JWKS_URL } from '../better-auth';
 import { Unauthorized } from '../../exceptions';
 import { toISO8601String } from '../../utils/dates';
 import { SessionNotFound } from '../exceptions';
+import { getSession } from '../../context/session';
+import { getAuth } from '../../context/auth';
 
 const { BETTER_AUTH_URL } = env;
 const JWKS = createRemoteJWKSet(JWKS_URL);
@@ -20,7 +22,7 @@ const BetterAuthJWTPayloadSchema = z
 
 function requireLoggedInSession() {
   return createMiddleware<{ Variables: HonoVariables }>(async (c, next) => {
-    if (c.get('session') != null) {
+    if (getSession(c) != null) {
       await next();
       return;
     }
@@ -40,7 +42,7 @@ async function getUserSession(c: HonoContext): Promise<SessionResponse> {
 }
 
 async function verifySession(c: HonoContext): Promise<SessionResponse> {
-  const sessionResponse = await c.get('auth').api.getSession({ headers: c.req.raw.headers });
+  const sessionResponse = await getAuth(c).api.getSession({ headers: c.req.raw.headers });
   if (!sessionResponse) {
     throw new SessionNotFound(c);
   }

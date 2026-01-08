@@ -8,6 +8,7 @@ import { TokenHeadersDescription } from '../schemas/headers';
 import { makeNewRequest } from '../../utils/request';
 import { SessionNotFound } from '../exceptions';
 import { parseTokenResponseAndCreateHeaders } from '../utils/request';
+import { getAuth } from '../../context/auth';
 
 const TokenResponseSchema = z
   .object({
@@ -41,7 +42,7 @@ const tokenRoute = [
   }),
   async (c: HonoContext) => {
     const request = await makeNewRequest(c);
-    const response = await c.get('auth').handler(request);
+    const response = await getAuth(c).handler(request);
     if (!response.ok) {
       throw new SessionNotFound(c);
     }

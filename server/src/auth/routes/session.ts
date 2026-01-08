@@ -8,6 +8,7 @@ import { AuthenticationHeadersSchema, type AuthenticationHeaders } from '../../s
 import { SessionResponseSchema } from '../schemas/responses';
 import { ErrorResponseSchema } from '../../schemas/error';
 import type { HonoContext } from '../../context';
+import { getSession } from '../../context/session';
 
 type SessionInput = { out: { header: AuthenticationHeaders } };
 
@@ -40,7 +41,7 @@ const sessionRoute = [
   validator('header', AuthenticationHeadersSchema.partial()),
   requireLoggedInSession(),
   async (c: HonoContext<SessionInput>) => {
-    const session = c.get('session');
+    const session = getSession(c);
     assert(session != null, 'Middleware should have made sure that session is present');
 
     return c.json(session, { status: 200 });

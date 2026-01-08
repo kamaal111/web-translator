@@ -1,8 +1,8 @@
 import { arrays } from '@kamaalio/kamaal';
 
-import type { HonoContext } from '.';
+import type { GetHonoContextVar, HonoContext } from '.';
 
-export function getLogEvents(c: HonoContext) {
+export function getLogEvents(c: HonoContext): GetHonoContextVar<'logEvents'> {
   return c.get('logEvents');
 }
 

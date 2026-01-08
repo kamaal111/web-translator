@@ -1,6 +1,5 @@
-import type { HonoContext } from '.';
-import type { Logger } from './types';
+import type { GetHonoContextVar, HonoContext } from '.';
 
-export function getLogger(c: HonoContext): Logger {
+export function getLogger(c: HonoContext): GetHonoContextVar<'logger'> {
   return c.get('logger');
 }

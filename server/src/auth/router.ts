@@ -7,6 +7,7 @@ import signInRoute from './routes/sign-in';
 import signOutRoute from './routes/sign-out';
 import tokenRoute from './routes/token';
 import sessionRoute from './routes/session';
+import { getAuth } from '../context/auth';
 
 const authRouter = new Hono<HonoEnvironment>();
 
@@ -17,6 +18,6 @@ authRouter
   .post(...signOutRoute)
   .get(...tokenRoute)
   .get(...sessionRoute)
-  .on(['POST', 'GET'], '**', c => c.get('auth').handler(c.req.raw));
+  .on(['POST', 'GET'], '**', c => getAuth(c).handler(c.req.raw));
 
 export default authRouter;

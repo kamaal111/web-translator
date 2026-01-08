@@ -2,6 +2,7 @@ import { HTTPException } from 'hono/http-exception';
 
 import type { HonoContext } from './context';
 import type { ContentfulStatusCode } from 'hono/utils/http-status';
+import { getRequestId } from './context/request-id';
 
 export class APIException extends HTTPException {
   readonly c: HonoContext;
@@ -16,7 +17,7 @@ export class APIException extends HTTPException {
         message: options.message,
         code: options.code,
         context: options.context,
-        request_id: c.get('requestId'),
+        request_id: getRequestId(c),
       }),
       {
         status: statusCode,

@@ -78,7 +78,7 @@ typecheck:
 quality: prepare format-check lint
 
 # Run all verification checks
-ready: quality
+ready: quality start-services
     just server/ready
     just web/ready
 

@@ -29,6 +29,8 @@ export type HonoContext<I extends Input = Record<string, unknown>, P extends str
   I
 >;
 
+export type GetHonoContextVar<Key extends keyof HonoContext['var']> = HonoContext['var'][Key];
+
 const { DEBUG, LOG_LEVEL } = env;
 
 const defaultPinoLogger = pino({
