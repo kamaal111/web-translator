@@ -20,12 +20,21 @@ build-watch output="dist": prepare
 
 # Prepare project for development
 [group('development')]
-prepare: install-modules
+prepare: install-modules generate-client
 
 # Install modules
 [group('development')]
 install-modules:
     bun install
+
+# Generate API client from OpenAPI spec
+[group('development')]
+generate-client:
+    bunx openapi-generator-cli generate \
+        -i src/openapi.yaml \
+        -g typescript-fetch \
+        -o src/generated/api-client \
+        --additional-properties=supportsES6=true,npmName=api-client,typescriptThreePlus=true
 
 # Type check
 [group('quality')]

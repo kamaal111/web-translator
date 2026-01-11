@@ -30,7 +30,7 @@
   "scripts": {
     "format": "prettier --write .",
     "format:check": "prettier --check .",
-    "lint": "eslint .",
+    "lint": "eslint . --max-warnings=0",
     "prepare": "husky"
   }
 }

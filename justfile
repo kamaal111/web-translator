@@ -103,3 +103,7 @@ prepare: install-modules
 # Install modules
 install-modules:
     bun install
+
+# Open vscode in the workspace
+code:
+    code web-translator.code-workspace
