@@ -1,13 +1,7 @@
 import { useState } from 'react';
-import { Configuration, AuthenticationApi } from '../../generated/api-client/src';
-import type { SessionResponse } from '../../generated/api-client/src';
 
-const authApi = new AuthenticationApi(
-  new Configuration({
-    basePath: 'http://localhost:3000',
-    credentials: 'include', // Include cookies for session authentication
-  }),
-);
+import apiClient from '@/api/client';
+import type { SessionResponse } from '@/generated/api-client/src/models/SessionResponse';
 
 function Login() {
   const [sessionData, setSessionData] = useState<SessionResponse | null>(null);
@@ -18,7 +12,7 @@ function Login() {
     setLoading(true);
     setError(null);
     try {
-      const session = await authApi.getAppApiV1AuthSession();
+      const session = await apiClient.auth.getSession();
       setSessionData(session);
       console.log('Session data:', session);
     } catch (err) {

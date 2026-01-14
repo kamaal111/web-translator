@@ -12,8 +12,14 @@ import { toISO8601String } from '../../utils/dates';
 import { SessionNotFound } from '../exceptions';
 import { getSession } from '../../context/session';
 import { getAuth } from '../../context/auth';
+import { unsafeCast } from '../../utils/typing';
+
+type SupportedLocales = typeof SUPPORTED_LOCALES;
+type SupportedLocale = SupportedLocales[number];
 
 const { BETTER_AUTH_URL } = env;
+const DEFAULT_LOCALE = 'en';
+const SUPPORTED_LOCALES = [DEFAULT_LOCALE] as const;
 const JWKS = createRemoteJWKSet(JWKS_URL);
 
 const BetterAuthJWTPayloadSchema = z
@@ -41,6 +47,20 @@ async function getUserSession(c: HonoContext): Promise<SessionResponse> {
   return verifySession(c);
 }
 
+function getSessionLocale(c: HonoContext): SupportedLocale {
+  const headers = c.req.header();
+  const requestLanguage = headers['accept-language']?.split(';')[0]?.split('-')[0];
+  if (requestLanguage == null) {
+    return DEFAULT_LOCALE;
+  }
+
+  if (!unsafeCast<string>(SUPPORTED_LOCALES).includes(requestLanguage)) {
+    return DEFAULT_LOCALE;
+  }
+
+  return unsafeCast<SupportedLocale>(requestLanguage);
+}
+
 async function verifySession(c: HonoContext): Promise<SessionResponse> {
   const sessionResponse = await getAuth(c).api.getSession({ headers: c.req.raw.headers });
   if (!sessionResponse) {
@@ -58,6 +78,7 @@ async function verifySession(c: HonoContext): Promise<SessionResponse> {
       email: sessionResponse.user.email,
       email_verified: sessionResponse.user.emailVerified,
       created_at: toISO8601String(sessionResponse.user.createdAt),
+      locale: getSessionLocale(c),
     },
   };
 
@@ -105,6 +126,7 @@ async function verifyJwt(c: HonoContext): Promise<SessionResponse | null> {
       email: jwtPayload.email,
       email_verified: jwtPayload.emailVerified,
       created_at: toISO8601String(new Date((payload.iat ?? 0) * 1000)),
+      locale: getSessionLocale(c),
     },
   };
 }

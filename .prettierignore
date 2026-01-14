@@ -1,3 +1,5 @@
 static
 dist
 generated
+web/src/translations/messages/constants.ts
+web/src/translations/messages/en.json

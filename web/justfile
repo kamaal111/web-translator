@@ -1,34 +1,27 @@
 # List available commands
-[group('meta')]
 default:
     just --list --unsorted
 
 # Run dev server
-[group('development')]
 dev: prepare
     bun run dev
 
 # Build assets
-[group('development')]
 build output="dist": prepare
     BUILD_OUTPUT={{output}} bun run build
 
 # Build and watch assets
-[group('development')]
 build-watch output="dist": prepare
     BUILD_OUTPUT={{output}} bun run build:watch
 
 # Prepare project for development
-[group('development')]
 prepare: install-modules generate-client
 
 # Install modules
-[group('development')]
 install-modules:
     bun install
 
 # Generate API client from OpenAPI spec
-[group('development')]
 generate-client:
     bunx openapi-generator-cli generate \
         -i src/openapi.yaml \
@@ -37,14 +30,11 @@ generate-client:
         --additional-properties=supportsES6=true,npmName=api-client,typescriptThreePlus=true
 
 # Type check
-[group('quality')]
 typecheck:
     bun run typecheck
 
 # Run all quality checks
-[group('quality')]
 quality: prepare typecheck
 
 # Run all verification checks
-[group('quality')]
 ready: quality build

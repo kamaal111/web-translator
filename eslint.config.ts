@@ -7,7 +7,14 @@ import pluginReact from 'eslint-plugin-react';
 import { defineConfig, globalIgnores } from 'eslint/config';
 
 export default defineConfig([
-  globalIgnores(['**/dist', '**/static', '**/generated']),
+  globalIgnores([
+    '**/dist',
+    '**/static',
+    '**/generated',
+    'web/scripts/build-locales-generated-constants.ts',
+    'web/src/translations/messages/constants.ts',
+    'web/src/translations/messages/en.json',
+  ]),
   {
     files: ['**/*.{js,mjs,cjs,ts,mts,cts}'],
     plugins: { js },

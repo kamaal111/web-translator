@@ -71,16 +71,15 @@ lint:
     bun run lint
 
 # Type check
-typecheck:
-    just server/typecheck
-    just web/typecheck
+[parallel]
+typecheck: typecheck-server typecheck-web
 
 # Run all quality checks
-quality: prepare format-check lint
+[parallel]
+quality: typecheck format-check lint
 
 # Run all verification checks
-ready: quality start-services
-    just download-spec
+ready: quality start-services download-spec
     just server/ready
     just web/ready
 
@@ -107,3 +106,11 @@ install-modules:
 # Open vscode in the workspace
 code:
     code web-translator.code-workspace
+
+[private]
+typecheck-web:
+    just web/typecheck
+
+[private]
+typecheck-server:
+    just server/typecheck
