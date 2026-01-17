@@ -1,7 +1,9 @@
+import { EmailPasswordSignInPayloadSchema } from '@wt/schemas';
+
 import { useLogin } from '@/auth/hooks/use-login';
 import type { FormField } from '@/common/components/form/form';
-import { LoginPayloadSchema, type LoginPayload } from '@/auth/schemas';
 import Form from '@/common/components/form/form';
+import type { EmailPasswordSignIn } from '@/generated/api-client/src';
 import messages from './messages';
 
 function LoginSubForm() {
@@ -10,7 +12,7 @@ function LoginSubForm() {
     result: { isLoading },
   } = useLogin();
 
-  const fields: Array<FormField<keyof LoginPayload>> = [
+  const fields: Array<FormField<keyof EmailPasswordSignIn>> = [
     {
       id: 'email',
       placeholder: 'jane@mail.com',
@@ -29,11 +31,11 @@ function LoginSubForm() {
     },
   ];
 
-  function handleSubmit(payload: LoginPayload) {
+  function handleSubmit(payload: EmailPasswordSignIn) {
     login(payload);
   }
 
-  return <Form schema={LoginPayloadSchema} fields={fields} onSubmit={handleSubmit} disable={isLoading} />;
+  return <Form schema={EmailPasswordSignInPayloadSchema} fields={fields} onSubmit={handleSubmit} disable={isLoading} />;
 }
 
 export default LoginSubForm;

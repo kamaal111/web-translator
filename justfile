@@ -1,5 +1,6 @@
 SERVER_ASSETS_PATH := "server/static"
 OUTPUT_SCHEMA_FILEPATH := "web/src/openapi.yaml"
+CONTAINER_NAME := "web-translator"
 
 # List available commands
 default:
@@ -35,7 +36,7 @@ run-server: build-for-server
 
 # Build the Docker image
 build-server:
-    just server/build
+    docker build --pull -t {{ CONTAINER_NAME }} .
 
 # Run dev server
 dev-server: start-services build-for-server
@@ -72,7 +73,7 @@ lint:
 
 # Type check
 [parallel]
-typecheck: typecheck-server typecheck-web
+typecheck: typecheck-server typecheck-web typecheck-schemas
 
 # Run all quality checks
 [parallel]
@@ -114,3 +115,8 @@ typecheck-web:
 [private]
 typecheck-server:
     just server/typecheck
+
+[private]
+[working-directory("modules/schemas")]
+typecheck-schemas:
+    bun run typecheck

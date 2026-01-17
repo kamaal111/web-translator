@@ -2,7 +2,7 @@ import { createAuthClient } from 'better-auth/react';
 
 import { AuthenticationApi } from '@/generated/api-client/src/apis/AuthenticationApi';
 import { Configuration } from '@/generated/api-client/src/runtime';
-import type { LoginPayload, SignUpPayload } from './schemas';
+import type { EmailPasswordSignIn, EmailPasswordSignUp } from '@/generated/api-client/src';
 
 class AuthClient {
   private readonly betterAuthClient: ReturnType<typeof createAuthClient>;
@@ -17,11 +17,11 @@ class AuthClient {
     return this.authApi.getAppApiV1AuthSession();
   }
 
-  login(payload: LoginPayload) {
+  login(payload: EmailPasswordSignIn) {
     return this.betterAuthClient.signIn.email(payload);
   }
 
-  signUp(payload: SignUpPayload) {
+  signUp(payload: EmailPasswordSignUp) {
     return this.betterAuthClient.signUp.email(payload);
   }
 }

@@ -1,5 +1,5 @@
 import { describeRoute, resolver, validator } from 'hono-openapi';
-import z from 'zod';
+import { EmailPasswordSignUpPayloadSchema, type EmailPasswordSignUpPayload } from '@wt/schemas';
 
 import { AuthResponseSchema } from '../schemas/responses';
 import type { HonoContext } from '../../context';
@@ -10,53 +10,7 @@ import { ErrorResponseSchema } from '../../schemas/error';
 import { OPENAPI_TAG } from '../constants';
 import { TokenHeadersDescription } from '../schemas/headers';
 
-type EmailPasswordSignUp = z.infer<typeof EmailPasswordSignUpSchema>;
-type SignUpInput = { out: { json: EmailPasswordSignUp } };
-
-const EmailPasswordSignUpSchema = z
-  .object({
-    email: z.email().meta({
-      description: 'User email address',
-      example: 'john.doe@example.com',
-    }),
-    password: z.string().min(8).max(128).meta({
-      description: 'User password (minimum 8 characters)',
-      example: 'SecurePassword123!',
-    }),
-    name: z
-      .string()
-      .trim()
-      .min(3)
-      .refine(val => val === val.trim(), {
-        message: 'Name must not have leading or trailing spaces',
-      })
-      .refine(val => /^[^\s]+(\s[^\s]+)+$/.test(val), {
-        message: 'Name must contain at least 2 words separated by single spaces',
-      })
-      .refine(val => val.split(/\s+/).every(word => /[a-zA-Z]/.test(word)), {
-        message: 'Each word must contain at least one letter',
-      })
-      .meta({
-        description: 'User display name (minimum 2 words, each with at least one letter)',
-        example: 'John Doe',
-      }),
-    callbackURL: z.url().optional().meta({
-      description: 'URL to redirect to after sign up',
-      example: 'https://example.com/dashboard',
-    }),
-  })
-  .describe('Email password sign up payload')
-  .meta({
-    ref: 'EmailPasswordSignUp',
-    title: 'Email Password Sign Up',
-    description: 'Request body for signing up with email and password',
-    example: {
-      email: 'john.doe@example.com',
-      password: 'SecurePassword123!',
-      name: 'John Doe',
-      callbackURL: 'https://example.com/dashboard',
-    },
-  });
+type SignUpInput = { out: { json: EmailPasswordSignUpPayload } };
 
 const signUpRoute = [
   '/sign-up/email',
@@ -84,7 +38,7 @@ const signUpRoute = [
       },
     },
   }),
-  validator('json', EmailPasswordSignUpSchema),
+  validator('json', EmailPasswordSignUpPayloadSchema),
   async (c: HonoContext<SignUpInput>) => {
     const { jsonResponse, sessionToken } = await handleAuthRequest(c, { responseSchema: AuthResponseSchema });
     if (!sessionToken) {
