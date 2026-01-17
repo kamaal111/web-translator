@@ -1,7 +1,7 @@
 import React from 'react';
 import { Outlet, useNavigate } from 'react-router';
 
-import { useConfigurations } from '@/data-providers/configurations-context';
+import { useConfigurations } from '@/context/use-configurations';
 
 function LoginRequiredLayout() {
   const { isLoggedIn } = useConfigurations();

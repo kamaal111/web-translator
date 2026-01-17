@@ -1,0 +1,8 @@
+.isInvalid {
+  background-color: rgba(255, 64, 64, 0.3);
+}
+
+.invalidMessage {
+  margin: 0;
+  font-size: small;
+}

@@ -1,7 +1,7 @@
 import React from 'react';
 import { objects } from '@kamaalio/kamaal';
 
-import { useConfigurations } from '@/data-providers/configurations-context';
+import { useConfigurations } from '@/context/use-configurations';
 
 type SupportedLocales = typeof SUPPORTED_LOCALES;
 export type SupportedLocale = SupportedLocales[number];
@@ -25,11 +25,17 @@ function useMessages(): UseMEssagesReturnType {
 
   React.useEffect(() => {
     import(`./messages/${locale}.json`)
-      .then(fetchedMessages => {
-        const flattenMessages = objects.flatten<Record<string, string>>(fetchedMessages.default);
+      .then((fetchedMessages: { default: unknown }) => {
+        if (typeof fetchedMessages.default !== 'object' || fetchedMessages.default === null) {
+          console.error(`Invalid message format for ${locale}`);
+          return;
+        }
+        const flattenMessages = objects.flatten<Record<string, string>>(
+          fetchedMessages.default as Record<string, unknown>,
+        );
         setMessages(flattenMessages);
       })
-      .catch(error => console.error(`Failed to load ${locale} message; error='${error}'`));
+      .catch((error: unknown) => console.error(`Failed to load ${locale} message; error='${error}'`));
   }, [locale]);
 
   return { messages, locale, defaultLocale: DEFAULT_LOCALE };

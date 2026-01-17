@@ -1,4 +1,4 @@
-import type { WebTranslatorContext } from '@/data-providers/configurations-context';
+import type { WebTranslatorContext } from '@/context/schemas';
 
 declare const window: {
   WebTranslatorContext: WebTranslatorContext | null;

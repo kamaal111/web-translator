@@ -1,5 +1,4 @@
 import React from 'react';
-import z from 'zod';
 import { useIntl } from 'react-intl';
 
 import { getWindow } from '@/utils/window';
@@ -8,20 +7,8 @@ import { ResponseError } from '@/generated/api-client/src/runtime';
 import toast from 'react-hot-toast';
 import messages from '@/common/messages';
 import type { SessionResponse } from '@/generated/api-client/src';
-
-export type WebTranslatorContext = z.infer<typeof WebTranslatorContextSchema>;
-
-type ConfigurationsState = [context: WebTranslatorContext | null, fetchSession: () => Promise<void>] | null;
-
-type UseConfigurationsReturnType = {
-  context: WebTranslatorContext | null;
-  isLoggedIn: boolean;
-  fetchSession: () => Promise<void>;
-};
-
-const WebTranslatorContextSchema = z.object({ locale: z.string().min(2).nullish() });
-
-const ConfigurationsContext = React.createContext<ConfigurationsState>(null);
+import { ConfigurationsContext } from './use-configurations';
+import { WebTranslatorContextSchema, type WebTranslatorContext } from './schemas';
 
 function ConfigurationsContextProvider({ children }: React.PropsWithChildren) {
   const window = getWindow();
@@ -85,16 +72,6 @@ function ConfigurationsContextProvider({ children }: React.PropsWithChildren) {
       {context != null ? children : null}
     </ConfigurationsContext.Provider>
   );
-}
-
-export function useConfigurations(): UseConfigurationsReturnType {
-  const [context, fetchSession] = React.useContext(ConfigurationsContext) ?? [null, async () => {}];
-
-  return {
-    context,
-    fetchSession,
-    isLoggedIn: false,
-  };
 }
 
 export default ConfigurationsContextProvider;

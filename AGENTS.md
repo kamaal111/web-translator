@@ -2,10 +2,27 @@
 
 ## Critical Development Rules
 
+- **ALWAYS verify your work with relevant commands BEFORE claiming completion**
+  - For linting changes: run `just lint` to verify
+  - For type changes: run `just typecheck` to verify
+  - For tests: run `just test` to verify
+  - For formatting: run `just format` to verify
+  - **ALWAYS run `just ready` as the FINAL verification before finishing ANY task**
 - **NEVER claim a task is done until ALL checks from `just ready` pass** (format, lint, typecheck, tests, build)
   - **ALWAYS run `just ready` from the root directory before finishing any task**
   - **If `just ready` fails, you MUST fix all errors before saying you're done**
   - This is NON-NEGOTIABLE - no exceptions
+- **NEVER add ESLint suppression comments** (e.g., `eslint-disable`, `eslint-disable-next-line`) - ALWAYS fix the underlying issue instead
+  - Restructure code, separate concerns, fix types, or refactor - but NEVER suppress warnings
+  - ESLint rules exist for good reasons - respect them and fix the root cause
+  - This is NON-NEGOTIABLE - no exceptions
+- **NEVER disable or turn off ESLint rules** - if a rule is failing, fix the code to comply with it
+  - Do not modify ESLint configuration to suppress errors
+  - Fix the underlying code issue instead
+- **NEVER use the `any` type in TypeScript** - always use proper types, `unknown`, or generics
+  - This is enforced by ESLint rules and will cause lint failures
+  - Use `unknown` when the type is truly unknown, then narrow it with type guards
+  - Use proper generics and type constraints instead of escaping the type system
 - **NEVER run dev servers yourself** (e.g., `bun run dev`, `just dev-server`) - they run in background and are difficult to kill
 - **NEVER perform destructive git operations** (e.g., `git checkout`, `git stash`, `git reset`, `git rebase`) - these change the working directory state
 - **ALWAYS use justfile commands** when available for debugging and development tasks (check `just` to list available commands)

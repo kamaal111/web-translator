@@ -1,21 +1,18 @@
-import { type DefaultToastOptions, Toaster } from 'react-hot-toast';
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 
 import IntlProvider from '@/translations/intl-provider';
-import ConfigurationsContextProvider from './configurations-context';
+import ConfigurationsContextProvider from '../context/configurations-context';
+import ThemeProvider from '@/theme/provider';
 
-const toastOptions: DefaultToastOptions = {
-  error: {
-    duration: 3000,
-    style: { background: '#DD2712', color: '#ffffff' },
-  },
-};
+const queryClient = new QueryClient();
 
 function DataProviders({ children }: React.PropsWithChildren) {
   return (
     <IntlProvider>
       <ConfigurationsContextProvider>
-        {children}
-        <Toaster toastOptions={toastOptions} />
+        <ThemeProvider>
+          <QueryClientProvider client={queryClient}>{children}</QueryClientProvider>
+        </ThemeProvider>
       </ConfigurationsContextProvider>
     </IntlProvider>
   );
