@@ -1,6 +1,12 @@
+set export
+set dotenv-load
+
 SERVER_ASSETS_PATH := "server/static"
 OUTPUT_SCHEMA_FILEPATH := "web/src/openapi.yaml"
 CONTAINER_NAME := "web-translator"
+PORT := "3000"
+AUTH_CONFIG := "src/auth/better-auth.ts"
+AUTH_SCHEMA := "src/db/schema/better-auth.ts"
 
 # List available commands
 default:
@@ -11,16 +17,19 @@ default:
 dev: build-watch-for-server dev-server
 
 # Run dev web server
-dev-web:
-    just web/dev
+[working-directory("web")]
+dev-web: prepare-web
+    bun run dev
 
 # Build web assets
-build-web output="dist":
-    just web/build {{ output }}
+[working-directory("web")]
+build-web output="dist": prepare-web
+    BUILD_OUTPUT={{ output }} bun run build
 
 # Build and watch web assets
-build-watch-web output="dist":
-    just web/build-watch {{ output }}
+[working-directory("web")]
+build-watch-web output="dist": prepare-web
+    BUILD_OUTPUT={{ output }} bun run build:watch
 
 # Build web assets for server
 build-for-server:
@@ -31,32 +40,43 @@ build-watch-for-server:
     just build-watch-web "../{{ SERVER_ASSETS_PATH }}"
 
 # Run the server Docker container
-run-server: build-for-server
-    just server/run
+run-server: build-for-server stop-server delete-server
+    #!/usr/bin/env zsh
+
+    docker run -dp {{ PORT }}:{{ PORT }} -e DATABASE_URL=$DATABASE_URL \
+        -e BETTER_AUTH_SECRET=$BETTER_AUTH_SECRET --name {{ CONTAINER_NAME }} {{ CONTAINER_NAME }}
 
 # Build the Docker image
 build-server:
     docker build --pull -t {{ CONTAINER_NAME }} .
 
 # Run dev server
+[working-directory("server")]
 dev-server: start-services build-for-server
-    just server/dev
+    #!/usr/bin/env zsh
+
+    export DEBUG="true"
+
+    bun run dev
 
 # Generate authentication database tables
-make-auth-tables:
-    just server/make-auth-tables
+[working-directory("server")]
+make-auth-tables: prepare-server
+    bunx @better-auth/cli generate --config {{ AUTH_CONFIG }} --output {{ AUTH_SCHEMA }} --yes
 
 # Generate migrations
-make-migrations:
-    just server/make-migrations
+[working-directory("server")]
+make-migrations: prepare-server
+    bunx drizzle-kit generate
 
 # Run database migrations
+[working-directory("server")]
 migrate:
-    just server/migrate
+    bunx drizzle-kit migrate
 
 # Run tests
-test:
-    just server/test
+[parallel]
+test: test-server
 
 
 # Format code with Prettier
@@ -80,9 +100,7 @@ typecheck: typecheck-server typecheck-web typecheck-schemas
 quality: typecheck format-check lint
 
 # Run all verification checks
-ready: quality start-services download-spec
-    just server/ready
-    just web/ready
+ready: quality start-services download-spec ready-web ready-server
 
 # Start services
 start-services:
@@ -93,8 +111,12 @@ stop-services:
     docker compose down
 
 # Download OpenAPI specification
-download-spec:
-    just server/download-spec ../{{ OUTPUT_SCHEMA_FILEPATH }}
+download-spec: prepare-server
+    #!/usr/bin/env zsh
+
+    cd server
+    bun run scripts/download-openapi-spec.ts ../{{ OUTPUT_SCHEMA_FILEPATH }}
+    cd ..
     just format
 
 # Prepare project for development
@@ -109,14 +131,65 @@ code:
     code web-translator.code-workspace
 
 [private]
-typecheck-web:
-    just web/typecheck
+[working-directory("server")]
+ready-server: quality-server test-server
 
 [private]
+[working-directory("server")]
+quality-server: prepare-server typecheck-server
+
+[private]
+[working-directory("server")]
+test-server:
+    bun run test
+
+[private]
+stop-server:
+    docker stop {{ CONTAINER_NAME }} || true
+
+[private]
+delete-server:
+    docker rm {{ CONTAINER_NAME }} || true
+
+[private]
+[working-directory("web")]
+typecheck-web:
+    bun run typecheck
+
+[private]
+[working-directory("server")]
 typecheck-server:
-    just server/typecheck
+    bun run typecheck
 
 [private]
 [working-directory("modules/schemas")]
 typecheck-schemas:
     bun run typecheck
+
+[private]
+[working-directory("server")]
+prepare-server:
+    bun install
+
+[private]
+[working-directory("web")]
+prepare-web:
+    bun install
+    just generate-client
+
+[private]
+[working-directory("web")]
+ready-web: quality-web build-web
+
+[private]
+[working-directory("web")]
+quality-web: prepare-web typecheck-web
+
+[private]
+[working-directory("web")]
+generate-client:
+    bunx openapi-generator-cli generate \
+        -i src/openapi.yaml \
+        -g typescript-fetch \
+        -o src/generated/api-client \
+        --additional-properties=supportsES6=true,npmName=api-client,typescriptThreePlus=true
