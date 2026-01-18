@@ -36,6 +36,11 @@
   - If a function, method, or package is marked as deprecated, ALWAYS follow the recommended migration path
   - Do not ignore deprecation warnings, as they indicate future breaking changes
   - Update the code to use the new recommended APIs instead of deprecated ones
+- **NEVER use nullish coalescing (??) or boolean coalescing (||) when values are guaranteed to exist**
+  - If you know for certain that a value exists (e.g., after validation or in a transform after refine), use `assert` to document the guarantee
+  - Example: `assert(canonical, 'Already validated, so we know this exists'); return canonical;`
+  - Do NOT write: `return value ?? fallback` or `return value || fallback` when validation ensures the value exists
+  - Coalescing should only be used when there's genuine optionality, not to paper over type system limitations
 
 ## Project Structure & Module Organization
 

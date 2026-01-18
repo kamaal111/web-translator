@@ -1,6 +1,6 @@
 import z from 'zod';
 
-import { ApiCommonDatetimeShape } from '../../schemas/common';
+import { ApiCommonDatetimeShape, LocaleShape } from '../../schemas/common';
 
 export const AuthResponseSchema = z
   .object({
@@ -48,7 +48,7 @@ export const SessionResponseSchema = z
         description: 'User account creation timestamp',
         example: '2025-10-05T12:08:28.374Z',
       }),
-      locale: z.string().length(2).meta({ description: 'Users preferred locale', example: 'en' }),
+      locale: LocaleShape.meta({ description: 'Users preferred locale', example: 'en' }),
     }),
   })
   .describe('Session response')

@@ -17,6 +17,11 @@ const TokenHeadersSchema = z.object({
     description: 'Session update age in seconds - session should be verified after this time',
     example: '86400',
   }),
+  'set-cookie': z.string().meta({
+    description: 'Cookies that get set by the browser containing the access token',
+    example:
+      'better-auth.session_token=ZWTrzHy0WsTfyRmn2xDsG92DAd4HShYy.eschpAS43ZWSQKIVZb3vMBhLIYdapOWUOJwA6Jum788%3D',
+  }),
 });
 
 export const TokenHeadersDescription = Object.fromEntries(

@@ -11,13 +11,17 @@ paths:
       tags:
         - Project
       responses:
-        '200':
+        '201':
           description: Successful response
           content:
             application/json:
               schema:
-                type: object
-                properties: {}
+                $ref: '#/components/schemas/CreateProjectResponse'
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateProjectPayload'
   '/app-api/v1/p/{projectId}/v/{versionId}/strings':
     get:
       operationId: getApp-apiV1P:projectIdV:versionIdStrings
@@ -78,6 +82,11 @@ paths:
                 type: string
               description: Session update age in seconds - session should be verified after this time
               example: '86400'
+            set-cookie:
+              schema:
+                type: string
+              description: Cookies that get set by the browser containing the access token
+              example: better-auth.session_token=ZWTrzHy0WsTfyRmn2xDsG92DAd4HShYy.eschpAS43ZWSQKIVZb3vMBhLIYdapOWUOJwA6Jum788%3D
         '400':
           description: Invalid request or email already exists
           content:
@@ -169,6 +178,11 @@ paths:
                 type: string
               description: Session update age in seconds - session should be verified after this time
               example: '86400'
+            set-cookie:
+              schema:
+                type: string
+              description: Cookies that get set by the browser containing the access token
+              example: better-auth.session_token=ZWTrzHy0WsTfyRmn2xDsG92DAd4HShYy.eschpAS43ZWSQKIVZb3vMBhLIYdapOWUOJwA6Jum788%3D
         '400':
           description: Invalid credentials or request
           content:
@@ -255,6 +269,11 @@ paths:
                 type: string
               description: Session update age in seconds - session should be verified after this time
               example: '86400'
+            set-cookie:
+              schema:
+                type: string
+              description: Cookies that get set by the browser containing the access token
+              example: better-auth.session_token=ZWTrzHy0WsTfyRmn2xDsG92DAd4HShYy.eschpAS43ZWSQKIVZb3vMBhLIYdapOWUOJwA6Jum788%3D
         '401':
           description: Not authenticated or session expired
           content:
@@ -312,6 +331,95 @@ paths:
           description: Bearer token for authentication
 components:
   schemas:
+    Locale:
+      description: The default locale for the project. Must be a valid BCP 47 language tag
+      example: en-US
+      type: string
+    CreateProjectResponse:
+      type: object
+      properties:
+        name:
+          type: string
+          minLength: 1
+          description: The name of the project
+          example: My App
+        default_locale:
+          $ref: '#/components/schemas/Locale'
+        enabled_locales:
+          type: array
+          items:
+            type: string
+          description: List of enabled locales for the project. Duplicates will be removed automatically. The default locale will be included if not present.
+          example:
+            - en-US
+            - fr-FR
+            - es-ES
+        public_read_key:
+          type: string
+          minLength: 1
+          description: Public read-only API key for accessing project translations
+          example: pk_1234567890abcdef
+        id:
+          type: string
+          minLength: 1
+          description: Unique identifier for the project
+          example: proj_1234567890abcdef
+      required:
+        - name
+        - default_locale
+        - enabled_locales
+        - public_read_key
+        - id
+      description: Response returned after successfully creating a project
+      title: Create Project Response
+      example:
+        id: proj_1234567890abcdef
+        name: My App
+        default_locale: en-US
+        enabled_locales:
+          - en-US
+          - fr-FR
+          - es-ES
+        public_read_key: pk_1234567890abcdef
+    CreateProjectPayload:
+      description: Payload for creating a new project with localization settings
+      title: Create Project Payload
+      example:
+        name: My App
+        default_locale: en-US
+        enabled_locales:
+          - en-US
+          - fr-FR
+          - es-ES
+        public_read_key: pk_1234567890abcdef
+      type: object
+      properties:
+        name:
+          type: string
+          minLength: 1
+          description: The name of the project
+          example: My App
+        default_locale:
+          $ref: '#/components/schemas/Locale'
+        enabled_locales:
+          type: array
+          items:
+            type: string
+          description: List of enabled locales for the project. Duplicates will be removed automatically. The default locale will be included if not present.
+          example:
+            - en-US
+            - fr-FR
+            - es-ES
+        public_read_key:
+          type: string
+          minLength: 1
+          description: Public read-only API key for accessing project translations
+          example: pk_1234567890abcdef
+      required:
+        - name
+        - default_locale
+        - enabled_locales
+        - public_read_key
     AuthResponse:
       type: object
       properties:
@@ -453,11 +561,9 @@ components:
               description: User account creation timestamp
               example: 2025-10-05T12:08:28.374Z
             locale:
-              type: string
-              minLength: 2
-              maxLength: 2
               description: Users preferred locale
               example: en
+              type: string
           required:
             - id
             - name

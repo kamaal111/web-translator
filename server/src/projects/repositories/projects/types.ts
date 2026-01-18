@@ -1,5 +1,6 @@
+import type { IProject } from '../../models/project';
 import type Project from '../../models/project';
 
 export interface ProjectsRepository {
-  createProject: () => Promise<Project>;
+  createProject: (payload: Omit<IProject, 'id'>) => Promise<Project>;
 }

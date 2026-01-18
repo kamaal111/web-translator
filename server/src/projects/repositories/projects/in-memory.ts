@@ -1,6 +1,6 @@
 import { arrays } from '@kamaalio/kamaal';
 
-import Project from '../../models/project';
+import Project, { type IProject } from '../../models/project';
 import type { ProjectsRepository } from './types';
 
 class ProjectsInMemoryRepository implements ProjectsRepository {
@@ -10,16 +10,16 @@ class ProjectsInMemoryRepository implements ProjectsRepository {
     this.projectsContainer = [];
   }
 
-  async createProject() {
-    const createdProject = new Project();
+  createProject = (payload: Omit<IProject, 'id'>): Promise<Project> => {
+    const createdProject = new Project({ ...payload, id: crypto.randomUUID() });
     this.setProjects(arrays.appended(this.projectsContainer, createdProject));
 
-    return createdProject;
-  }
+    return Promise.resolve(createdProject);
+  };
 
-  private setProjects(projects: Project[]) {
+  private setProjects = (projects: Project[]) => {
     this.projectsContainer = projects;
-  }
+  };
 }
 
 export default ProjectsInMemoryRepository;
