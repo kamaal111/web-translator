@@ -1,23 +1,21 @@
 import React from 'react';
-import { useIntl } from 'react-intl';
+import toast from 'react-hot-toast';
 
 import { getWindow } from '@/utils/window';
 import apiClient from '@/api/client';
 import { ResponseError } from '@/generated/api-client/src/runtime';
-import toast from 'react-hot-toast';
-import messages from '@/common/messages';
 import type { SessionResponse } from '@/generated/api-client/src';
 import { ConfigurationsContext } from './use-configurations';
 import { WebTranslatorContextSchema, type WebTranslatorContext } from './schemas';
 
-function ConfigurationsContextProvider({ children }: React.PropsWithChildren) {
+export type ConfigurationsContextProviderProps = React.PropsWithChildren<{ context?: WebTranslatorContext }>;
+
+function ConfigurationsContextProvider({ children, context: defaultContext }: ConfigurationsContextProviderProps) {
   const window = getWindow();
 
   const [context, setContext] = React.useState<WebTranslatorContext | null>(() => {
-    return WebTranslatorContextSchema.safeParse(window.WebTranslatorContext).data ?? null;
+    return defaultContext ?? WebTranslatorContextSchema.safeParse(window.WebTranslatorContext).data ?? null;
   });
-
-  const intl = useIntl();
 
   const fetchSession = React.useCallback(async (): Promise<void> => {
     let session: SessionResponse;
@@ -25,7 +23,7 @@ function ConfigurationsContextProvider({ children }: React.PropsWithChildren) {
       session = await apiClient.auth.getSession();
     } catch (error) {
       if (!(error instanceof ResponseError)) {
-        toast.error(intl.formatMessage(messages.unexpectedError));
+        toast.error('Something went wrong');
         return;
       }
 
@@ -37,18 +35,18 @@ function ConfigurationsContextProvider({ children }: React.PropsWithChildren) {
           });
           break;
         default:
-          toast.error(intl.formatMessage(messages.unexpectedError));
+          toast.error('Something went wrong');
           break;
       }
 
       return;
     }
 
-    setContext({ locale: session?.user.locale });
-  }, [intl]);
+    setContext({ locale: session?.user.locale, current_user: session.user });
+  }, []);
 
   React.useEffect(() => {
-    let intervalID: number | null = null;
+    let intervalID: ReturnType<typeof setInterval> | null = null;
     if (context == null) {
       intervalID = setInterval(() => {
         if (window.WebTranslatorContext != null) {

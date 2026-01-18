@@ -31,6 +31,7 @@ export const SessionResponseSchema = z
       }),
     }),
     user: z.object({
+      id: z.string().meta({ description: 'Users ID', example: 'mI1bHG27g2GOTOHz3v6ob3Huc9xWILP2' }),
       name: z.string().meta({
         description: 'User full name',
         example: 'John Doe',
@@ -62,6 +63,7 @@ export const SessionResponseSchema = z
         updated_at: '2025-10-05T12:08:28.382Z',
       },
       user: {
+        id: 'mI1bHG27g2GOTOHz3v6ob3Huc9xWILP2',
         name: 'John Doe',
         email: 'john@apple.com',
         email_verified: false,

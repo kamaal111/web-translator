@@ -59,4 +59,22 @@ export default defineConfig([
       '@typescript-eslint/no-unsafe-return': 'error',
     },
   },
+  {
+    files: ['**/*.test.ts', '**/*.test.tsx', '**/*.test.setup.ts', '**/__tests__/**/*.ts'],
+    rules: {
+      '@typescript-eslint/no-unsafe-call': 'off',
+      '@typescript-eslint/no-unsafe-argument': 'off',
+      'no-restricted-imports': [
+        'error',
+        {
+          patterns: [
+            {
+              group: ['@testing-library/*'],
+              message: 'Import from @test-utils instead of @testing-library/* directly.',
+            },
+          ],
+        },
+      ],
+    },
+  },
 ]);

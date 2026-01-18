@@ -23,7 +23,13 @@ function closeBundle(options: RenameOutputOptions) {
 function rename(outDir: string) {
   return async ([initial, rename]: [initialName: string, renameName: string]) => {
     const initialPath = path.join(outDir, initial);
+    const initialPathExists = await fileExists(initialPath);
+    if (!initialPathExists) {
+      console.warn(`⚠️ ${initialPath} does not exist`);
+      return;
+    }
     const renamePath = path.join(outDir, rename);
+
     try {
       await fs.rename(initialPath, renamePath);
       console.log(`✅ Renamed ${initialPath} -> ${renamePath}`);
@@ -31,8 +37,18 @@ function rename(outDir: string) {
       console.error(
         `❌ Failed to rename ${initialPath}; error=${error instanceof Error ? error.message : String(error)}`,
       );
+      throw error;
     }
   };
+}
+
+async function fileExists(filepath: string) {
+  try {
+    await fs.access(filepath);
+  } catch {
+    return false;
+  }
+  return true;
 }
 
 export default renameOutput;

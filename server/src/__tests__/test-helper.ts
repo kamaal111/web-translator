@@ -5,10 +5,14 @@ import { migrate } from 'drizzle-orm/node-postgres/migrator';
 import * as schema from '../db/schema';
 import { PostgresDatabase, type DrizzleDatabase } from '../db';
 import { createApp } from '..';
-import { createAuth } from '../auth/better-auth';
+import { createAuth, BASE_PATH } from '../auth/better-auth';
 import env from '../env';
 
 const { DATABASE_URL } = env;
+
+const DEFAULT_USER_EMAIL = 'test@example.com';
+const DEFAULT_USER_PASSWORD = 'TestPassword123!';
+const DEFAULT_USER_NAME = 'Test User';
 
 class TestHelper {
   private _app: ReturnType<typeof createApp> | null = null;
@@ -47,10 +51,39 @@ class TestHelper {
     const testAuth = createAuth(db);
 
     this._app = createApp({ db: postgresDb, auth: testAuth });
+
+    await this.signUpUser(DEFAULT_USER_EMAIL, DEFAULT_USER_NAME);
   };
 
   afterAll = async () => {
     await this.dbCleanUp?.();
+  };
+
+  signUpUser = async (email: string, name: string) => {
+    return this.app.request(`${BASE_PATH}/sign-up/email`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        email,
+        password: DEFAULT_USER_PASSWORD,
+        name,
+      }),
+    });
+  };
+
+  signInUser = async (email: string) => {
+    return this.app.request(`${BASE_PATH}/sign-in/email`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        email,
+        password: DEFAULT_USER_PASSWORD,
+      }),
+    });
+  };
+
+  signInAsDefaultUser = async () => {
+    return this.signInUser(DEFAULT_USER_EMAIL);
   };
 
   private createDbContext = async (): Promise<{ db: DrizzleDatabase; cleanUpPool: Pool; name: string }> => {

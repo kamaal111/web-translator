@@ -8,8 +8,6 @@ type IntlProviderProps = React.PropsWithChildren;
 const IntlProvider: React.FC<IntlProviderProps> = ({ children }) => {
   const { messages, locale, defaultLocale } = useMessages();
 
-  if (messages == null) return null;
-
   return (
     <ReactIntlProvider locale={locale} messages={messages} defaultLocale={defaultLocale}>
       {children}

@@ -32,6 +32,10 @@
   - Use structured logging: pass additional context as second parameter (e.g., `getLogger(c).error('message', { userId, requestData })`)
   - NEVER leak internal error details to API responses - use generic error messages for exceptions
   - Use `getLogger(c)` from `context/logging` for server-side logging
+- **CAREFULLY read and address deprecation warnings** from linters or compilers
+  - If a function, method, or package is marked as deprecated, ALWAYS follow the recommended migration path
+  - Do not ignore deprecation warnings, as they indicate future breaking changes
+  - Update the code to use the new recommended APIs instead of deprecated ones
 
 ## Project Structure & Module Organization
 
@@ -80,11 +84,85 @@ The project is a monorepo with the following structure:
 
 ## Testing Guidelines
 
-- **Framework:** `bun:test` (Server).
+- **Framework:** `bun:test` (Server) and `vitest` (Web).
 - **Location:** Co-locate tests or use `__tests__` directories.
 - **Scope:** Cover route behavior, database interactions, and edge cases.
 - **Dependency Injection:** Use `createApp({ db, auth, logger })` pattern in server tests to override dependencies.
 - **Run Tests:** `just test` (or `just server/test`).
+- **Component Testing (Web):**
+  - **ALWAYS use `screen` from `@testing-library/react` for queries** - NEVER use `within(container)`
+  - Import: `import { screen } from '@testing-library/react'`
+  - Query elements directly: `screen.getByPlaceholderText('...')`, `screen.getByRole('...')`, etc.
+  - Anti-pattern: `const { container } = render(...); within(container).getBy...()`
+  - Correct pattern: `render(...); screen.getBy...()`
+  - Using `screen` aligns with Testing Library best practices and makes tests more maintainable
+
+### Server Test Setup with TestHelper
+
+- **TestHelper Class:** Located in `server/src/__tests__/test-helper.ts` - provides test database setup and authentication utilities.
+- **Basic Setup Pattern:**
+
+  ```typescript
+  import { beforeAll, afterAll, describe, test, expect } from 'bun:test';
+  import TestHelper from '../__tests__/test-helper';
+
+  const helper = new TestHelper();
+
+  describe('My Tests', () => {
+    beforeAll(helper.beforeAll); // Sets up test DB and creates default user
+    afterAll(helper.afterAll); // Cleans up test DB
+
+    test('my test', async () => {
+      // Test implementation
+    });
+  });
+  ```
+
+### Using the Default User in Tests
+
+The TestHelper automatically creates a **default user** during `beforeAll()` setup. Use this default user for tests that don't require special user characteristics.
+
+- **Default User Credentials:**
+  - Email: `test@example.com`
+  - Password: `TestPassword123!`
+  - Name: `Test User`
+
+- **Sign in as default user:**
+
+  ```typescript
+  test('should access protected resource', async () => {
+    const response = await helper.signInAsDefaultUser();
+    expect(response.status).toBe(200);
+
+    const token = response.headers.get('set-auth-token');
+    // Use token for subsequent authenticated requests
+  });
+  ```
+
+- **When to use custom users:**
+  - If you need specific user attributes (different name, email)
+  - If you're testing duplicate email handling
+  - If you need multiple users in the same test
+
+  ```typescript
+  test('should handle multiple users', async () => {
+    // Default user already exists from beforeAll
+    const defaultUserResponse = await helper.signInAsDefaultUser();
+
+    // Create a custom user for comparison
+    const customUserResponse = await helper.signUpUser('custom@example.com', 'Custom User');
+
+    // Test interaction between users
+  });
+  ```
+
+- **Helper Methods Available:**
+  - `helper.signInAsDefaultUser()` - Sign in with default user credentials (most common)
+  - `helper.signUpUser(email, name)` - Create a new user with custom details
+  - `helper.signInUser(email)` - Sign in an existing user by email (uses default password)
+  - `helper.app` - Access to the Hono app instance for making requests
+
+- **Best Practice:** Prefer `signInAsDefaultUser()` unless your test specifically requires custom user attributes. This keeps tests simpler and more maintainable.
 
 ## Security & Configuration Tips
 

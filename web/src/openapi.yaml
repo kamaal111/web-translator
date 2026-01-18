@@ -428,6 +428,10 @@ components:
         user:
           type: object
           properties:
+            id:
+              type: string
+              description: Users ID
+              example: mI1bHG27g2GOTOHz3v6ob3Huc9xWILP2
             name:
               type: string
               description: User full name
@@ -455,6 +459,7 @@ components:
               description: Users preferred locale
               example: en
           required:
+            - id
             - name
             - email
             - email_verified
@@ -471,6 +476,7 @@ components:
           created_at: 2025-10-05T12:08:28.382Z
           updated_at: 2025-10-05T12:08:28.382Z
         user:
+          id: mI1bHG27g2GOTOHz3v6ob3Huc9xWILP2
           name: John Doe
           email: john@apple.com
           email_verified: false

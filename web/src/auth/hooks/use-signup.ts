@@ -6,10 +6,12 @@ import toast from 'react-hot-toast';
 
 import client from '@/api/client';
 import { useConfigurations } from '@/context/use-configurations';
+import { ResponseError } from '@/generated/api-client/src';
+import commonMessages from '@/common/messages';
 import messages from './message';
 
-function useLogin() {
-  const { isSuccess, isPending, mutate, error } = useMutation({ mutationFn: client.auth.login });
+function useSignup() {
+  const { isSuccess, mutate, isPending, error } = useMutation({ mutationFn: client.auth.signUp });
 
   const { fetchSession } = useConfigurations();
   const navigate = useNavigate();
@@ -24,15 +26,27 @@ function useLogin() {
 
   React.useEffect(() => {
     if (error != null) {
-      handleLoginError(intl);
+      handleSignupError(error, intl);
     }
   }, [error, intl]);
 
   return { result: { isLoading: isPending, isSuccess: isSuccess }, action: mutate };
 }
 
-function handleLoginError(intl: IntlShape) {
-  toast.error(intl.formatMessage(messages.defaultLoginError));
+function handleSignupError(error: unknown, intl: IntlShape) {
+  if (!(error instanceof ResponseError)) {
+    toast.error(intl.formatMessage(commonMessages.unexpectedError));
+    return;
+  }
+
+  switch (error.response.status) {
+    case 409:
+      toast.error(intl.formatMessage(messages.conflictSignUpError));
+      return;
+    default:
+      toast.error(intl.formatMessage(messages.defaultSignUpError));
+      return;
+  }
 }
 
-export default useLogin;
+export default useSignup;

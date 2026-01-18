@@ -5,4 +5,5 @@ export interface Logger {
   warn: LogFn;
   error: LogFn;
   debug: LogFn;
+  silent: LogFn;
 }

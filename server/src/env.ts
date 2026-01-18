@@ -6,7 +6,7 @@ const EnvSchema = z
     PORT: z.coerce.number().default(3000),
     DATABASE_URL: z.string(),
     WEB_ASSETS_ROOT: z.string().default('static'),
-    LOG_LEVEL: z.string().default('info'),
+    LOG_LEVEL: z.enum(['info', 'warn', 'error', 'debug', 'silent']).default('info'),
 
     // Auth
     BETTER_AUTH_SECRET: z.string().nonempty(),

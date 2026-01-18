@@ -1,3 +1,5 @@
+/// <reference types="vitest/config" />
+
 import path from 'node:path';
 
 import { defineConfig } from 'vite';
@@ -16,12 +18,17 @@ export default defineConfig({
     renameOutput({ outDir, renames: { 'index.prod.html': 'index.html' } }),
     etags({ outDir }),
   ],
-  resolve: { alias: { '@': path.resolve(__dirname, 'src') } },
+  resolve: { alias: { '@test-utils': path.resolve(__dirname, 'src/test-utils'), '@': path.resolve(__dirname, 'src') } },
   build: {
     outDir,
     emptyOutDir: true,
     rolldownOptions: {
       input: { index: path.resolve(__dirname, 'index.prod.html') },
     },
+  },
+  test: {
+    globals: true,
+    environment: 'happy-dom',
+    setupFiles: ['./src/__tests__/setup.ts'],
   },
 });

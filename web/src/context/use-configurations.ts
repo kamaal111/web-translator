@@ -10,6 +10,6 @@ export function useConfigurations(): UseConfigurationsReturnType {
   return {
     context,
     fetchSession,
-    isLoggedIn: false,
+    isLoggedIn: context?.current_user?.id != null,
   };
 }

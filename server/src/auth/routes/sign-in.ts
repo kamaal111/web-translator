@@ -36,12 +36,16 @@ const signInRoute = [
   }),
   validator('json', EmailPasswordSignInPayloadSchema),
   async (c: HonoContext<SignInInput>) => {
-    const { jsonResponse, sessionToken } = await handleAuthRequest(c, { responseSchema: AuthResponseSchema });
+    const {
+      jsonResponse,
+      sessionToken,
+      headers: authHeaders,
+    } = await handleAuthRequest(c, { responseSchema: AuthResponseSchema });
     if (!sessionToken) {
       getLogger(c).error('Sign-in failed: no session token returned from better-auth');
       throw new ServerInternal(c);
     }
-    const headers = await getHeadersWithJwtAfterAuth(c, sessionToken);
+    const headers = await getHeadersWithJwtAfterAuth(c, authHeaders, sessionToken);
 
     return c.json(jsonResponse, { status: 200, headers });
   },

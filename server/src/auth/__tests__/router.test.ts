@@ -16,15 +16,7 @@ describe('Auth Router Integration Tests', () => {
 
   describe('POST /sign-up/email', () => {
     test('should successfully register a new user', async () => {
-      const response = await helper.app.request(`${BASE_PATH}/sign-up/email`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          email: 'test@example.com',
-          password: 'SecurePassword123!',
-          name: 'Test User',
-        }),
-      });
+      const response = await helper.signUpUser('newuser@example.com', 'Test User');
 
       expect(response.status).toBe(201);
       const data = (await response.json()) as { token: string };
@@ -37,26 +29,10 @@ describe('Auth Router Integration Tests', () => {
 
     test('should reject duplicate email', async () => {
       // First signup
-      await helper.app.request(`${BASE_PATH}/sign-up/email`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          email: 'duplicate@example.com',
-          password: 'Password123!',
-          name: 'First User',
-        }),
-      });
+      await helper.signUpUser('duplicate@example.com', 'First User');
 
       // Attempt duplicate signup
-      const response = await helper.app.request(`${BASE_PATH}/sign-up/email`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          email: 'duplicate@example.com',
-          password: 'Password456!',
-          name: 'Second User',
-        }),
-      });
+      const response = await helper.signUpUser('duplicate@example.com', 'Second User');
 
       expect(response.status).toBe(409);
       const data = (await response.json()) as { message: string };
@@ -64,15 +40,7 @@ describe('Auth Router Integration Tests', () => {
     });
 
     test('should reject invalid email format', async () => {
-      const response = await helper.app.request(`${BASE_PATH}/sign-up/email`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          email: 'invalid-email',
-          password: 'Password123!',
-          name: 'Test User',
-        }),
-      });
+      const response = await helper.signUpUser('invalid-email', 'Test User');
 
       expect(response.status).toBe(400);
     });
@@ -92,15 +60,7 @@ describe('Auth Router Integration Tests', () => {
     });
 
     test('should accept name after trimming spaces', async () => {
-      const response = await helper.app.request(`${BASE_PATH}/sign-up/email`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          email: 'test3@example.com',
-          password: 'Password123!',
-          name: '  Spaced Name  ',
-        }),
-      });
+      const response = await helper.signUpUser('test3@example.com', '  Spaced Name  ');
 
       expect(response.status).toBe(201);
     });
@@ -109,28 +69,16 @@ describe('Auth Router Integration Tests', () => {
   describe('POST /sign-in/email', () => {
     const testUser = {
       email: 'signin@example.com',
-      password: 'SignInPassword123!',
       name: 'Sign In User',
     };
 
     beforeAll(async () => {
       // Create a test user
-      await helper.app.request(`${BASE_PATH}/sign-up/email`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(testUser),
-      });
+      await helper.signUpUser(testUser.email, testUser.name);
     });
 
     test('should successfully sign in existing user', async () => {
-      const response = await helper.app.request(`${BASE_PATH}/sign-in/email`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          email: testUser.email,
-          password: testUser.password,
-        }),
-      });
+      const response = await helper.signInUser(testUser.email);
 
       expect(response.status).toBe(200);
       const data = (await response.json()) as { token: string };
@@ -156,27 +104,13 @@ describe('Auth Router Integration Tests', () => {
     });
 
     test('should reject non-existent user', async () => {
-      const response = await helper.app.request(`${BASE_PATH}/sign-in/email`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          email: 'nonexistent@example.com',
-          password: 'Password123!',
-        }),
-      });
+      const response = await helper.signInUser('nonexistent@example.com');
 
       expect(response.status).toBe(401);
     });
 
     test('should reject invalid email format', async () => {
-      const response = await helper.app.request(`${BASE_PATH}/sign-in/email`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          email: 'invalid-email',
-          password: 'Password123!',
-        }),
-      });
+      const response = await helper.signInUser('invalid-email');
 
       expect(response.status).toBe(400);
     });
@@ -187,15 +121,7 @@ describe('Auth Router Integration Tests', () => {
 
     beforeAll(async () => {
       // Create user and sign in to get a session token
-      const signUpResponse = await helper.app.request(`${BASE_PATH}/sign-up/email`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          email: 'signout@example.com',
-          password: 'SignOutPassword123!',
-          name: 'Sign Out User',
-        }),
-      });
+      const signUpResponse = await helper.signUpUser('signout@example.com', 'Sign Out User');
 
       const data = (await signUpResponse.json()) as { token: string };
       sessionToken = data.token;
@@ -226,27 +152,24 @@ describe('Auth Router Integration Tests', () => {
 
   describe('GET /session', () => {
     let sessionToken: string;
+    let cookies: string;
 
     beforeAll(async () => {
       // Create user and sign in to get a session token
-      const signUpResponse = await helper.app.request(`${BASE_PATH}/sign-up/email`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          email: 'session@example.com',
-          password: 'SessionPassword123!',
-          name: 'Session User',
-        }),
-      });
+      const signUpResponse = await helper.signUpUser('session@example.com', 'Session User');
 
       const data = (await signUpResponse.json()) as { token: string };
       sessionToken = data.token;
+      cookies = signUpResponse.headers.get('set-cookie') ?? '';
     });
 
     test('should retrieve current session with valid token', async () => {
       const response = await helper.app.request(`${BASE_PATH}/session`, {
         method: 'GET',
-        headers: { Authorization: `Bearer ${sessionToken}` },
+        headers: {
+          Authorization: `Bearer ${sessionToken}`,
+          Cookie: cookies,
+        },
       });
 
       expect(response.status).toBe(200);
@@ -279,15 +202,7 @@ describe('Auth Router Integration Tests', () => {
 
     beforeAll(async () => {
       // Create user and sign in to get a session token
-      const signUpResponse = await helper.app.request(`${BASE_PATH}/sign-up/email`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          email: 'token@example.com',
-          password: 'TokenPassword123!',
-          name: 'Token User',
-        }),
-      });
+      const signUpResponse = await helper.signUpUser('token@example.com', 'Token User');
 
       const data = (await signUpResponse.json()) as { token: string };
       sessionToken = data.token;
@@ -339,24 +254,20 @@ describe('Auth Router Integration Tests', () => {
   describe('Full Auth Flow', () => {
     test('should complete sign-up, sign-in, session check, and sign-out flow', async () => {
       // 1. Sign up
-      const signUpResponse = await helper.app.request(`${BASE_PATH}/sign-up/email`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          email: 'flow@example.com',
-          password: 'FlowPassword123!',
-          name: 'Flow User',
-        }),
-      });
+      const signUpResponse = await helper.signUpUser('flow@example.com', 'Flow User');
 
       expect(signUpResponse.status).toBe(201);
       const signUpData = (await signUpResponse.json()) as { token: string };
       const token1 = signUpData.token;
+      const cookies1 = signUpResponse.headers.get('set-cookie') ?? '';
 
       // 2. Check session
       const sessionResponse = await helper.app.request(`${BASE_PATH}/session`, {
         method: 'GET',
-        headers: { Authorization: `Bearer ${token1}` },
+        headers: {
+          Authorization: `Bearer ${token1}`,
+          Cookie: cookies1,
+        },
       });
 
       expect(sessionResponse.status).toBe(200);
@@ -374,14 +285,7 @@ describe('Auth Router Integration Tests', () => {
       expect(signOutResponse.status).toBe(204);
 
       // 4. Sign in again
-      const signInResponse = await helper.app.request(`${BASE_PATH}/sign-in/email`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          email: 'flow@example.com',
-          password: 'FlowPassword123!',
-        }),
-      });
+      const signInResponse = await helper.signInUser('flow@example.com');
 
       expect(signInResponse.status).toBe(200);
       const signInData = (await signInResponse.json()) as { token: string };

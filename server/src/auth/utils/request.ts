@@ -28,7 +28,7 @@ const TokenResponseSchema = z.object({
 export async function handleAuthRequest<Schema extends z.ZodType>(
   c: HonoContext,
   options: { responseSchema: Schema; requireSessionToken?: boolean },
-): Promise<{ jsonResponse: z.infer<Schema>; sessionToken: string | null }> {
+): Promise<{ jsonResponse: z.infer<Schema>; sessionToken: string | null; headers: Headers }> {
   const request = await makeNewRequest(c);
   const response = await getAuth(c).handler(request);
   const jsonResponse: unknown = await response.json();
@@ -56,7 +56,7 @@ export async function handleAuthRequest<Schema extends z.ZodType>(
     });
   }
 
-  return { jsonResponse: validatedResponse, sessionToken: sessionToken ?? null };
+  return { jsonResponse: validatedResponse, sessionToken: sessionToken ?? null, headers: response.headers };
 }
 
 function createHeadersWithJwt(jwt: string | undefined): Headers {
@@ -81,7 +81,11 @@ function createHeadersWithJwt(jwt: string | undefined): Headers {
   return headers;
 }
 
-export async function getHeadersWithJwtAfterAuth(c: HonoContext, sessionToken: string): Promise<Headers> {
+export async function getHeadersWithJwtAfterAuth(
+  c: HonoContext,
+  authHeaders: Headers,
+  sessionToken: string,
+): Promise<Headers> {
   const tokenRequestHeaders = new Headers({ Authorization: `Bearer ${sessionToken}` });
   const tokenRequest = new Request(TOKEN_URL, { method: 'GET', headers: tokenRequestHeaders });
   const response = await getAuth(c).handler(tokenRequest);
@@ -97,6 +101,12 @@ export async function getHeadersWithJwtAfterAuth(c: HonoContext, sessionToken: s
   headers.set('set-session-token', sessionToken);
   const sessionUpdateAgeSeconds = ONE_DAY_IN_SECONDS * BETTER_AUTH_SESSION_UPDATE_AGE_DAYS;
   headers.set('set-session-update-age', sessionUpdateAgeSeconds.toString());
+
+  authHeaders.forEach((value, key) => {
+    if (!headers.has(key)) {
+      headers.set(key, value);
+    }
+  });
 
   return headers;
 }

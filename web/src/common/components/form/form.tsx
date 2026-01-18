@@ -1,6 +1,6 @@
 import { useIntl, type MessageDescriptor, FormattedMessage } from 'react-intl';
 import z from 'zod';
-import { useForm, type Path, type SubmitHandler, type UseFormReturn } from 'react-hook-form';
+import { useForm, Controller, type Path, type SubmitHandler, type UseFormReturn } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { Button, Card, Flex, Text } from '@radix-ui/themes';
 
@@ -18,21 +18,41 @@ export type FormField<ID extends string> = {
   autoComplete?: TextFieldProps['autoComplete'];
 };
 
-type FormProps<TSchema extends z.ZodObject<z.ZodRawShape>> = {
+type RequiredKeys<T> = {
+  [Key in keyof T]-?: undefined extends T[Key] ? never : Key;
+}[keyof T];
+
+type RequiredFieldIds<TSchema extends z.ZodObject<z.ZodRawShape>> = RequiredKeys<z.input<TSchema>>;
+
+type EnsureAllRequiredFields<
+  TSchema extends z.ZodObject<z.ZodRawShape>,
+  TFields extends ReadonlyArray<FormField<Path<z.input<TSchema>>>>,
+> = RequiredFieldIds<TSchema> extends TFields[number]['id'] ? TFields : never;
+
+type FormProps<
+  TSchema extends z.ZodObject<z.ZodRawShape>,
+  TFields extends ReadonlyArray<FormField<Path<z.input<TSchema>>>>,
+> = {
   schema: TSchema;
-  fields: Array<FormField<Path<z.input<TSchema>>>>;
+  fields: EnsureAllRequiredFields<TSchema, TFields>;
   disable?: boolean;
   onSubmit: SubmitHandler<z.input<TSchema>>;
 };
 
-type TextFieldsProps<TSchema extends z.ZodObject<z.ZodRawShape>> = {
-  fields: Array<FormField<Path<z.input<TSchema>>>>;
+type TextFieldsProps<
+  TSchema extends z.ZodObject<z.ZodRawShape>,
+  TFields extends ReadonlyArray<FormField<Path<z.input<TSchema>>>>,
+> = {
+  fields: EnsureAllRequiredFields<TSchema, TFields>;
   form: UseFormReturn<z.core.input<TSchema>, unknown, z.core.input<TSchema>>;
   disable?: boolean;
 };
 
-function Form<TSchema extends z.ZodObject<z.ZodRawShape>>({ schema, fields, disable, onSubmit }: FormProps<TSchema>) {
-  const form = useForm<z.input<TSchema>>({
+function Form<
+  TSchema extends z.ZodObject<z.ZodRawShape>,
+  TFields extends ReadonlyArray<FormField<Path<z.input<TSchema>>>>,
+>({ schema, fields, disable, onSubmit }: FormProps<TSchema, TFields>) {
+  const form = useForm<z.input<TSchema>, unknown, z.input<TSchema>>({
     resolver: zodResolver(schema, undefined, { raw: true }),
   });
 
@@ -41,7 +61,7 @@ function Form<TSchema extends z.ZodObject<z.ZodRawShape>>({ schema, fields, disa
       <Card size="4">
         <Flex direction="column">
           <TextFields fields={fields} form={form} disable={disable} />
-          <Flex mt="6" justify="end" gap="3" align="center">
+          <Flex justify="end" gap="3" align="center">
             <SubmitButton disable={disable} />
           </Flex>
         </Flex>
@@ -58,7 +78,10 @@ function SubmitButton({ disable }: { disable?: boolean }) {
   );
 }
 
-function TextFields<TSchema extends z.ZodObject<z.ZodRawShape>>({ fields, form, disable }: TextFieldsProps<TSchema>) {
+function TextFields<
+  TSchema extends z.ZodObject<z.ZodRawShape>,
+  TFields extends ReadonlyArray<FormField<Path<z.input<TSchema>>>>,
+>({ fields, form, disable }: TextFieldsProps<TSchema, TFields>) {
   const intl = useIntl();
 
   if (fields.length === 0) {
@@ -69,26 +92,36 @@ function TextFields<TSchema extends z.ZodObject<z.ZodRawShape>>({ fields, form, 
     <>
       {fields.map(field => {
         return (
-          <TextField
-            {...form.register(field.id)}
+          <Controller
             key={field.id}
-            placeholder={formatMessage(intl, field.placeholder)}
-            invalidMessage={formatMessage(intl, field.invalidMessage)}
-            isInvalid={form.formState.errors[field.id] != null}
-            type={field.type}
-            autoComplete={field.autoComplete}
-            disabled={disable}
-            label={
-              field.label != null
-                ? () => {
-                    return (
-                      <Text as="label" size="2">
-                        {formatMessage(intl, field.label)}
-                      </Text>
-                    );
-                  }
-                : null
-            }
+            name={field.id}
+            control={form.control}
+            render={({ field: controllerField, fieldState }) => (
+              <TextField
+                name={controllerField.name}
+                value={(controllerField.value as string) ?? ''}
+                onChange={controllerField.onChange}
+                onBlur={controllerField.onBlur}
+                ref={controllerField.ref}
+                placeholder={formatMessage(intl, field.placeholder)}
+                invalidMessage={formatMessage(intl, field.invalidMessage)}
+                isInvalid={fieldState.invalid}
+                type={field.type}
+                autoComplete={field.autoComplete}
+                disabled={disable}
+                label={
+                  field.label != null
+                    ? () => {
+                        return (
+                          <Text as="label" size="2">
+                            {formatMessage(intl, field.label)}
+                          </Text>
+                        );
+                      }
+                    : null
+                }
+              />
+            )}
           />
         );
       })}

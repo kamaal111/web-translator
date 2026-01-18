@@ -81,13 +81,17 @@ function makeDefaultLogger(c: HonoContext): Logger {
     debug: (message: string, payload?: Record<string, string>) => {
       defaultPinoLogger.debug({ ...basePayload(c), ...payload }, message);
     },
+    silent: (message: string, payload?: Record<string, string>) => {
+      defaultPinoLogger.silent({ ...basePayload(c), ...payload }, message);
+    },
   };
 }
 
 function logEvents(c: HonoContext) {
+  const logger = getLogger(c)[LOG_LEVEL];
   for (const logEvent of getLogEvents(c)) {
     for (const [key, log] of Object.entries(logEvent)) {
-      getLogger(c).info(`Event - ${key}`, log);
+      logger(`Event - ${key}`, log);
     }
   }
 }

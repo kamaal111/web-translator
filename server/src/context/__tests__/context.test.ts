@@ -16,6 +16,7 @@ describe('Context tests', () => {
     error: mockLoggerFn,
     warn: mockLoggerFn,
     debug: mockLoggerFn,
+    silent: mockLoggerFn,
   };
   let app: Hono<HonoEnvironment>;
   let nowSpy: Mock<() => number>;

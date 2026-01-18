@@ -7,7 +7,7 @@ type SupportedLocales = typeof SUPPORTED_LOCALES;
 export type SupportedLocale = SupportedLocales[number];
 
 type UseMEssagesReturnType = {
-  messages: Record<string, string> | null;
+  messages: Record<string, string>;
   locale: SupportedLocale;
   defaultLocale: string;
 };
@@ -38,7 +38,7 @@ function useMessages(): UseMEssagesReturnType {
       .catch((error: unknown) => console.error(`Failed to load ${locale} message; error='${error}'`));
   }, [locale]);
 
-  return { messages, locale, defaultLocale: DEFAULT_LOCALE };
+  return { messages: messages ?? {}, locale, defaultLocale: DEFAULT_LOCALE };
 }
 
 export default useMessages;

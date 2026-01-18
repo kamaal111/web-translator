@@ -76,7 +76,7 @@ migrate:
 
 # Run tests
 [parallel]
-test: test-server
+test: test-server test-web
 
 
 # Format code with Prettier
@@ -144,6 +144,11 @@ test-server:
     bun run test
 
 [private]
+[working-directory("web")]
+test-web:
+    bun run test
+
+[private]
 stop-server:
     docker stop {{ CONTAINER_NAME }} || true
 
@@ -179,7 +184,7 @@ prepare-web:
 
 [private]
 [working-directory("web")]
-ready-web: quality-web build-web
+ready-web: quality-web test-web build-web
 
 [private]
 [working-directory("web")]
