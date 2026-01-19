@@ -5,8 +5,8 @@ import type { Database } from './types';
 class PostgresDatabase implements Database {
   readonly projects: ProjectsRepository;
 
-  constructor(db: DrizzleDatabase) {
-    this.projects = new ProjectsPostgresRepository(db);
+  constructor(drizzle: DrizzleDatabase) {
+    this.projects = new ProjectsPostgresRepository(drizzle);
   }
 }
 

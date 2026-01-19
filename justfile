@@ -28,7 +28,7 @@ build-web output="dist": prepare-web
 
 # Build and watch web assets
 [working-directory("web")]
-build-watch-web output="dist": prepare-web
+build-watch-web output="dist":
     BUILD_OUTPUT={{ output }} bun run build:watch
 
 # Build web assets for server

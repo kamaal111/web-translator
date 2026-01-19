@@ -53,7 +53,6 @@ export default defineConfig([
     rules: {
       '@typescript-eslint/no-deprecated': 'error',
       '@typescript-eslint/no-explicit-any': 'error',
-      '@typescript-eslint/no-unsafe-argument': 'error',
       '@typescript-eslint/no-unsafe-call': 'error',
       '@typescript-eslint/no-unsafe-member-access': 'error',
       '@typescript-eslint/no-unsafe-return': 'error',
@@ -62,8 +61,6 @@ export default defineConfig([
   {
     files: ['**/*.test.ts', '**/*.test.tsx', '**/*.test.setup.ts', '**/__tests__/**/*.ts'],
     rules: {
-      '@typescript-eslint/no-unsafe-call': 'off',
-      '@typescript-eslint/no-unsafe-argument': 'off',
       'no-restricted-imports': [
         'error',
         {

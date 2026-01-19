@@ -8,6 +8,13 @@
       "when": 1767279843266,
       "tag": "0000_black_greymalkin",
       "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "7",
+      "when": 1768855967401,
+      "tag": "0001_thick_anita_blake",
+      "breakpoints": true
     }
   ]
 }

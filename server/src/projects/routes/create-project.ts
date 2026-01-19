@@ -1,15 +1,14 @@
+import assert from 'node:assert';
+
 import { describeRoute, resolver, validator } from 'hono-openapi';
 
 import type { HonoContext } from '../../context';
 import { getDatabase } from '../../context/database';
 import { OPENAPI_TAG } from '../constants';
-import {
-  CreateProjectPayloadSchema,
-  CreateProjectResponseSchema,
-  type CreateProjectPayload,
-  type CreateProjectResponse,
-} from '../schemas';
-import type { IProject } from '../models/project';
+import { CreateProjectPayloadSchema, CreateProjectResponseSchema, type CreateProjectPayload } from '../schemas';
+import { dbProjectToResponse, requestCreateProjectPayloadToDbPayload } from '../mappers';
+import requireLoggedInSession from '../../auth/middleware/require-logged-in-session';
+import { getSession } from '../../context/session';
 
 type CreateProjectInput = { out: { json: CreateProjectPayload } };
 
@@ -28,25 +27,16 @@ const createProjectRoute = [
     },
   }),
   validator('json', CreateProjectPayloadSchema),
+  requireLoggedInSession(),
   async (c: HonoContext<CreateProjectInput>) => {
-    const db = getDatabase(c);
-    const payload = c.req.valid('json');
-    const projectPayload: Omit<IProject, 'id'> = {
-      name: payload.name,
-      defaultLocale: payload.default_locale,
-      enabledLocales: payload.enabled_locales,
-      publicKey: payload.public_read_key,
-    };
-    const project = await db.projects.createProject(projectPayload);
-    const response: CreateProjectResponse = {
-      id: project.id,
-      name: project.name,
-      default_locale: project.defaultLocale,
-      enabled_locales: project.enabledLocales,
-      public_read_key: project.publicKey,
-    };
+    const session = getSession(c);
+    assert(session != null, 'Middleware should have made sure that session is present');
 
-    return c.json(response, 201);
+    const db = getDatabase(c);
+    const payload = requestCreateProjectPayloadToDbPayload(c.req.valid('json'), session.user.id);
+    const project = await db.projects.createProject(payload);
+
+    return c.json(dbProjectToResponse(project), 201);
   },
 ] as const;
 
