@@ -62,13 +62,18 @@ The project is a monorepo with the following structure:
 **ALWAYS use `just` commands from the root directory.**
 
 - **Start Development:** `just dev` (Runs server and web in parallel)
-- **Run Tests:** `just test` (Runs server tests; web tests are currently not configured)
+- **Run Tests:** `just test` (Runs server and web tests)
 - **Database Migrations:**
   - Apply migrations: `just migrate`
   - Generate migrations: `just make-migrations`
 - **Quality Check:** `just ready` (Runs format, lint, typecheck, tests, and build for both server and web)
+- **Quality (no build/tests):** `just quality` (typecheck, format-check, lint)
 - **Docker:**
   - Run server in Docker: `just run-server`
+  - Start/stop services (Postgres): `just start-services` / `just stop-services`
+- **OpenAPI:**
+  - Download spec from app: `just download-spec` (writes to `web/src/openapi.yaml` and runs Prettier)
+  - Web client generation runs during `prepare-web` as part of `just ready`/`just dev`
 
 ## Coding Style & Naming Conventions
 
@@ -93,7 +98,7 @@ The project is a monorepo with the following structure:
 - **Location:** Co-locate tests or use `__tests__` directories.
 - **Scope:** Cover route behavior, database interactions, and edge cases.
 - **Dependency Injection:** Use `createApp({ db, auth, logger })` pattern in server tests to override dependencies.
-- **Run Tests:** `just test` (or `just server/test`).
+- **Run Tests:** `just test`.
 - **Component Testing (Web):**
   - **ALWAYS use `screen` from `@testing-library/react` for queries** - NEVER use `within(container)`
   - Import: `import { screen } from '@testing-library/react'`
@@ -172,4 +177,16 @@ The TestHelper automatically creates a **default user** during `beforeAll()` set
 ## Security & Configuration Tips
 
 - **Server Port:** Defaults to `3000`.
-- **Dependencies:** Prefer Bun primitives (`Bun.file`, `bun:sqlite`) and Hono for routing. Avoid adding heavy frameworks unless necessary.
+- **Environment:** Use `.env` (see `.env.example`) — required: `DATABASE_URL` (Postgres), `BETTER_AUTH_SECRET`.
+- **Dependencies:** Prefer Bun primitives where suitable (e.g., `Bun.file`) and Hono for routing. Database is Postgres via Drizzle.
+- **Services:** Postgres runs via Docker Compose. Use `just start-services` before running migrations or tests that hit the DB.
+
+## API & Docs
+
+- **Base Path:** App API is served under `/app-api/v1`.
+- **Docs:**
+  - JSON spec: `/docs/spec.json`
+  - YAML spec: `/docs/spec.yaml`
+  - Swagger UI: `/docs/doc`
+  - Scalar UI: `/docs/scalar`
+- **Spec Workflow:** `just download-spec` generates `web/src/openapi.yaml`; the web app generates a typed client during prepare/build.
