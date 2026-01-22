@@ -2,7 +2,7 @@ import type { Context, Input, Next } from 'hono';
 import type { RequestIdVariables } from 'hono/request-id';
 import pino from 'pino';
 
-import { createDrizzleDatabase, PostgresDatabase, type Database } from '../db';
+import { createDrizzleDatabase, DrizzleClient, type Database, type DrizzleDatabase } from '../db';
 import { type Auth, type SessionResponse, createAuth } from '../auth';
 import env from '../env';
 import { getLogger } from './logging';
@@ -11,13 +11,18 @@ import packageJson from '../../package.json';
 import { getLogEvents } from './events';
 
 export interface InjectedContext {
+  drizzle: DrizzleDatabase;
+  logger: Logger;
+}
+
+interface StateContext {
+  session?: SessionResponse;
   db: Database;
   auth: Auth;
-  logger: Logger;
   logEvents: Record<string, Record<string, string>>[];
 }
 
-export type HonoVariables = RequestIdVariables & InjectedContext & { session?: SessionResponse };
+export type HonoVariables = RequestIdVariables & InjectedContext & StateContext;
 
 export interface HonoEnvironment {
   Variables: HonoVariables;
@@ -47,8 +52,6 @@ const defaultPinoLogger = pino({
     : undefined,
 });
 const defaultDrizzleDatabase = createDrizzleDatabase();
-const defaultPostgresDatabase = new PostgresDatabase(defaultDrizzleDatabase);
-const defaultAuth = createAuth(defaultDrizzleDatabase);
 
 function makeDefaultLogger(c: HonoContext): Logger {
   const basePayload = (c: HonoContext) => {
@@ -102,8 +105,9 @@ export function injectRequestContext(injects?: Partial<InjectedContext>) {
     c.set('logEvents', []);
     c.set('logger', injects?.logger ?? makeDefaultLogger(c));
     getLogger(c).info(`<-- ${c.req.method} ${c.req.path}`);
-    c.set('db', injects?.db ?? defaultPostgresDatabase);
-    c.set('auth', injects?.auth ?? defaultAuth);
+    c.set('drizzle', injects?.drizzle ?? defaultDrizzleDatabase);
+    c.set('db', new DrizzleClient({ context: c }));
+    c.set('auth', createAuth(c));
     await next();
     logEvents(c);
     const elapsedTimeInMs = Math.floor(performance.now() - startTime);

@@ -1,9 +1,4 @@
-type ReplaceValue<OriginalObject, KeyToReplace extends keyof OriginalObject, Replacement> = Omit<
-  OriginalObject,
-  KeyToReplace
-> & {
-  [ReplacementKey in KeyToReplace]: Replacement;
-};
+import type { ReplaceValue } from '../../utils/typing';
 
 export type IProject = {
   id: string;

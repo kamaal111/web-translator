@@ -4,10 +4,11 @@ import { betterAuth } from 'better-auth';
 import { drizzleAdapter } from 'better-auth/adapters/drizzle';
 import { bearer, jwt } from 'better-auth/plugins';
 
-import type { DrizzleDatabase } from '../db';
 import env from '../env';
 import { APP_API_BASE_PATH, ONE_DAY_IN_SECONDS } from '../constants/common';
 import { ROUTE_NAME } from './constants';
+import type { HonoContext } from '../context';
+import { getDrizzle } from '../context/database';
 
 const { BETTER_AUTH_SESSION_EXPIRY_DAYS, BETTER_AUTH_SESSION_UPDATE_AGE_DAYS, BETTER_AUTH_URL, JWT_EXPIRY_DAYS } = env;
 const EXPIRES_IN = ONE_DAY_IN_SECONDS * BETTER_AUTH_SESSION_EXPIRY_DAYS;
@@ -19,9 +20,9 @@ export const BASE_PATH = path.join(APP_API_BASE_PATH, ROUTE_NAME);
 
 export type Auth = ReturnType<typeof betterAuth>;
 
-export function createAuth(database: DrizzleDatabase) {
+export function createAuth(c: HonoContext) {
   return betterAuth({
-    database: drizzleAdapter(database, { provider: 'pg' }),
+    database: drizzleAdapter(getDrizzle(c), { provider: 'pg' }),
     emailAndPassword: { enabled: true, requireEmailVerification: false },
     trustedOrigins: TRUSTED_ORIGINS,
     session: { expiresIn: EXPIRES_IN, updateAge: UPDATE_AGE },

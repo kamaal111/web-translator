@@ -3,10 +3,10 @@ import { drizzle } from 'drizzle-orm/node-postgres';
 import { migrate } from 'drizzle-orm/node-postgres/migrator';
 
 import * as schema from '../db/schema';
-import { PostgresDatabase, type DrizzleDatabase } from '../db';
+import type { DrizzleDatabase } from '../db';
 import { createApp } from '..';
-import { createAuth, BASE_PATH } from '../auth/better-auth';
 import env from '../env';
+import { AUTH_BASE_PATH } from '../auth';
 
 const { DATABASE_URL } = env;
 
@@ -47,10 +47,7 @@ class TestHelper {
       }
     };
 
-    const postgresDb = new PostgresDatabase(db);
-    const testAuth = createAuth(db);
-
-    this._app = createApp({ db: postgresDb, auth: testAuth });
+    this._app = createApp({ drizzle: db });
 
     await this.signUpUser(DEFAULT_USER_EMAIL, DEFAULT_USER_NAME);
   };
@@ -60,7 +57,7 @@ class TestHelper {
   };
 
   signUpUser = async (email: string, name: string) => {
-    return this.app.request(`${BASE_PATH}/sign-up/email`, {
+    return this.app.request(`${AUTH_BASE_PATH}/sign-up/email`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
@@ -72,7 +69,7 @@ class TestHelper {
   };
 
   signInUser = async (email: string) => {
-    return this.app.request(`${BASE_PATH}/sign-in/email`, {
+    return this.app.request(`${AUTH_BASE_PATH}/sign-in/email`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
