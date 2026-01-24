@@ -18,7 +18,7 @@ export default defineConfig({
     renameOutput({ outDir, renames: { 'index.prod.html': 'index.html' } }),
     etags({ outDir }),
   ],
-  resolve: { alias: { '@test-utils': path.resolve(__dirname, 'src/test-utils'), '@': path.resolve(__dirname, 'src') } },
+  resolve: { alias: { '@': path.resolve(__dirname, 'src'), '@test-utils': path.resolve(__dirname, 'src/test-utils') } },
   build: {
     outDir,
     emptyOutDir: true,

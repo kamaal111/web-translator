@@ -3,19 +3,21 @@ import z from 'zod';
 import { useForm, Controller, type Path, type SubmitHandler, type UseFormReturn } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { Button, Card, Flex, Text } from '@radix-ui/themes';
+import type { ReactNode } from 'react';
 
 import type { TextFieldProps } from '../text-field/text-field';
 import TextField from '../text-field/text-field';
 import { formatMessage } from '@/translations/utils';
 import messages from './messages';
 
-export type FormField<ID extends string> = {
-  id: ID;
+type FormField<TSchema extends z.ZodObject<z.ZodRawShape>> = {
+  id: Path<z.input<TSchema>>;
   placeholder: string | MessageDescriptor;
   label?: string | MessageDescriptor;
   type?: TextFieldProps['type'];
   invalidMessage?: string | MessageDescriptor;
   autoComplete?: TextFieldProps['autoComplete'];
+  renderAddon?: (form: UseFormReturn<z.input<TSchema>>) => ReactNode;
 };
 
 type RequiredKeys<T> = {
@@ -26,13 +28,10 @@ type RequiredFieldIds<TSchema extends z.ZodObject<z.ZodRawShape>> = RequiredKeys
 
 type EnsureAllRequiredFields<
   TSchema extends z.ZodObject<z.ZodRawShape>,
-  TFields extends ReadonlyArray<FormField<Path<z.input<TSchema>>>>,
+  TFields extends ReadonlyArray<FormField<TSchema>>,
 > = RequiredFieldIds<TSchema> extends TFields[number]['id'] ? TFields : never;
 
-type FormProps<
-  TSchema extends z.ZodObject<z.ZodRawShape>,
-  TFields extends ReadonlyArray<FormField<Path<z.input<TSchema>>>>,
-> = {
+type FormProps<TSchema extends z.ZodObject<z.ZodRawShape>, TFields extends ReadonlyArray<FormField<TSchema>>> = {
   schema: TSchema;
   fields: EnsureAllRequiredFields<TSchema, TFields>;
   disable?: boolean;
@@ -41,19 +40,20 @@ type FormProps<
   showSubmitButton?: boolean;
 };
 
-type TextFieldsProps<
-  TSchema extends z.ZodObject<z.ZodRawShape>,
-  TFields extends ReadonlyArray<FormField<Path<z.input<TSchema>>>>,
-> = {
+type TextFieldsProps<TSchema extends z.ZodObject<z.ZodRawShape>, TFields extends ReadonlyArray<FormField<TSchema>>> = {
   fields: EnsureAllRequiredFields<TSchema, TFields>;
   form: UseFormReturn<z.input<TSchema>>;
   disable?: boolean;
 };
 
-function Form<
-  TSchema extends z.ZodObject<z.ZodRawShape>,
-  TFields extends ReadonlyArray<FormField<Path<z.input<TSchema>>>>,
->({ schema, fields, disable, onSubmit, showCard = true, showSubmitButton = true }: FormProps<TSchema, TFields>) {
+function Form<TSchema extends z.ZodObject<z.ZodRawShape>, TFields extends ReadonlyArray<FormField<TSchema>>>({
+  schema,
+  fields,
+  disable,
+  onSubmit,
+  showCard = true,
+  showSubmitButton = true,
+}: FormProps<TSchema, TFields>) {
   const form = useForm<z.input<TSchema>>({
     resolver: zodResolver(schema, undefined, { raw: true }),
   });
@@ -92,10 +92,11 @@ function SubmitButton({ disable }: { disable?: boolean }) {
   );
 }
 
-function TextFields<
-  TSchema extends z.ZodObject<z.ZodRawShape>,
-  TFields extends ReadonlyArray<FormField<Path<z.input<TSchema>>>>,
->({ fields, form, disable }: TextFieldsProps<TSchema, TFields>) {
+function TextFields<TSchema extends z.ZodObject<z.ZodRawShape>, TFields extends ReadonlyArray<FormField<TSchema>>>({
+  fields,
+  form,
+  disable,
+}: TextFieldsProps<TSchema, TFields>) {
   const intl = useIntl();
 
   if (fields.length === 0) {
@@ -105,7 +106,9 @@ function TextFields<
   return (
     <>
       {fields.map(field => {
-        return (
+        const hasAddon = field.renderAddon != null;
+
+        const fieldComponent = (
           <Controller
             key={field.id}
             name={field.id}
@@ -124,7 +127,7 @@ function TextFields<
                 autoComplete={field.autoComplete}
                 disabled={disable}
                 label={
-                  field.label != null
+                  field.label != null && !hasAddon
                     ? () => {
                         return (
                           <Text as="label" size="2">
@@ -138,6 +141,24 @@ function TextFields<
             )}
           />
         );
+
+        if (hasAddon) {
+          return (
+            <Flex key={field.id} direction="column" gap="2">
+              {field.label != null && (
+                <Text as="label" size="2">
+                  {formatMessage(intl, field.label)}
+                </Text>
+              )}
+              <Flex gap="2" align="start">
+                <div style={{ flex: 1 }}>{fieldComponent}</div>
+                {field.renderAddon?.(form)}
+              </Flex>
+            </Flex>
+          );
+        }
+
+        return fieldComponent;
       })}
     </>
   );

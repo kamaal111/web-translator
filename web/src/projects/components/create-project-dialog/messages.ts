@@ -61,6 +61,16 @@ const messages = defineMessages({
     defaultMessage: 'Public Read Key',
     description: 'Label for public read key field',
   },
+  generateKeyButton: {
+    id: 'PROJECTS.CREATE_PROJECT_DIALOG.CREATE_PROJECT.GENERATE_KEY_BUTTON',
+    defaultMessage: 'Generate',
+    description: 'Button to generate a random public read key',
+  },
+  generateKeyButtonAriaLabel: {
+    id: 'PROJECTS.CREATE_PROJECT_DIALOG.CREATE_PROJECT.GENERATE_KEY_BUTTON_ARIA_LABEL',
+    defaultMessage: 'Generate random public read key',
+    description: 'Aria label for generate key button',
+  },
 });
 
 export default messages;

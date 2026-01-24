@@ -1,10 +1,11 @@
 import { Button, Dialog, Flex } from '@radix-ui/themes';
-import { FormattedMessage } from 'react-intl';
+import { FormattedMessage, useIntl } from 'react-intl';
 import z from 'zod';
 import { BaseCreateProjectSchema } from '@wt/schemas';
 
 import useCreateProject from '@/projects/hooks/use-create-project';
 import Form from '@/common/components/form/form';
+import type { CreateProjectPayload } from '@/generated/api-client/src';
 import messages from './messages';
 
 type CreateProjectDialogProps = {
@@ -14,53 +15,18 @@ type CreateProjectDialogProps = {
 
 type CreateProject = z.infer<typeof CreateProjectSchema>;
 
-const FIELDS = [
-  {
-    id: 'name',
-    label: messages.projectNameLabel,
-    placeholder: messages.projectNamePlaceholder,
-  },
-  {
-    id: 'default_locale',
-    label: messages.defaultLocaleLabel,
-    placeholder: messages.defaultLocalePlaceholder,
-  },
-  {
-    id: 'enabledLocales',
-    label: messages.enabledLocalesLabel,
-    placeholder: messages.enabledLocalesPlaceholder,
-  },
-  {
-    id: 'public_read_key',
-    label: messages.publicReadKeyLabel,
-    placeholder: messages.publicReadKeyPlaceholder,
-  },
-] as const;
-
 const CreateProjectSchema = BaseCreateProjectSchema.omit({ enabled_locales: true }).extend({
-  enabledLocales: z.string(),
+  enabledLocales: z.string().nullish(),
 });
 
 function CreateProjectDialog({ open, onOpenChange }: CreateProjectDialogProps) {
+  const intl = useIntl();
+
   const { createProject, isCreating } = useCreateProject({
     onSuccess: () => {
       onOpenChange(false);
     },
   });
-
-  const handleCreateProject = (data: CreateProject) => {
-    const enabledLocales = data.enabledLocales
-      .split(',')
-      .map(locale => locale.trim())
-      .filter(locale => locale.length > 0);
-
-    createProject({
-      name: data.name,
-      defaultLocale: data.default_locale,
-      enabledLocales,
-      publicReadKey: data.public_read_key,
-    });
-  };
 
   return (
     <Dialog.Root open={open} onOpenChange={onOpenChange}>
@@ -79,9 +45,45 @@ function CreateProjectDialog({ open, onOpenChange }: CreateProjectDialogProps) {
 
         <Form
           schema={CreateProjectSchema}
-          fields={FIELDS}
+          fields={[
+            {
+              id: 'name',
+              label: intl.formatMessage(messages.projectNameLabel),
+              placeholder: intl.formatMessage(messages.projectNamePlaceholder),
+            },
+            {
+              id: 'default_locale',
+              label: intl.formatMessage(messages.defaultLocaleLabel),
+              placeholder: intl.formatMessage(messages.defaultLocalePlaceholder),
+            },
+            {
+              id: 'enabledLocales',
+              label: intl.formatMessage(messages.enabledLocalesLabel),
+              placeholder: intl.formatMessage(messages.enabledLocalesPlaceholder),
+            },
+            {
+              id: 'public_read_key',
+              label: intl.formatMessage(messages.publicReadKeyLabel),
+              placeholder: intl.formatMessage(messages.publicReadKeyPlaceholder),
+              renderAddon: form => {
+                return (
+                  <Button
+                    type="button"
+                    variant="soft"
+                    onClick={() => {
+                      const key = crypto.randomUUID();
+                      form.setValue('public_read_key', key);
+                    }}
+                    aria-label={intl.formatMessage(messages.generateKeyButtonAriaLabel)}
+                  >
+                    <FormattedMessage {...messages.generateKeyButton} />
+                  </Button>
+                );
+              },
+            },
+          ]}
           disable={isCreating}
-          onSubmit={handleCreateProject}
+          onSubmit={data => createProject(mapFormDataToCreateProjectPayload(data))}
           showCard={false}
         />
 
@@ -95,6 +97,21 @@ function CreateProjectDialog({ open, onOpenChange }: CreateProjectDialogProps) {
       </Dialog.Content>
     </Dialog.Root>
   );
+}
+
+function mapFormDataToCreateProjectPayload(data: CreateProject): CreateProjectPayload {
+  const enabledLocales =
+    data.enabledLocales
+      ?.split(',')
+      .map(locale => locale.trim())
+      .filter(locale => locale.length > 0) ?? [];
+
+  return {
+    name: data.name,
+    defaultLocale: data.default_locale,
+    enabledLocales,
+    publicReadKey: data.public_read_key,
+  };
 }
 
 export default CreateProjectDialog;
