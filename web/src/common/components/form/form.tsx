@@ -37,6 +37,8 @@ type FormProps<
   fields: EnsureAllRequiredFields<TSchema, TFields>;
   disable?: boolean;
   onSubmit: SubmitHandler<z.input<TSchema>>;
+  showCard?: boolean;
+  showSubmitButton?: boolean;
 };
 
 type TextFieldsProps<
@@ -44,28 +46,40 @@ type TextFieldsProps<
   TFields extends ReadonlyArray<FormField<Path<z.input<TSchema>>>>,
 > = {
   fields: EnsureAllRequiredFields<TSchema, TFields>;
-  form: UseFormReturn<z.core.input<TSchema>, unknown, z.core.input<TSchema>>;
+  form: UseFormReturn<z.input<TSchema>>;
   disable?: boolean;
 };
 
 function Form<
   TSchema extends z.ZodObject<z.ZodRawShape>,
   TFields extends ReadonlyArray<FormField<Path<z.input<TSchema>>>>,
->({ schema, fields, disable, onSubmit }: FormProps<TSchema, TFields>) {
-  const form = useForm<z.input<TSchema>, unknown, z.input<TSchema>>({
+>({ schema, fields, disable, onSubmit, showCard = true, showSubmitButton = true }: FormProps<TSchema, TFields>) {
+  const form = useForm<z.input<TSchema>>({
     resolver: zodResolver(schema, undefined, { raw: true }),
   });
 
+  const formContent = (
+    <>
+      <TextFields fields={fields} form={form} disable={disable} />
+      {showSubmitButton && (
+        <Flex justify="end" gap="3" align="center">
+          <SubmitButton disable={disable} />
+        </Flex>
+      )}
+    </>
+  );
+
   return (
     <form onSubmit={form.handleSubmit(onSubmit)} className="form">
-      <Card size="4">
-        <Flex direction="column">
-          <TextFields fields={fields} form={form} disable={disable} />
-          <Flex justify="end" gap="3" align="center">
-            <SubmitButton disable={disable} />
-          </Flex>
+      {showCard ? (
+        <Card size="4">
+          <Flex direction="column">{formContent}</Flex>
+        </Card>
+      ) : (
+        <Flex direction="column" gap="3">
+          {formContent}
         </Flex>
-      </Card>
+      )}
     </form>
   );
 }

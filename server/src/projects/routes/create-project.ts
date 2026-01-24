@@ -7,7 +7,6 @@ import { getDatabase } from '../../context/database';
 import { OPENAPI_TAG } from '../constants';
 import { CreateProjectPayloadSchema, ProjectResponseSchema, type CreateProjectPayload } from '../schemas';
 import { dbProjectToResponse, requestCreateProjectPayloadToDbPayload } from '../mappers';
-import requireLoggedInSession from '../../auth/middleware/require-logged-in-session';
 import { getSession } from '../../context/session';
 import { ErrorResponseSchema } from '../../schemas/error';
 
@@ -46,7 +45,6 @@ const createProjectRoute = [
     },
   }),
   validator('json', CreateProjectPayloadSchema),
-  requireLoggedInSession(),
   async (c: HonoContext<CreateProjectInput>) => {
     const session = getSession(c);
     assert(session != null, 'Middleware should have made sure that session is present');

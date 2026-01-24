@@ -1,17 +1,17 @@
 import React from 'react';
 import { render, type RenderOptions } from '@testing-library/react';
-import type { QueryClient } from '@tanstack/react-query';
 
-import { TestWrapper } from './wrapper';
+import { TestWrapper, type TestWrapperProps } from './wrapper';
 
-function renderWithProviders(
-  ui: React.ReactElement,
-  options?: Omit<RenderOptions, 'wrapper'> & { queryClient?: QueryClient },
-) {
-  const { queryClient, ...renderOptions } = options ?? {};
+function renderWithProviders(ui: React.ReactElement, options?: Omit<RenderOptions, 'wrapper'> & TestWrapperProps) {
+  const { queryClient, withRouter, context, ...renderOptions } = options ?? {};
 
   return render(ui, {
-    wrapper: ({ children }) => <TestWrapper queryClient={queryClient}>{children}</TestWrapper>,
+    wrapper: ({ children }) => (
+      <TestWrapper withRouter={withRouter} queryClient={queryClient} context={context}>
+        {children}
+      </TestWrapper>
+    ),
     ...renderOptions,
   });
 }

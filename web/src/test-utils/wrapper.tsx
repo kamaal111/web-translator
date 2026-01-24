@@ -3,6 +3,10 @@ import { BrowserRouter } from 'react-router';
 
 import DataProviders, { type DataProvidersProps } from '@/data-providers/data-providers';
 
+export interface TestWrapperProps extends DataProvidersProps {
+  withRouter?: boolean;
+}
+
 function createTestQueryClient(): QueryClient {
   return new QueryClient({
     defaultOptions: {
@@ -12,8 +16,16 @@ function createTestQueryClient(): QueryClient {
   });
 }
 
-export function TestWrapper({ children, queryClient, context }: DataProvidersProps) {
+export function TestWrapper({ children, queryClient, context, withRouter }: TestWrapperProps) {
   const client = queryClient ?? createTestQueryClient();
+
+  if (withRouter === false) {
+    return (
+      <DataProviders queryClient={client} context={context ?? { locale: 'en' }}>
+        {children}
+      </DataProviders>
+    );
+  }
 
   return (
     <BrowserRouter>

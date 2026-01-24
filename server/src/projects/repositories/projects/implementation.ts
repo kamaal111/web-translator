@@ -1,5 +1,7 @@
 import assert from 'node:assert';
 
+import { and, eq } from 'drizzle-orm';
+
 import { projects } from '../../../db/schema';
 import type Project from '../../models/project';
 import { newProject, type IProject } from '../../models/project';
@@ -37,7 +39,7 @@ class ProjectsRepositoryImpl implements ProjectsRepository {
   list = async (): Promise<Project[]> => {
     const session = this.getSession();
     const usersProjects = await getDrizzle(this.context).query.projects.findMany({
-      where: (projects, { eq }) => eq(projects.userId, session.user.id),
+      where: () => eq(projects.userId, session.user.id),
     });
 
     return usersProjects.map(newProject);
@@ -46,7 +48,7 @@ class ProjectsRepositoryImpl implements ProjectsRepository {
   read = async (id: string): Promise<Project | null> => {
     const session = this.getSession();
     const project = await getDrizzle(this.context).query.projects.findFirst({
-      where: (projects, { eq, and }) => and(eq(projects.userId, session.user.id), eq(projects.id, id)),
+      where: () => and(eq(projects.userId, session.user.id), eq(projects.id, id)),
     });
     if (project == null) {
       return null;

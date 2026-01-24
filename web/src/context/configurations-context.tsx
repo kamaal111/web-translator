@@ -8,7 +8,7 @@ import type { SessionResponse } from '@/generated/api-client/src';
 import { ConfigurationsContext } from './use-configurations';
 import { WebTranslatorContextSchema, type WebTranslatorContext } from './schemas';
 
-export type ConfigurationsContextProviderProps = React.PropsWithChildren<{ context?: WebTranslatorContext }>;
+export type ConfigurationsContextProviderProps = React.PropsWithChildren<{ context?: WebTranslatorContext | null }>;
 
 function ConfigurationsContextProvider({ children, context: defaultContext }: ConfigurationsContextProviderProps) {
   const window = getWindow();

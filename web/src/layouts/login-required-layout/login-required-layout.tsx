@@ -13,6 +13,10 @@ function LoginRequiredLayout() {
     }
   }, [isLoggedIn, navigate]);
 
+  if (!isLoggedIn) {
+    return null;
+  }
+
   return <Outlet />;
 }
 

@@ -2,6 +2,27 @@ import z from 'zod';
 
 export type EmailPasswordSignInPayload = z.infer<typeof EmailPasswordSignInPayloadSchema>;
 
+export const LocaleShape = z
+  .string()
+  .refine(val => {
+    let canonicals: Array<string> = [];
+    try {
+      canonicals = Intl.getCanonicalLocales(val);
+    } catch {
+      return false;
+    }
+
+    return canonicals[0] != null;
+  })
+  .transform(val => {
+    const canonical = Intl.getCanonicalLocales(val)[0];
+    if (!canonical) {
+      throw new Error('Already validated, so at this point we know there is a value here');
+    }
+
+    return canonical;
+  });
+
 export const EmailPasswordSignInPayloadSchema = z
   .object({
     email: z.email().meta({
@@ -76,3 +97,24 @@ export const EmailPasswordSignUpPayloadSchema = z
       callbackURL: 'https://example.com/dashboard',
     },
   });
+
+export const BaseCreateProjectSchema = z.object({
+  name: z.string().trim().nonempty().meta({
+    description: 'The name of the project',
+    example: 'My App',
+  }),
+  default_locale: LocaleShape.meta({
+    description: 'The default locale for the project. Must be a valid BCP 47 language tag',
+    example: 'en-US',
+    ref: 'Locale',
+  }),
+  enabled_locales: z.array(LocaleShape).meta({
+    description:
+      'List of enabled locales for the project. Duplicates will be removed automatically. The default locale will be included if not present.',
+    example: ['en-US', 'fr-FR', 'es-ES'],
+  }),
+  public_read_key: z.string().trim().nonempty().meta({
+    description: 'Public read-only API key for accessing project translations',
+    example: 'pk_1234567890abcdef',
+  }),
+});

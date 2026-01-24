@@ -1,62 +1,29 @@
-import { Box, Flex, Heading, Card, Text, Spinner } from '@radix-ui/themes';
-import { FormattedMessage, useIntl } from 'react-intl';
+import { useState } from 'react';
+import { Box, Flex, Heading } from '@radix-ui/themes';
+import { FormattedMessage } from 'react-intl';
 
 import useProjects from '@/projects/hooks/use-projects';
-import type { ProjectResponse } from '@/generated/api-client/src';
+import CreateProjectDialog from '../../projects/components/create-project-dialog/create-project-dialog';
+import ProjectsList from '../../projects/components/projects-list/projects-list';
 import messages from './messages';
 
 import './home.css';
 
 function Home() {
   const { projects, isLoading, isError } = useProjects();
-  const intl = useIntl();
+  const [isDialogOpen, setIsDialogOpen] = useState(false);
 
   return (
-    <Box className="home-container">
-      <Heading as="h1" size="8" mb="4">
-        <FormattedMessage {...messages.title} />
-      </Heading>
-
-      {isLoading ? (
-        <Flex justify="center" align="center" py="9">
-          <Spinner size="3" aria-label={intl.formatMessage(messages.loadingProjects)} />
-        </Flex>
-      ) : isError ? (
-        <Text as="p" size="3" color="red">
-          <FormattedMessage {...messages.errorFetchingProjects} />
-        </Text>
-      ) : projects.length === 0 ? (
-        <Text as="p" size="3" color="gray">
-          <FormattedMessage {...messages.noProjects} />
-        </Text>
-      ) : (
-        <Flex direction="column" gap="3">
-          {projects.map(project => (
-            <ProjectCard key={project.id} project={project} />
-          ))}
-        </Flex>
-      )}
-    </Box>
-  );
-}
-
-function ProjectCard({ project }: { project: ProjectResponse }) {
-  return (
-    <Card>
-      <Flex direction="column" gap="2">
-        <Heading as="h2" size="5">
-          {project.name}
+    <Box className="home-container" px="6" py="5">
+      <Flex justify="between" align="center" mb="4">
+        <Heading as="h1" size="8">
+          <FormattedMessage {...messages.title} />
         </Heading>
-        <Flex direction="row" gap="4">
-          <Text size="2" color="gray">
-            <FormattedMessage {...messages.projectCardDefaultLocale} values={{ locale: project.defaultLocale }} />
-          </Text>
-          <Text size="2" color="gray">
-            <FormattedMessage {...messages.projectCardLocalesCount} values={{ count: project.enabledLocales.length }} />
-          </Text>
-        </Flex>
+        <CreateProjectDialog open={isDialogOpen} onOpenChange={setIsDialogOpen} />
       </Flex>
-    </Card>
+
+      <ProjectsList projects={projects} isLoading={isLoading} isError={isError} />
+    </Box>
   );
 }
 

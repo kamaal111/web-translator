@@ -7,7 +7,6 @@ import { getDatabase } from '../../context/database';
 import { OPENAPI_TAG } from '../constants';
 import { ListProjectsResponseSchema } from '../schemas';
 import { dbProjectToResponse } from '../mappers';
-import requireLoggedInSession from '../../auth/middleware/require-logged-in-session';
 import { getSession } from '../../context/session';
 import { ErrorResponseSchema } from '../../schemas/error';
 
@@ -31,7 +30,6 @@ const listProjectsRoute = [
       },
     },
   }),
-  requireLoggedInSession(),
   async (c: HonoContext) => {
     const session = getSession(c);
     assert(session != null, 'Middleware should have made sure that session is present');

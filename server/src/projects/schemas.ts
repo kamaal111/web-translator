@@ -1,33 +1,11 @@
 import z from 'zod';
-
-import { LocaleShape } from '../schemas/common';
+import { BaseCreateProjectSchema } from '@wt/schemas';
 
 export type ProjectResponse = z.infer<typeof ProjectResponseSchema>;
 
 export type CreateProjectPayload = z.infer<typeof CreateProjectPayloadSchema>;
 
 export type ListProjectsResponse = z.infer<typeof ListProjectsResponseSchema>;
-
-const BaseCreateProjectSchema = z.object({
-  name: z.string().trim().nonempty().meta({
-    description: 'The name of the project',
-    example: 'My App',
-  }),
-  default_locale: LocaleShape.meta({
-    description: 'The default locale for the project. Must be a valid BCP 47 language tag',
-    example: 'en-US',
-    ref: 'Locale',
-  }),
-  enabled_locales: z.array(LocaleShape).meta({
-    description:
-      'List of enabled locales for the project. Duplicates will be removed automatically. The default locale will be included if not present.',
-    example: ['en-US', 'fr-FR', 'es-ES'],
-  }),
-  public_read_key: z.string().trim().nonempty().meta({
-    description: 'Public read-only API key for accessing project translations',
-    example: 'pk_1234567890abcdef',
-  }),
-});
 
 export const ProjectResponseSchema = BaseCreateProjectSchema.extend({
   id: z.string().nonempty().meta({
