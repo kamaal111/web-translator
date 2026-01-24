@@ -100,7 +100,7 @@ typecheck: typecheck-server typecheck-web typecheck-schemas
 quality: typecheck format-check lint
 
 # Run all verification checks
-ready: quality start-services download-spec ready-web ready-server
+ready: prepare quality start-services download-spec ready-web ready-server
 
 # Start services
 start-services:
@@ -120,7 +120,8 @@ download-spec: prepare-server
     just format
 
 # Prepare project for development
-prepare: install-modules
+prepare: install-modules prepare-web prepare-server prepare-schemas
+
 
 # Install modules
 install-modules:
@@ -170,6 +171,11 @@ typecheck-server:
 [working-directory("modules/schemas")]
 typecheck-schemas:
     bun run typecheck
+
+[private]
+[working-directory("modules/schemas")]
+prepare-schemas:
+    bun install
 
 [private]
 [working-directory("server")]
