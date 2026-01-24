@@ -9,6 +9,8 @@ export type IProject = {
   userId: string;
 };
 
+type ProjectArguments = ReplaceValue<IProject, 'id', string | null | undefined>;
+
 class Project implements IProject {
   id: string;
   name: string;
@@ -17,7 +19,7 @@ class Project implements IProject {
   publicKey: string;
   userId: string;
 
-  constructor(params: ReplaceValue<IProject, 'id', string | null | undefined>) {
+  constructor(params: ProjectArguments) {
     this.id = params.id || Bun.randomUUIDv7();
     this.name = params.name;
     this.defaultLocale = params.defaultLocale;
@@ -25,6 +27,10 @@ class Project implements IProject {
     this.publicKey = params.publicKey;
     this.userId = params.userId;
   }
+}
+
+export function newProject(args: ProjectArguments) {
+  return new Project(args);
 }
 
 export default Project;

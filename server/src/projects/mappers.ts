@@ -2,16 +2,12 @@ import type Project from './models/project';
 import type { IProject } from './models/project';
 import type { CreateProjectPayload, CreateProjectResponse } from './schemas';
 
-export function requestCreateProjectPayloadToDbPayload(
-  payload: CreateProjectPayload,
-  userId: string,
-): Omit<IProject, 'id'> {
+export function requestCreateProjectPayloadToDbPayload(payload: CreateProjectPayload): Omit<IProject, 'id' | 'userId'> {
   return {
     name: payload.name,
     defaultLocale: payload.default_locale,
     enabledLocales: payload.enabled_locales,
     publicKey: payload.public_read_key,
-    userId,
   };
 }
 

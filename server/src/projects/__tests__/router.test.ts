@@ -15,21 +15,9 @@ describe('Projects Router Integration Tests', () => {
 
   afterAll(helper.afterAll);
 
-  async function getAuthHeaders() {
-    const signInResponse = await helper.signInAsDefaultUser();
-    const { token } = (await signInResponse.json()) as { token: string };
-    const cookies = signInResponse.headers.get('set-cookie') ?? '';
-
-    return {
-      'Content-Type': 'application/json',
-      Authorization: `Bearer ${token}`,
-      Cookie: cookies,
-    };
-  }
-
   describe('POST /', () => {
     test('should successfully create a new project with valid data', async () => {
-      const headers = await getAuthHeaders();
+      const headers = await helper.getDefaultUserHeaders();
       const projectData = {
         name: 'My Test App',
         default_locale: 'en-US',
@@ -54,7 +42,7 @@ describe('Projects Router Integration Tests', () => {
     });
 
     test('should automatically include default_locale in enabled_locales if missing', async () => {
-      const headers = await getAuthHeaders();
+      const headers = await helper.getDefaultUserHeaders();
       const projectData = {
         name: 'Test App Without Default',
         default_locale: 'en-US',
@@ -77,7 +65,7 @@ describe('Projects Router Integration Tests', () => {
     });
 
     test('should remove duplicate locales from enabled_locales', async () => {
-      const headers = await getAuthHeaders();
+      const headers = await helper.getDefaultUserHeaders();
 
       const projectData = {
         name: 'Test App With Duplicates',
@@ -121,7 +109,7 @@ describe('Projects Router Integration Tests', () => {
     });
 
     test('should reject request with empty name', async () => {
-      const headers = await getAuthHeaders();
+      const headers = await helper.getDefaultUserHeaders();
       const projectData = {
         name: '',
         default_locale: 'en-US',
@@ -139,7 +127,7 @@ describe('Projects Router Integration Tests', () => {
     });
 
     test('should reject request with whitespace-only name', async () => {
-      const headers = await getAuthHeaders();
+      const headers = await helper.getDefaultUserHeaders();
       const projectData = {
         name: '   ',
         default_locale: 'en-US',
@@ -157,7 +145,7 @@ describe('Projects Router Integration Tests', () => {
     });
 
     test('should reject request with empty public_read_key', async () => {
-      const headers = await getAuthHeaders();
+      const headers = await helper.getDefaultUserHeaders();
       const projectData = {
         name: 'Test App',
         default_locale: 'en-US',
@@ -175,7 +163,7 @@ describe('Projects Router Integration Tests', () => {
     });
 
     test('should reject request with missing required fields', async () => {
-      const headers = await getAuthHeaders();
+      const headers = await helper.getDefaultUserHeaders();
       const incompleteData = {
         name: 'Test App',
         default_locale: 'en-US',
@@ -191,7 +179,7 @@ describe('Projects Router Integration Tests', () => {
     });
 
     test('should trim whitespace from name', async () => {
-      const headers = await getAuthHeaders();
+      const headers = await helper.getDefaultUserHeaders();
       const projectData = {
         name: '  Whitespace App  ',
         default_locale: 'en-US',
@@ -242,7 +230,7 @@ describe('Projects Router Integration Tests', () => {
     });
 
     test('should handle empty enabled_locales array', async () => {
-      const headers = await getAuthHeaders();
+      const headers = await helper.getDefaultUserHeaders();
       const projectData = {
         name: 'Empty Locales App',
         default_locale: 'en-US',
@@ -260,6 +248,86 @@ describe('Projects Router Integration Tests', () => {
       const data = (await response.json()) as CreateProjectResponse;
       expect(data.enabled_locales).toContain('en-US');
       expect(data.enabled_locales.length).toBe(1);
+    });
+
+    test('should reject duplicate project names for the same user', async () => {
+      const headers = await helper.getDefaultUserHeaders();
+      const projectData = {
+        name: 'Unique Name Test Project',
+        default_locale: 'en-US',
+        enabled_locales: ['en-US'],
+        public_read_key: 'pk_unique1',
+      };
+
+      const firstResponse = await helper.app.request(BASE_PATH, {
+        method: 'POST',
+        headers,
+        body: JSON.stringify(projectData),
+      });
+
+      expect(firstResponse.status).toBe(201);
+
+      const duplicateData = {
+        ...projectData,
+        public_read_key: 'pk_unique2',
+      };
+
+      const secondResponse = await helper.app.request(BASE_PATH, {
+        method: 'POST',
+        headers,
+        body: JSON.stringify(duplicateData),
+      });
+
+      expect(secondResponse.status).toBe(409);
+      const errorData = (await secondResponse.json()) as { message: string; code: string };
+      expect(errorData.code).toBe('PROJECT_NAME_ALREADY_EXISTS');
+      expect(errorData.message).toBe('A project with this name already exists');
+    });
+
+    test('should allow duplicate project names for different users', async () => {
+      const headers = await helper.getDefaultUserHeaders();
+      const projectData = {
+        name: 'Shared Name Project',
+        default_locale: 'en-US',
+        enabled_locales: ['en-US'],
+        public_read_key: 'pk_user1',
+      };
+
+      const firstResponse = await helper.app.request(BASE_PATH, {
+        method: 'POST',
+        headers,
+        body: JSON.stringify(projectData),
+      });
+
+      expect(firstResponse.status).toBe(201);
+
+      const secondUserEmail = 'seconduser@example.com';
+      await helper.signUpUser(secondUserEmail, 'Second User');
+
+      const signInResponse = await helper.signInUser(secondUserEmail);
+      const { token } = (await signInResponse.json()) as { token: string };
+      const cookies = signInResponse.headers.get('set-cookie') ?? '';
+
+      const secondUserHeaders = {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${token}`,
+        Cookie: cookies,
+      };
+
+      const secondProjectData = {
+        ...projectData,
+        public_read_key: 'pk_user2',
+      };
+
+      const secondResponse = await helper.app.request(BASE_PATH, {
+        method: 'POST',
+        headers: secondUserHeaders,
+        body: JSON.stringify(secondProjectData),
+      });
+
+      expect(secondResponse.status).toBe(201);
+      const data = (await secondResponse.json()) as CreateProjectResponse;
+      expect(data.name).toBe(projectData.name);
     });
   });
 });

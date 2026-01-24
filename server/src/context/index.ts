@@ -8,7 +8,7 @@ import env from '../env';
 import { getLogger } from './logging';
 import type { Logger } from './types';
 import packageJson from '../../package.json';
-import { getLogEvents } from './events';
+import { getSession } from './session';
 
 export interface InjectedContext {
   drizzle: DrizzleDatabase;
@@ -68,6 +68,12 @@ function makeDefaultLogger(c: HonoContext): Logger {
       payload.status = c.res.status.toString();
     }
 
+    const session = getSession(c);
+    if (session != null) {
+      payload.user_id = session.user.id;
+      payload.user_email_verified = String(session.user.email_verified);
+    }
+
     return payload;
   };
 
@@ -90,15 +96,6 @@ function makeDefaultLogger(c: HonoContext): Logger {
   };
 }
 
-function logEvents(c: HonoContext) {
-  const logger = getLogger(c)[LOG_LEVEL];
-  for (const logEvent of getLogEvents(c)) {
-    for (const [key, log] of Object.entries(logEvent)) {
-      logger(`Event - ${key}`, log);
-    }
-  }
-}
-
 export function injectRequestContext(injects?: Partial<InjectedContext>) {
   return async (c: HonoContext, next: Next) => {
     const startTime = performance.now();
@@ -109,7 +106,6 @@ export function injectRequestContext(injects?: Partial<InjectedContext>) {
     c.set('db', new DrizzleClient({ context: c }));
     c.set('auth', createAuth(c));
     await next();
-    logEvents(c);
     const elapsedTimeInMs = Math.floor(performance.now() - startTime);
     getLogger(c).info(`--> ${c.req.method} ${c.req.path}`, { elapsed_time_ms: elapsedTimeInMs.toString() });
   };

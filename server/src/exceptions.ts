@@ -3,6 +3,7 @@ import { HTTPException } from 'hono/http-exception';
 import type { HonoContext } from './context';
 import type { ContentfulStatusCode } from 'hono/utils/http-status';
 import { getRequestId } from './context/request-id';
+import { getLogger } from './context/logging';
 
 export class APIException extends HTTPException {
   readonly c: HonoContext;
@@ -26,6 +27,8 @@ export class APIException extends HTTPException {
     );
     super(statusCode, { res: response });
     this.c = c;
+
+    getLogger(c).error('Error event', { message: options.message });
   }
 }
 
@@ -52,6 +55,15 @@ export class ServerInternal extends APIException {
     super(c, 500, {
       message: options?.message ?? 'Internal server error',
       code: 'SERVER_INTERNAL',
+    });
+  }
+}
+
+export class Conflict extends APIException {
+  constructor(c: HonoContext, options?: { message?: string; code?: string }) {
+    super(c, 409, {
+      message: options?.message ?? 'Conflict',
+      code: options?.code ?? 'CONFLICT',
     });
   }
 }

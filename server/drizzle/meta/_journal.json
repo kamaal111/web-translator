@@ -15,6 +15,20 @@
       "when": 1768855967401,
       "tag": "0001_thick_anita_blake",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1769276354529,
+      "tag": "0002_panoramic_kat_farrell",
+      "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "7",
+      "when": 1769276408568,
+      "tag": "0003_organic_unus",
+      "breakpoints": true
     }
   ]
 }

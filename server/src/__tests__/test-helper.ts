@@ -83,6 +83,18 @@ class TestHelper {
     return this.signInUser(DEFAULT_USER_EMAIL);
   };
 
+  getDefaultUserHeaders = async () => {
+    const signInResponse = await this.signInAsDefaultUser();
+    const { token } = (await signInResponse.json()) as { token: string };
+    const cookies = signInResponse.headers.get('set-cookie') ?? '';
+
+    return {
+      'Content-Type': 'application/json',
+      Authorization: `Bearer ${token}`,
+      Cookie: cookies,
+    };
+  };
+
   private createDbContext = async (): Promise<{ db: DrizzleDatabase; cleanUpPool: Pool; name: string }> => {
     const postgresDbUrl = new URL(DATABASE_URL);
     postgresDbUrl.pathname = '/postgres';

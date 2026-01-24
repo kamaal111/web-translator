@@ -9,6 +9,7 @@ import { CreateProjectPayloadSchema, CreateProjectResponseSchema, type CreatePro
 import { dbProjectToResponse, requestCreateProjectPayloadToDbPayload } from '../mappers';
 import requireLoggedInSession from '../../auth/middleware/require-logged-in-session';
 import { getSession } from '../../context/session';
+import { ErrorResponseSchema } from '../../schemas/error';
 
 type CreateProjectInput = { out: { json: CreateProjectPayload } };
 
@@ -24,6 +25,18 @@ const createProjectRoute = [
           'application/json': { schema: resolver(CreateProjectResponseSchema) },
         },
       },
+      400: {
+        description: 'Bad request - Invalid payload schema or validation errors',
+        content: {
+          'application/json': { schema: resolver(ErrorResponseSchema) },
+        },
+      },
+      409: {
+        description: 'Conflict - Project with this name already exists for the user',
+        content: {
+          'application/json': { schema: resolver(ErrorResponseSchema) },
+        },
+      },
     },
   }),
   validator('json', CreateProjectPayloadSchema),
@@ -33,7 +46,7 @@ const createProjectRoute = [
     assert(session != null, 'Middleware should have made sure that session is present');
 
     const db = getDatabase(c);
-    const payload = requestCreateProjectPayloadToDbPayload(c.req.valid('json'), session.user.id);
+    const payload = requestCreateProjectPayloadToDbPayload(c.req.valid('json'));
     const project = await db.projects.createProject(payload);
 
     return c.json(dbProjectToResponse(project), 201);

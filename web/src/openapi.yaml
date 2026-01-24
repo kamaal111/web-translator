@@ -17,6 +17,40 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/CreateProjectResponse'
+        '400':
+          description: Bad request - Invalid payload schema or validation errors
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    description: Error message
+                  code:
+                    description: Error code
+                    type: string
+                required:
+                  - message
+                description: Error response containing error message and optional error code
+                title: Error Response
+        '409':
+          description: Conflict - Project with this name already exists for the user
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    description: Error message
+                  code:
+                    description: Error code
+                    type: string
+                required:
+                  - message
+                description: Error response containing error message and optional error code
+                title: Error Response
       requestBody:
         content:
           application/json:
