@@ -36,14 +36,18 @@ class ProjectsRepositoryImpl implements ProjectsRepository {
 
   list = async (): Promise<Project[]> => {
     const session = this.getSession();
-    const usersProjects = await getDrizzle(this.context).query.projects.findMany({ with: { userId: session.user.id } });
+    const usersProjects = await getDrizzle(this.context).query.projects.findMany({
+      where: (projects, { eq }) => eq(projects.userId, session.user.id),
+    });
 
     return usersProjects.map(newProject);
   };
 
   read = async (id: string): Promise<Project | null> => {
     const session = this.getSession();
-    const project = await getDrizzle(this.context).query.projects.findFirst({ with: { userId: session.user.id, id } });
+    const project = await getDrizzle(this.context).query.projects.findFirst({
+      where: (projects, { eq, and }) => and(eq(projects.userId, session.user.id), eq(projects.id, id)),
+    });
     if (project == null) {
       return null;
     }

@@ -2,9 +2,11 @@ import z from 'zod';
 
 import { LocaleShape } from '../schemas/common';
 
-export type CreateProjectResponse = z.infer<typeof CreateProjectResponseSchema>;
+export type ProjectResponse = z.infer<typeof ProjectResponseSchema>;
 
 export type CreateProjectPayload = z.infer<typeof CreateProjectPayloadSchema>;
+
+export type ListProjectsResponse = z.infer<typeof ListProjectsResponseSchema>;
 
 const BaseCreateProjectSchema = z.object({
   name: z.string().trim().nonempty().meta({
@@ -27,17 +29,17 @@ const BaseCreateProjectSchema = z.object({
   }),
 });
 
-export const CreateProjectResponseSchema = BaseCreateProjectSchema.extend({
+export const ProjectResponseSchema = BaseCreateProjectSchema.extend({
   id: z.string().nonempty().meta({
     description: 'Unique identifier for the project',
     example: 'proj_1234567890abcdef',
   }),
 })
-  .describe('Create project response')
+  .describe('Project response')
   .meta({
-    ref: 'CreateProjectResponse',
-    title: 'Create Project Response',
-    description: 'Response returned after successfully creating a project',
+    ref: 'ProjectResponse',
+    title: 'Project Response',
+    description: 'Response for a project',
     example: {
       id: 'proj_1234567890abcdef',
       name: 'My App',
@@ -75,4 +77,22 @@ export const CreateProjectPayloadSchema = BaseCreateProjectSchema.transform(obj 
       enabled_locales: ['en-US', 'fr-FR', 'es-ES'],
       public_read_key: 'pk_1234567890abcdef',
     },
+  });
+
+export const ListProjectsResponseSchema = z
+  .array(ProjectResponseSchema)
+  .describe('List projects response')
+  .meta({
+    ref: 'ListProjectsResponse',
+    title: 'List Projects Response',
+    description: 'Array of projects belonging to the authenticated user',
+    example: [
+      {
+        id: 'proj_1234567890abcdef',
+        name: 'My App',
+        default_locale: 'en-US',
+        enabled_locales: ['en-US', 'fr-FR', 'es-ES'],
+        public_read_key: 'pk_1234567890abcdef',
+      },
+    ],
   });

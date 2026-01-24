@@ -9,7 +9,15 @@ import ThemeProvider from '@/theme/provider';
 export type DataProvidersProps = React.PropsWithChildren<{ queryClient?: QueryClient }> &
   Omit<ConfigurationsContextProviderProps, 'children'>;
 
-const defaultQueryClient = new QueryClient();
+const defaultQueryClient = new QueryClient({
+  defaultOptions: {
+    queries: {
+      retry: 3,
+      // Exponential backoff: 1s (attempt 0), 2s (attempt 1), 4s (attempt 2), capped at 30s
+      retryDelay: attemptIndex => Math.min(1000 * 2 ** attemptIndex, 30000),
+    },
+  },
+});
 
 function DataProviders({ children, queryClient, context }: DataProvidersProps) {
   return (

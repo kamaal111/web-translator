@@ -1,12 +1,12 @@
 import { AuthenticationApi } from '@/generated/api-client/src/apis/AuthenticationApi';
-import { Configuration } from '@/generated/api-client/src/runtime';
+import type { Configuration } from '@/generated/api-client/src/runtime';
 import type { EmailPasswordSignIn, EmailPasswordSignUp } from '@/generated/api-client/src';
 
 class AuthClient {
   private readonly authApi: AuthenticationApi;
 
-  constructor(baseUrl: string) {
-    this.authApi = new AuthenticationApi(new Configuration({ basePath: baseUrl, credentials: 'include' }));
+  constructor(config: Configuration) {
+    this.authApi = new AuthenticationApi(config);
   }
 
   getSession = () => {

@@ -1,6 +1,6 @@
 import type Project from './models/project';
 import type { IProject } from './models/project';
-import type { CreateProjectPayload, CreateProjectResponse } from './schemas';
+import type { CreateProjectPayload, ProjectResponse } from './schemas';
 
 export function requestCreateProjectPayloadToDbPayload(payload: CreateProjectPayload): Omit<IProject, 'id' | 'userId'> {
   return {
@@ -11,7 +11,7 @@ export function requestCreateProjectPayloadToDbPayload(payload: CreateProjectPay
   };
 }
 
-export function dbProjectToResponse(project: Project): CreateProjectResponse {
+export function dbProjectToResponse(project: Project): ProjectResponse {
   return {
     id: project.id,
     name: project.name,

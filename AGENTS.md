@@ -87,6 +87,13 @@ The project is a monorepo with the following structure:
   - Use Functional Components with Hooks.
   - Styling: Tailwind CSS (v4).
   - UI Library: Radix UI Themes.
+  - **Internationalization (i18n):**
+    - **ALWAYS use `messages.ts` files** for all user-facing text, following the pattern from other components
+    - Use `defineMessages` from `react-intl` to define message descriptors
+    - Message IDs should be UPPERCASE with dots (e.g., `HOME.TITLE`, `AUTH.LOGIN_FORM.EMAIL_FIELD_LABEL`)
+    - **ALWAYS translate aria-labels and other accessibility attributes** using `useIntl` hook
+    - Example: `aria-label={intl.formatMessage(messages.loadingProjects)}`
+    - Never use hardcoded strings in JSX - all text must be translatable
 - **Backend (Server):**
   - Framework: Hono.
   - Database: Drizzle ORM.
@@ -100,12 +107,14 @@ The project is a monorepo with the following structure:
 - **Dependency Injection:** Use `createApp({ db, auth, logger })` pattern in server tests to override dependencies.
 - **Run Tests:** `just test`.
 - **Component Testing (Web):**
-  - **ALWAYS use `screen` from `@testing-library/react` for queries** - NEVER use `within(container)`
+  - **ALWAYS use `screen` from `@testing-library/react` for queries** - NEVER use `within(container)` or `document.querySelector()`
   - Import: `import { screen } from '@testing-library/react'`
-  - Query elements directly: `screen.getByPlaceholderText('...')`, `screen.getByRole('...')`, etc.
-  - Anti-pattern: `const { container } = render(...); within(container).getBy...()`
+  - Query elements directly: `screen.getByPlaceholderText('...')`, `screen.getByRole('...')`, `screen.getByLabelText('...')`, etc.
+  - Anti-patterns:
+    - `const { container } = render(...); within(container).getBy...()`
+    - `document.querySelector('.some-class')`
   - Correct pattern: `render(...); screen.getBy...()`
-  - Using `screen` aligns with Testing Library best practices and makes tests more maintainable
+  - Using `screen` aligns with Testing Library best practices and makes tests more maintainable and accessible
 
 ### Server Test Setup with TestHelper
 
