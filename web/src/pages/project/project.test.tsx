@@ -150,13 +150,19 @@ describe('Project', () => {
     expect(esESBadge).toBeDefined();
   });
 
-  it('should display public read key', async () => {
+  it('should display public read key when show button is clicked', async () => {
     vi.mocked(client.projects.read).mockResolvedValue(mockProject);
 
     renderProject();
 
+    const redactedKey = await screen.findByText('•'.repeat('pk_test123'.length));
+    expect(redactedKey, 'Key should be redacted initially').toBeDefined();
+
+    const showButton = screen.getByRole('button', { name: /show key/i });
+    await userEvent.click(showButton);
+
     const publicReadKey = await screen.findByText('pk_test123');
-    expect(publicReadKey).toBeDefined();
+    expect(publicReadKey, 'Now the actual key should be visible').toBeDefined();
   });
 
   it('should call API with correct project ID from URL', async () => {

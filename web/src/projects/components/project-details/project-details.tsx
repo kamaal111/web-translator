@@ -1,5 +1,8 @@
-import { Box, Flex, Heading, Text, Card, Badge } from '@radix-ui/themes';
-import { FormattedMessage } from 'react-intl';
+import { useState } from 'react';
+import { Box, Flex, Heading, Text, Card, Badge, IconButton } from '@radix-ui/themes';
+import { FormattedMessage, useIntl } from 'react-intl';
+import { EyeOpenIcon, EyeClosedIcon, CopyIcon } from '@radix-ui/react-icons';
+import toast from 'react-hot-toast';
 
 import type { ProjectResponse } from '@/generated/api-client/src';
 import messages from './messages';
@@ -11,6 +14,20 @@ interface ProjectDetailsProps {
 }
 
 function ProjectDetails({ project }: ProjectDetailsProps) {
+  const intl = useIntl();
+  const [isKeyVisible, setIsKeyVisible] = useState(false);
+
+  const handleCopyKey = async () => {
+    await navigator.clipboard.writeText(project.publicReadKey);
+    toast.success(intl.formatMessage(messages.keyCopied));
+  };
+
+  const toggleKeyVisibility = () => {
+    setIsKeyVisible(!isKeyVisible);
+  };
+
+  const displayedKey = isKeyVisible ? project.publicReadKey : '•'.repeat(project.publicReadKey.length);
+
   return (
     <Box className="project-container" px="6" py="5">
       <Flex direction="column" gap="4">
@@ -40,12 +57,32 @@ function ProjectDetails({ project }: ProjectDetailsProps) {
             </Box>
 
             <Box>
-              <Text size="2" weight="bold" color="gray" mb="1">
-                <FormattedMessage {...messages.publicReadKey} />
-              </Text>
-              <Text size="2" className="project-details-public-key">
-                {project.publicReadKey}
-              </Text>
+              <Flex gap="2" direction="column">
+                <Text size="2" weight="bold" color="gray">
+                  <FormattedMessage {...messages.publicReadKey} />
+                </Text>
+                <Flex gap="2" align="center">
+                  <Text size="2" className="project-details-public-key">
+                    {displayedKey}
+                  </Text>
+                  <IconButton
+                    size="1"
+                    variant="ghost"
+                    onClick={toggleKeyVisibility}
+                    aria-label={intl.formatMessage(isKeyVisible ? messages.hideKey : messages.showKey)}
+                  >
+                    {isKeyVisible ? <EyeClosedIcon /> : <EyeOpenIcon />}
+                  </IconButton>
+                  <IconButton
+                    size="1"
+                    variant="ghost"
+                    onClick={handleCopyKey}
+                    aria-label={intl.formatMessage(messages.copyKey)}
+                  >
+                    <CopyIcon />
+                  </IconButton>
+                </Flex>
+              </Flex>
             </Box>
           </Flex>
         </Card>
