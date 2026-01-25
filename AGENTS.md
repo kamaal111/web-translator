@@ -106,6 +106,14 @@ The project is a monorepo with the following structure:
 - **Scope:** Cover route behavior, database interactions, and edge cases.
 - **Dependency Injection:** Use `createApp({ db, auth, logger })` pattern in server tests to override dependencies.
 - **Run Tests:** `just test`.
+- **CRITICAL: ALWAYS write tests BEFORE claiming a fix works**
+  - **NEVER say "this should work" or "the fix is done" without running tests**
+  - When fixing bugs or adding features that affect runtime behavior:
+    1. Write comprehensive tests that verify the fix/feature
+    2. Run the tests to see them pass
+    3. ONLY THEN claim the work is complete
+  - Example: When fixing SPA routing, write tests for all route patterns FIRST, then implement the fix
+  - This is NON-NEGOTIABLE - tests are the only way to verify correctness
 - **Component Testing (Web):**
   - **ALWAYS use `screen` from `@testing-library/react` for queries** - NEVER use `within(container)` or `document.querySelector()`
   - Import: `import { screen } from '@testing-library/react'`
@@ -199,3 +207,19 @@ The TestHelper automatically creates a **default user** during `beforeAll()` set
   - Swagger UI: `/docs/doc`
   - Scalar UI: `/docs/scalar`
 - **Spec Workflow:** `just download-spec` generates `web/src/openapi.yaml`; the web app generates a typed client during prepare/build.
+
+## SPA Routing Configuration
+
+- **Web Router:** `server/src/web/router.ts` contains the `WEB_ROUTES` array that defines which paths serve the HTML template
+- **Pattern Matching:** The template middleware (`server/src/web/middleware/template.ts`) supports dynamic route patterns
+  - Use `:paramName` syntax for dynamic segments (e.g., `/projects/:id`, `/users/:userId`)
+  - The middleware automatically matches these patterns against incoming requests
+  - Example: Adding `/projects/:id` to `WEB_ROUTES` allows the SPA to handle any URL like `/projects/123` or `/projects/abc`
+- **When to Update WEB_ROUTES:**
+  - Whenever you add a new client-side route in React Router
+  - For any route that should serve the HTML template instead of 404ing
+  - Remember: API routes under `/app-api/` are NOT in WEB_ROUTES and should never serve HTML
+- **Testing SPA Routes:**
+  - Always add tests in `server/src/web/__tests__/router.test.ts` when adding new routes
+  - Verify that the route serves HTML with a 200 status
+  - Verify that API routes still return JSON, not HTML

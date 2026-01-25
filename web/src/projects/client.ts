@@ -16,6 +16,10 @@ class ProjectsClient {
   create = (payload: CreateProjectPayload) => {
     return this.projectsApi.postAppApiV1P({ createProjectPayload: payload });
   };
+
+  read = (id: string) => {
+    return this.projectsApi.getAppApiV1PId({ id });
+  };
 }
 
 export default ProjectsClient;

@@ -4,11 +4,11 @@ import { render, type RenderOptions } from '@testing-library/react';
 import { TestWrapper, type TestWrapperProps } from './wrapper';
 
 function renderWithProviders(ui: React.ReactElement, options?: Omit<RenderOptions, 'wrapper'> & TestWrapperProps) {
-  const { queryClient, withRouter, context, ...renderOptions } = options ?? {};
+  const { queryClient, context, initialRouterEntries, ...renderOptions } = options ?? {};
 
   return render(ui, {
     wrapper: ({ children }) => (
-      <TestWrapper withRouter={withRouter} queryClient={queryClient} context={context}>
+      <TestWrapper initialRouterEntries={initialRouterEntries} queryClient={queryClient} context={context}>
         {children}
       </TestWrapper>
     ),

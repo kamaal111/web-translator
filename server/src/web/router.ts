@@ -5,9 +5,15 @@ import type { HonoEnvironment } from '../context';
 import env from '../env';
 import { serveTemplate } from './middleware/template';
 import { LocalTemplateFetcher, type TemplateFetcher } from './template-fetcher';
+import type { HtmlRoutes } from './types';
+import { LOGIN_ROUTE } from './constants';
 
 const { WEB_ASSETS_ROOT } = env;
-const WEB_ROUTES = ['/', '/login'];
+const WEB_ROUTES: HtmlRoutes = [
+  { pattern: '/', loginIsRequired: true },
+  { pattern: LOGIN_ROUTE, loginIsRequired: false },
+  { pattern: '/projects/:id', loginIsRequired: true },
+];
 
 const webRouter = new Hono<HonoEnvironment>();
 const templateFetcher: TemplateFetcher = new LocalTemplateFetcher(WEB_ASSETS_ROOT);

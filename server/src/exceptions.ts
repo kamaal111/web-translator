@@ -11,7 +11,7 @@ export class APIException extends HTTPException {
   constructor(
     c: HonoContext,
     statusCode: ContentfulStatusCode,
-    options: { message: string; code?: string; headers?: Headers; context?: unknown },
+    options: { message: string; code?: string; headers?: Headers; context?: unknown; name?: string },
   ) {
     const response = new Response(
       JSON.stringify({
@@ -27,8 +27,9 @@ export class APIException extends HTTPException {
     );
     super(statusCode, { res: response });
     this.c = c;
+    this.name = options.name ?? this.name;
 
-    getLogger(c).error('Error event', { message: options.message });
+    getLogger(c).error('Error event', { error_message: options.message, error_name: this.name });
   }
 }
 
@@ -42,10 +43,11 @@ export class Unauthorized extends APIException {
 }
 
 export class NotFound extends APIException {
-  constructor(c: HonoContext, options?: { message?: string }) {
+  constructor(c: HonoContext, options?: { message?: string; name?: string }) {
     super(c, 404, {
       message: options?.message ?? 'Not found',
       code: 'NOT_FOUND',
+      name: options?.name,
     });
   }
 }
@@ -60,10 +62,11 @@ export class ServerInternal extends APIException {
 }
 
 export class Conflict extends APIException {
-  constructor(c: HonoContext, options?: { message?: string; code?: string }) {
+  constructor(c: HonoContext, options?: { message?: string; code?: string; name?: string }) {
     super(c, 409, {
       message: options?.message ?? 'Conflict',
       code: options?.code ?? 'CONFLICT',
+      name: options?.name,
     });
   }
 }

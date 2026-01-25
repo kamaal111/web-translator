@@ -1,10 +1,10 @@
 import { QueryClient } from '@tanstack/react-query';
-import { BrowserRouter } from 'react-router';
+import { MemoryRouter, type InitialEntry } from 'react-router';
 
 import DataProviders, { type DataProvidersProps } from '@/data-providers/data-providers';
 
 export interface TestWrapperProps extends DataProvidersProps {
-  withRouter?: boolean;
+  initialRouterEntries?: InitialEntry[];
 }
 
 function createTestQueryClient(): QueryClient {
@@ -16,22 +16,14 @@ function createTestQueryClient(): QueryClient {
   });
 }
 
-export function TestWrapper({ children, queryClient, context, withRouter }: TestWrapperProps) {
+export function TestWrapper({ children, queryClient, context, initialRouterEntries }: TestWrapperProps) {
   const client = queryClient ?? createTestQueryClient();
 
-  if (withRouter === false) {
-    return (
-      <DataProviders queryClient={client} context={context ?? { locale: 'en' }}>
-        {children}
-      </DataProviders>
-    );
-  }
-
   return (
-    <BrowserRouter>
+    <MemoryRouter initialEntries={initialRouterEntries}>
       <DataProviders queryClient={client} context={context ?? { locale: 'en' }}>
         {children}
       </DataProviders>
-    </BrowserRouter>
+    </MemoryRouter>
   );
 }

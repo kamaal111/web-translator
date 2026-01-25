@@ -1,5 +1,5 @@
 import { describe, test, expect, vi, beforeEach } from 'vitest';
-import { MemoryRouter, Route, Routes, useLocation } from 'react-router';
+import { Route, Routes, useLocation } from 'react-router';
 
 import { render, screen } from '@test-utils';
 import type { WebTranslatorContext } from '@/context/schemas';
@@ -24,7 +24,7 @@ describe('LoginRequiredLayout', () => {
     };
 
     render(
-      <MemoryRouter initialEntries={['/']}>
+      <>
         <Routes>
           <Route element={<LoginRequiredLayout />}>
             <Route path="/" element={<TestChild />} />
@@ -32,8 +32,8 @@ describe('LoginRequiredLayout', () => {
           <Route path="/login" element={<div>Login Page</div>} />
         </Routes>
         <LocationDisplay />
-      </MemoryRouter>,
-      { context, withRouter: false },
+      </>,
+      { context, initialRouterEntries: ['/'] },
     );
 
     expect(TestChild, 'Child component should NOT have been called/rendered').not.toHaveBeenCalled();
@@ -51,7 +51,7 @@ describe('LoginRequiredLayout', () => {
     };
 
     render(
-      <MemoryRouter initialEntries={['/']}>
+      <>
         <Routes>
           <Route element={<LoginRequiredLayout />}>
             <Route path="/" element={<TestChild />} />
@@ -59,8 +59,8 @@ describe('LoginRequiredLayout', () => {
           <Route path="/login" element={<div>Login Page</div>} />
         </Routes>
         <LocationDisplay />
-      </MemoryRouter>,
-      { context, withRouter: false },
+      </>,
+      { context, initialRouterEntries: ['/'] },
     );
 
     expect(TestChild, 'Child component SHOULD have been rendered').toHaveBeenCalled();
@@ -83,7 +83,7 @@ describe('LoginRequiredLayout', () => {
     };
 
     render(
-      <MemoryRouter initialEntries={['/']}>
+      <>
         <Routes>
           <Route element={<LoginRequiredLayout />}>
             <Route path="/" element={<ChildWithApiCall />} />
@@ -91,8 +91,8 @@ describe('LoginRequiredLayout', () => {
           <Route path="/login" element={<div>Login Page</div>} />
         </Routes>
         <LocationDisplay />
-      </MemoryRouter>,
-      { context, withRouter: false },
+      </>,
+      { context, initialRouterEntries: ['/'] },
     );
 
     expect(mockApiCall, "API call should NOT have been made because child didn't render").not.toHaveBeenCalled();

@@ -2,6 +2,7 @@ import '@radix-ui/themes/styles.css';
 
 import React from 'react';
 import ReactDom from 'react-dom/client';
+import { BrowserRouter } from 'react-router';
 
 import './index.css';
 
@@ -15,8 +16,10 @@ if (rootElement == null) {
 
 ReactDom.createRoot(rootElement).render(
   <React.StrictMode>
-    <DataProviders>
-      <Router />
-    </DataProviders>
+    <BrowserRouter>
+      <DataProviders>
+        <Router />
+      </DataProviders>
+    </BrowserRouter>
   </React.StrictMode>,
 );

@@ -485,4 +485,117 @@ describe('Projects Router Integration Tests', () => {
       expect(response.status).toBe(404);
     });
   });
+
+  describe('GET /:id', () => {
+    test('should return project details for valid project ID', async () => {
+      const headers = await helper.getDefaultUserHeaders();
+
+      const projectData = {
+        name: 'Read Test Project',
+        default_locale: 'en-US',
+        enabled_locales: ['en-US', 'fr-FR'],
+        public_read_key: 'pk_read_test',
+      };
+
+      const createResponse = await helper.app.request(BASE_PATH, {
+        method: 'POST',
+        headers,
+        body: JSON.stringify(projectData),
+      });
+
+      expect(createResponse.status).toBe(201);
+      const createdProject = (await createResponse.json()) as ProjectResponse;
+
+      const response = await helper.app.request(`${BASE_PATH}/${createdProject.id}`, {
+        method: 'GET',
+        headers,
+      });
+
+      expect(response.status).toBe(200);
+      const data = (await response.json()) as ProjectResponse;
+      expect(data.id).toBe(createdProject.id);
+      expect(data.name).toBe(projectData.name);
+      expect(data.default_locale).toBe(projectData.default_locale);
+      expect(data.enabled_locales).toEqual(projectData.enabled_locales);
+      expect(data.public_read_key).toBe(projectData.public_read_key);
+    });
+
+    test('should return 400 for invalid project ID format', async () => {
+      const headers = await helper.getDefaultUserHeaders();
+
+      const response = await helper.app.request(`${BASE_PATH}/invalid-id-format`, {
+        method: 'GET',
+        headers,
+      });
+
+      expect(response.status).toBe(400);
+    });
+
+    test('should return 404 for non-existent project ID with valid UUID format', async () => {
+      const headers = await helper.getDefaultUserHeaders();
+      const nonExistentUuid = '018d8f28-1234-7890-abcd-ef1234567890';
+
+      const response = await helper.app.request(`${BASE_PATH}/${nonExistentUuid}`, {
+        method: 'GET',
+        headers,
+      });
+
+      expect(response.status).toBe(404);
+      const data = (await response.json()) as { message: string; code: string };
+      expect(data.code).toBe('NOT_FOUND');
+      expect(data.message).toBe('Project not found');
+    });
+
+    test('should return 404 when accessing another users project', async () => {
+      const user1Headers = await helper.getDefaultUserHeaders();
+
+      const projectData = {
+        name: 'User 1 Private Project',
+        default_locale: 'en-US',
+        enabled_locales: ['en-US'],
+        public_read_key: 'pk_user1_private',
+      };
+
+      const createResponse = await helper.app.request(BASE_PATH, {
+        method: 'POST',
+        headers: user1Headers,
+        body: JSON.stringify(projectData),
+      });
+
+      expect(createResponse.status).toBe(201);
+      const createdProject = (await createResponse.json()) as ProjectResponse;
+
+      const user2Email = 'anotheruser@example.com';
+      await helper.signUpUser(user2Email, 'Another User');
+
+      const user2SignInResponse = await helper.signInUser(user2Email);
+      const { token: user2Token } = (await user2SignInResponse.json()) as { token: string };
+      const user2Cookies = user2SignInResponse.headers.get('set-cookie') ?? '';
+      const user2Headers = {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${user2Token}`,
+        Cookie: user2Cookies,
+      };
+
+      const response = await helper.app.request(`${BASE_PATH}/${createdProject.id}`, {
+        method: 'GET',
+        headers: user2Headers,
+      });
+
+      expect(response.status).toBe(404);
+      const data = (await response.json()) as { message: string; code: string };
+      expect(data.code).toBe('NOT_FOUND');
+    });
+
+    test('should reject request without authentication', async () => {
+      const response = await helper.app.request(`${BASE_PATH}/proj_test123`, {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      });
+
+      expect(response.status).toBe(404);
+    });
+  });
 });

@@ -7,6 +7,8 @@ export type CreateProjectPayload = z.infer<typeof CreateProjectPayloadSchema>;
 
 export type ListProjectsResponse = z.infer<typeof ListProjectsResponseSchema>;
 
+export type ReadProjectParams = z.infer<typeof ReadProjectParamsSchema>;
+
 export const ProjectResponseSchema = BaseCreateProjectSchema.extend({
   id: z.string().nonempty().meta({
     description: 'Unique identifier for the project',
@@ -74,3 +76,9 @@ export const ListProjectsResponseSchema = z
       },
     ],
   });
+
+export const ReadProjectParamsSchema = z.object({ id: z.uuid() }).describe('Read project path parameters').meta({
+  ref: 'ReadProjectParams',
+  title: 'Read Project Parameters',
+  description: 'Path parameters for reading a project',
+});

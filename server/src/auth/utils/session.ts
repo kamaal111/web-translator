@@ -12,6 +12,7 @@ import { toISO8601String } from '../../utils/dates';
 import { JWKS_URL } from '../better-auth';
 import { Unauthorized } from '../../exceptions';
 import { unsafeCast } from '../../utils/typing';
+import { getSession } from '../../context/session';
 
 type SupportedLocales = typeof SUPPORTED_LOCALES;
 type SupportedLocale = SupportedLocales[number];
@@ -26,11 +27,19 @@ const BetterAuthJWTPayloadSchema = z
   .loose();
 
 export async function getUserSession(c: HonoContext): Promise<SessionResponse> {
+  const session = getSession(c);
+  if (session != null) {
+    return session;
+  }
+
   const jwtSessionResponse = await verifyJwt(c);
-  if (jwtSessionResponse != null) return jwtSessionResponse;
+  if (jwtSessionResponse != null) {
+    return jwtSessionResponse;
+  }
 
   const cookie = getCookie(c, 'better-auth.session_token');
   if (!cookie) {
+    getLogger(c).info('Session not found');
     throw new SessionNotFound(c);
   }
 
