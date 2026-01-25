@@ -15,9 +15,16 @@ const WEB_ROUTES: HtmlRoutes = [
   { pattern: '/projects/:id', loginIsRequired: true },
 ];
 
-const webRouter = new Hono<HonoEnvironment>();
 const templateFetcher: TemplateFetcher = new LocalTemplateFetcher(WEB_ASSETS_ROOT);
 
-webRouter.use('*', serveTemplate({ routes: WEB_ROUTES, templateFetcher }), serveStatic({ root: WEB_ASSETS_ROOT }));
+function webRouter() {
+  const router = new Hono<HonoEnvironment>();
+
+  return router.use(
+    '*',
+    serveTemplate({ routes: WEB_ROUTES, templateFetcher }),
+    serveStatic({ root: WEB_ASSETS_ROOT }),
+  );
+}
 
 export default webRouter;

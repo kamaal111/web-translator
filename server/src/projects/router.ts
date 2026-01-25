@@ -6,12 +6,14 @@ import createProjectRoute from './routes/create-project';
 import listProjectsRoute from './routes/list-projects';
 import readProjectRoute from './routes/read-project';
 
-const projectsRouter = new Hono<HonoEnvironment>();
+function projectsRouter() {
+  const router = new Hono<HonoEnvironment>();
 
-projectsRouter
-  .use(requireLoggedInSession())
-  .post(...createProjectRoute)
-  .get(...listProjectsRoute)
-  .get(...readProjectRoute);
+  return router
+    .use(requireLoggedInSession())
+    .post(...createProjectRoute)
+    .get(...listProjectsRoute)
+    .get(...readProjectRoute);
+}
 
 export default projectsRouter;

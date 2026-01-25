@@ -14,6 +14,12 @@ const DEFAULT_USER_EMAIL = 'test@example.com';
 const DEFAULT_USER_PASSWORD = 'TestPassword123!';
 const DEFAULT_USER_NAME = 'Test User';
 
+type TranslationEntry = {
+  key: string;
+  context?: string | null;
+  translations: Record<string, string>;
+};
+
 class TestHelper {
   private _app: ReturnType<typeof createApp> | null = null;
   private dbCleanUp: (() => Promise<void>) | null = null;
@@ -85,6 +91,9 @@ class TestHelper {
 
   getDefaultUserHeaders = async () => {
     const signInResponse = await this.signInAsDefaultUser();
+    if (signInResponse.status !== 200) {
+      throw new Error(`Failed to sign in: ${signInResponse.status} ${await signInResponse.text()}`);
+    }
     const { token } = (await signInResponse.json()) as { token: string };
     const cookies = signInResponse.headers.get('set-cookie') ?? '';
 
@@ -93,6 +102,37 @@ class TestHelper {
       Authorization: `Bearer ${token}`,
       Cookie: cookies,
     };
+  };
+
+  createProject = async (data: {
+    name: string;
+    default_locale: string;
+    enabled_locales: string[];
+    public_read_key: string;
+  }) => {
+    const headers = await this.getDefaultUserHeaders();
+    return this.app.request('/app-api/v1/p', {
+      method: 'POST',
+      headers,
+      body: JSON.stringify(data),
+    });
+  };
+
+  upsertTranslations = async (projectId: string, translations: TranslationEntry[]) => {
+    const headers = await this.getDefaultUserHeaders();
+    return this.app.request(`/app-api/v1/s/${projectId}/translations`, {
+      method: 'PUT',
+      headers,
+      body: JSON.stringify({ translations }),
+    });
+  };
+
+  publishSnapshot = async (projectId: string, locale: string) => {
+    const headers = await this.getDefaultUserHeaders();
+    return this.app.request(`/app-api/v1/s/${projectId}/translations/${locale}/publish`, {
+      method: 'POST',
+      headers,
+    });
   };
 
   private createDbContext = async (): Promise<{ db: DrizzleDatabase; cleanUpPool: Pool; name: string }> => {

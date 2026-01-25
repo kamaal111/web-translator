@@ -4,6 +4,104 @@ info:
   version: 0.0.0
   description: Development documentation
 paths:
+  '/api/v1/projects/{projectId}/translations/{locale}':
+    get:
+      operationId: getApiV1Projects:projectIdTranslations:locale
+      description: 'Get translations for a specific locale in a project. Returns the latest published snapshot by default, or a specific version with ?v=N. Requires public key in headers.'
+      tags:
+        - Translations
+      responses:
+        '200':
+          description: Successful response - returns key-value map of translations
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GetTranslationsResponse'
+        '400':
+          description: Bad request - Invalid parameters or headers
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    description: Error message
+                  code:
+                    description: Error code
+                    type: string
+                required:
+                  - message
+                description: Error response containing error message and optional error code
+                title: Error Response
+        '401':
+          description: Invalid or missing public key
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    description: Error message
+                  code:
+                    description: Error code
+                    type: string
+                required:
+                  - message
+                description: Error response containing error message and optional error code
+                title: Error Response
+        '404':
+          description: 'Project not found, no published versions, or specific version not found'
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    description: Error message
+                  code:
+                    description: Error code
+                    type: string
+                required:
+                  - message
+                description: Error response containing error message and optional error code
+                title: Error Response
+      parameters:
+        - in: path
+          name: projectId
+          schema:
+            type: string
+            format: uuid
+            pattern: '^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$'
+            example: proj_1234567890abcdef
+          required: true
+          description: ID of the project
+        - in: path
+          name: locale
+          schema:
+            type: string
+            minLength: 1
+            example: en
+          required: true
+          description: 'Locale code (e.g., en, es, fr)'
+        - in: query
+          name: v
+          schema:
+            example: 1
+            type: integer
+            exclusiveMinimum: 0
+            maximum: 9007199254740991
+          description: 'Version number to fetch (optional, omit for latest published version)'
+        - in: header
+          name: x-public-key
+          schema:
+            type: string
+            minLength: 1
+            example: pk_abc123
+          required: true
+          description: Public read key for the project
   /app-api/v1/p:
     post:
       operationId: postApp-apiV1P
@@ -433,8 +531,176 @@ paths:
             type: string
             example: Bearer f21wcpz7Aokmlh2MB632MZpTgfruPc62
           description: Bearer token for authentication
+  '/app-api/v1/s/{projectId}':
+    get:
+      operationId: getApp-apiV1S:projectId
+      description: List all translation strings for a project
+      tags:
+        - String
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ListStringsResponse'
+        '401':
+          description: Not authenticated
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    description: Error message
+                  code:
+                    description: Error code
+                    type: string
+                required:
+                  - message
+                description: Error response containing error message and optional error code
+                title: Error Response
+      parameters:
+        - schema:
+            type: string
+          in: path
+          name: projectId
+          required: true
+  '/app-api/v1/s/{projectId}/translations':
+    put:
+      operationId: putApp-apiV1S:projectIdTranslations
+      description: 'Batch upsert strings and their translations for a project. Creates new strings if they do not exist, updates context if provided, and sets all translation values.'
+      tags:
+        - String
+      responses:
+        '200':
+          description: Successful response with count of translations updated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UpsertTranslationsResponse'
+        '400':
+          description: Bad request - Invalid payload schema or validation errors
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    description: Error message
+                  code:
+                    description: Error code
+                    type: string
+                required:
+                  - message
+                description: Error response containing error message and optional error code
+                title: Error Response
+        '401':
+          description: Not authenticated
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    description: Error message
+                  code:
+                    description: Error code
+                    type: string
+                required:
+                  - message
+                description: Error response containing error message and optional error code
+                title: Error Response
+      parameters:
+        - $ref: '#/components/parameters/UpsertTranslationsParams'
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpsertTranslationsPayload'
+  '/app-api/v1/s/{projectId}/translations/{locale}/publish':
+    post:
+      operationId: postApp-apiV1S:projectIdTranslations:localePublish
+      description: Publish a new snapshot version of the current translations for a locale. Creates an immutable copy that can be retrieved using the ?v=N query parameter.
+      tags:
+        - String
+      responses:
+        '201':
+          description: Snapshot created successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PublishSnapshotResponse'
+        '400':
+          description: Bad request - Invalid parameters
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    description: Error message
+                  code:
+                    description: Error code
+                    type: string
+                required:
+                  - message
+                description: Error response containing error message and optional error code
+                title: Error Response
+        '401':
+          description: Not authenticated
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    description: Error message
+                  code:
+                    description: Error code
+                    type: string
+                required:
+                  - message
+                description: Error response containing error message and optional error code
+                title: Error Response
+      parameters:
+        - in: path
+          name: projectId
+          schema:
+            type: string
+            format: uuid
+            pattern: '^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$'
+            example: proj_1234567890abcdef
+          required: true
+          description: ID of the project
+        - in: path
+          name: locale
+          schema:
+            type: string
+            minLength: 1
+            example: en
+          required: true
+          description: 'Locale code to publish (e.g., en, es, fr)'
 components:
   schemas:
+    GetTranslationsResponse:
+      type: object
+      propertyNames:
+        type: string
+      additionalProperties:
+        type: string
+      description: Key-value map of translation keys to translated values for a specific locale
+      title: Get Translations Response
+      example:
+        HOME.TITLE: Welcome Home
+        HOME.SUBTITLE: Your personal dashboard
+        COMMON.SUBMIT: Submit
+        COMMON.CANCEL: Cancel
     Locale:
       description: The default locale for the project. Must be a valid BCP 47 language tag
       example: en-US
@@ -706,6 +972,144 @@ components:
           email: john@apple.com
           email_verified: false
           created_at: 2025-10-05T12:08:28.374Z
+    StringResponse:
+      type: object
+      properties:
+        id:
+          type: string
+          minLength: 1
+          description: Unique identifier for the string
+          example: str_1234567890abcdef
+        key:
+          type: string
+          minLength: 1
+          description: 'Translation key (e.g., HOME.TITLE)'
+          example: HOME.TITLE
+        context:
+          anyOf:
+            - type: string
+            - type: 'null'
+          description: Optional context explaining where/how the string is used
+          example: Page title shown in browser tab and header
+        project_id:
+          type: string
+          minLength: 1
+          description: ID of the project this string belongs to
+          example: proj_1234567890abcdef
+      required:
+        - id
+        - key
+        - context
+        - project_id
+      description: Response for a translation string
+      title: String Response
+      example:
+        id: str_1234567890abcdef
+        key: HOME.TITLE
+        context: Page title shown in browser tab
+        project_id: proj_1234567890abcdef
+    ListStringsResponse:
+      type: array
+      items:
+        $ref: '#/components/schemas/StringResponse'
+      description: Array of translation strings for a project
+      title: List Strings Response
+      example:
+        - id: str_1234567890abcdef
+          key: HOME.TITLE
+          context: Page title shown in browser tab
+          project_id: proj_1234567890abcdef
+    UpsertTranslationsResponse:
+      type: object
+      properties:
+        updated_count:
+          type: integer
+          minimum: 0
+          maximum: 9007199254740991
+          description: Number of translation entries that were updated or created
+          example: 5
+      required:
+        - updated_count
+      description: Response after batch upserting translations
+      title: Upsert Translations Response
+      example:
+        updated_count: 5
+    UpsertTranslationsPayload:
+      type: object
+      properties:
+        translations:
+          minItems: 1
+          type: array
+          items:
+            type: object
+            properties:
+              key:
+                type: string
+                minLength: 1
+                description: 'Translation key (e.g., HOME.TITLE)'
+                example: HOME.TITLE
+              context:
+                description: Optional context explaining where/how the string is used
+                example: Page title shown in browser tab and header
+                anyOf:
+                  - type: string
+                  - type: 'null'
+              translations:
+                type: object
+                propertyNames:
+                  type: string
+                  minLength: 1
+                additionalProperties:
+                  type: string
+                description: Map of locale codes to translation values
+                example:
+                  en: Welcome Home
+                  es: Bienvenido a Casa
+            required:
+              - key
+              - translations
+          description: Array of translation entries to upsert
+      required:
+        - translations
+      description: Payload for batch upserting strings and their translations
+      title: Upsert Translations Payload
+      example:
+        translations:
+          - key: HOME.TITLE
+            context: Page title shown in browser tab
+            translations:
+              en: Welcome Home
+              es: Bienvenido a Casa
+          - key: HOME.SUBTITLE
+            translations:
+              en: Your personal dashboard
+    PublishSnapshotResponse:
+      type: object
+      properties:
+        version:
+          type: integer
+          exclusiveMinimum: 0
+          maximum: 9007199254740991
+          description: The version number of the newly created snapshot
+          example: 1
+        created_at:
+          type: string
+          format: date-time
+          pattern: "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d(?::[0-5]\\d(?:\\.\\d+)?)?(?:Z))$"
+          description: When this version was created
+          example: 2024-01-01T12:00:00.000Z
+        translation_count:
+          type: integer
+          minimum: 0
+          maximum: 9007199254740991
+          description: Number of translations in this snapshot
+          example: 42
+      required:
+        - version
+        - created_at
+        - translation_count
+      description: Response after creating a new translation snapshot
+      title: Publish Snapshot Response
   parameters:
     ReadProjectParams:
       in: path
@@ -715,3 +1119,13 @@ components:
         format: uuid
         pattern: '^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$'
       required: true
+    UpsertTranslationsParams:
+      in: path
+      name: projectId
+      schema:
+        type: string
+        format: uuid
+        pattern: '^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$'
+        example: proj_1234567890abcdef
+      required: true
+      description: ID of the project

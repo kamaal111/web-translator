@@ -7,4 +7,6 @@ export interface ProjectsRepository {
   list: () => Promise<Project[]>;
 
   read: (id: string) => Promise<Project | null>;
+
+  readById: (id: string) => Promise<Project | null>;
 }

@@ -21,7 +21,9 @@ function useMessages(): UseMEssagesReturnType {
   const { context } = useConfigurations();
 
   const userLocale = context?.locale ?? DEFAULT_LOCALE;
-  const locale = userLocale in SUPPORTED_LOCALES ? (userLocale as SupportedLocale) : DEFAULT_LOCALE;
+  const locale = (SUPPORTED_LOCALES as unknown as string[]).includes(userLocale)
+    ? (userLocale as SupportedLocale)
+    : DEFAULT_LOCALE;
 
   React.useEffect(() => {
     import(`./messages/${locale}.json`)

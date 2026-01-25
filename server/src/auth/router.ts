@@ -9,15 +9,17 @@ import tokenRoute from './routes/token';
 import sessionRoute from './routes/session';
 import { getAuth } from '../context/auth';
 
-const authRouter = new Hono<HonoEnvironment>();
+function authRouter() {
+  const router = new Hono<HonoEnvironment>();
 
-authRouter
-  .get(...jwksRoute)
-  .post(...signUpRoute)
-  .post(...signInRoute)
-  .post(...signOutRoute)
-  .get(...tokenRoute)
-  .get(...sessionRoute)
-  .on(['POST', 'GET'], '**', c => getAuth(c).handler(c.req.raw));
+  return router
+    .get(...jwksRoute)
+    .post(...signUpRoute)
+    .post(...signInRoute)
+    .post(...signOutRoute)
+    .get(...tokenRoute)
+    .get(...sessionRoute)
+    .on(['POST', 'GET'], '**', c => getAuth(c).handler(c.req.raw));
+}
 
 export default authRouter;

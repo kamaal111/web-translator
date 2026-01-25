@@ -29,6 +29,20 @@
       "when": 1769276408568,
       "tag": "0003_organic_unus",
       "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "7",
+      "when": 1769373573059,
+      "tag": "0004_loving_champions",
+      "breakpoints": true
+    },
+    {
+      "idx": 5,
+      "version": "7",
+      "when": 1769375496906,
+      "tag": "0005_shallow_wallop",
+      "breakpoints": true
     }
   ]
 }

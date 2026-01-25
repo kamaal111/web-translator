@@ -57,6 +57,17 @@ class ProjectsRepositoryImpl implements ProjectsRepository {
     return newProject(project);
   };
 
+  readById = async (id: string): Promise<Project | null> => {
+    const project = await getDrizzle(this.context).query.projects.findFirst({
+      where: () => eq(projects.id, id),
+    });
+    if (project == null) {
+      return null;
+    }
+
+    return newProject(project);
+  };
+
   private getSession = (): SessionResponse => {
     const session = getSession(this.context);
     assert(session != null, 'This function should have been called with an authorized request');
