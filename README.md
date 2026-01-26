@@ -1,11 +1,11 @@
 # Web Translator
 
-Full‑stack monorepo for a web translation app built with Bun, Hono, Drizzle, and React. The repository contains a backend server (API + auth + docs) and a frontend web app (Vite + React + Tailwind), including end‑to‑end quality checks and Dockerized Postgres for local development.
+Full‑stack monorepo for a web translation app built with Bun, Hono, Drizzle, and React. The repository contains a backend server (API + auth + docs) and a frontend web app (Vite + React + Radix UI), including end‑to‑end quality checks and Dockerized Postgres for local development.
 
 ## Tech Stack
 
 - Server: Bun, Hono, Drizzle ORM, Better Auth
-- Frontend: Vite, React, Tailwind CSS, Radix UI Themes
+- Frontend: Vite, React, Radix UI Themes (custom CSS)
 - Testing: `bun:test` (server), `vitest` (web)
 - Tooling: `just` task runner, Prettier, ESLint (strict, no suppression)
 - Database: Postgres (via Docker Compose)
@@ -14,7 +14,7 @@ Full‑stack monorepo for a web translation app built with Bun, Hono, Drizzle, a
 
 ```
 server/        # Backend (Hono app, auth, DB, docs)
-web/           # Frontend (Vite + React + Tailwind)
+web/           # Frontend (Vite + React + Radix UI)
 modules/       # Shared modules (e.g., schemas)
 justfile       # Root task runner with common workflows
 docker-compose.yml  # Local Postgres service
@@ -42,10 +42,10 @@ Key web files:
 
 ## Quick Start
 
-1. Install all workspace dependencies
+1. Prepare the workspace (installs dependencies for all packages and generates the web API client)
 
 ```bash
-just install-modules
+just prepare
 ```
 
 2. Create `.env` (or use `.env.example`)
@@ -100,7 +100,7 @@ Frequently used:
 1. Start services (Postgres): `just start-services`
 2. Generate/Apply DB migrations as needed: `just make-migrations`, `just migrate`
 3. Run the stack: `just dev`
-4. Update OpenAPI spec and regenerate client (happens as part of `just ready` and web prepare tasks):
+4. Update OpenAPI spec and regenerate client (happens as part of `just ready` and during web prepare):
 
 ```bash
 just download-spec      # writes to web/src/openapi.yaml
@@ -120,6 +120,16 @@ The server exposes OpenAPI docs via `hono-openapi`:
 - Scalar UI: `/docs/scalar`
 
 The `just download-spec` task generates `web/src/openapi.yaml` directly from the running app definition, and `web` uses that spec to generate a typed fetch client under `web/src/generated/api-client`.
+
+## SPA Routing
+
+Client‑side routes are served by the server’s SPA router. Update `server/src/web/router.ts` to add new paths that should return the HTML template.
+
+- Patterns: use `:param` syntax for dynamic segments (e.g., `/projects/:id`).
+- Login gating: each route can be marked `loginIsRequired` to force unauthenticated users to `/login`.
+- Static files are served from `server/static`; `just build-for-server` writes the web build there.
+
+Tests for SPA routing live in `server/src/web/__tests__/router.test.ts`. When adding routes, add/adjust tests to ensure HTML is served (200) and that API routes still return JSON.
 
 ### Notable Routes
 
@@ -158,6 +168,15 @@ just test
 ```
 
 Use `helper.signInAsDefaultUser()` for authenticated routes in server tests. See repo tests for patterns.
+
+## Internationalization (Web)
+
+All user‑facing text must be translatable.
+
+- Define messages with `defineMessages` in `messages.ts` files co‑located with components.
+- Message IDs are UPPERCASE with dot notation (e.g., `HOME.TITLE`).
+- Use `useIntl` for dynamic/ARIA text and `FormattedMessage` for inline strings.
+- Default locale and message catalog live under `web/src/translations`.
 
 ## Quality & CI
 
