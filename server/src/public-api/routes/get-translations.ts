@@ -6,13 +6,12 @@ import { getDatabase } from '../../context/database';
 import { ErrorResponseSchema } from '../../schemas/error';
 import { NotFound, Unauthorized } from '../../exceptions';
 import { GetTranslationsResponseSchema } from '../../strings/schemas';
+import { ProjectIdShape } from '../../projects/schemas';
 
 const OPENAPI_TAG = 'Translations';
 
 const GetTranslationsParamsSchema = z.object({
-  projectId: z.uuid().describe('ID of the project').meta({
-    example: 'proj_1234567890abcdef',
-  }),
+  projectId: ProjectIdShape,
   locale: z.string().min(1).describe('Locale code (e.g., en, es, fr)').meta({
     example: 'en',
   }),

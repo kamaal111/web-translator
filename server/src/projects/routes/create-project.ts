@@ -1,5 +1,3 @@
-import assert from 'node:assert';
-
 import { describeRoute, resolver, validator } from 'hono-openapi';
 
 import type { HonoContext } from '../../context';
@@ -7,7 +5,6 @@ import { getDatabase } from '../../context/database';
 import { OPENAPI_TAG } from '../constants';
 import { CreateProjectPayloadSchema, ProjectResponseSchema, type CreateProjectPayload } from '../schemas';
 import { dbProjectToResponse, requestCreateProjectPayloadToDbPayload } from '../mappers';
-import { getSession } from '../../context/session';
 import { ErrorResponseSchema } from '../../schemas/error';
 
 type CreateProjectInput = { out: { json: CreateProjectPayload } };
@@ -46,12 +43,8 @@ const createProjectRoute = [
   }),
   validator('json', CreateProjectPayloadSchema),
   async (c: HonoContext<CreateProjectInput>) => {
-    const session = getSession(c);
-    assert(session != null, 'Middleware should have made sure that session is present');
-
-    const db = getDatabase(c);
     const payload = requestCreateProjectPayloadToDbPayload(c.req.valid('json'));
-    const project = await db.projects.createProject(payload);
+    const project = await getDatabase(c).projects.createProject(payload);
 
     return c.json(dbProjectToResponse(project), 201);
   },

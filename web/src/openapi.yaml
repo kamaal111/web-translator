@@ -200,9 +200,9 @@ paths:
                   - message
                 description: Error response containing error message and optional error code
                 title: Error Response
-  '/app-api/v1/p/{id}':
+  '/app-api/v1/p/{projectId}':
     get:
-      operationId: getApp-apiV1P:id
+      operationId: getApp-apiV1P:projectId
       description: Get a single project by ID
       tags:
         - Project
@@ -544,8 +544,8 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/ListStringsResponse'
-        '401':
-          description: Not authenticated
+        '404':
+          description: Project not found
           content:
             application/json:
               schema:
@@ -562,11 +562,15 @@ paths:
                 description: Error response containing error message and optional error code
                 title: Error Response
       parameters:
-        - schema:
-            type: string
-          in: path
+        - in: path
           name: projectId
+          schema:
+            type: string
+            format: uuid
+            pattern: '^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$'
+            example: proj_1234567890abcdef
           required: true
+          description: ID of the project
   '/app-api/v1/s/{projectId}/translations':
     put:
       operationId: putApp-apiV1S:projectIdTranslations
@@ -731,8 +735,9 @@ components:
           example: pk_1234567890abcdef
         id:
           type: string
-          minLength: 1
-          description: Unique identifier for the project
+          format: uuid
+          pattern: '^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$'
+          description: ID of the project
           example: proj_1234567890abcdef
       required:
         - name
@@ -1113,12 +1118,14 @@ components:
   parameters:
     ReadProjectParams:
       in: path
-      name: id
+      name: projectId
       schema:
         type: string
         format: uuid
         pattern: '^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$'
+        example: proj_1234567890abcdef
       required: true
+      description: ID of the project
     UpsertTranslationsParams:
       in: path
       name: projectId

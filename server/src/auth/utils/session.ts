@@ -138,3 +138,7 @@ export function getSessionLocale(c: HonoContext): SupportedLocale {
 
   return unsafeCast<SupportedLocale>(requestLanguage);
 }
+
+export function verifySessionIsSet(c: HonoContext) {
+  return getUserSession(c);
+}

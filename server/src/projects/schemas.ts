@@ -9,12 +9,11 @@ export type ListProjectsResponse = z.infer<typeof ListProjectsResponseSchema>;
 
 export type ReadProjectParams = z.infer<typeof ReadProjectParamsSchema>;
 
-export const ProjectResponseSchema = BaseCreateProjectSchema.extend({
-  id: z.string().nonempty().meta({
-    description: 'Unique identifier for the project',
-    example: 'proj_1234567890abcdef',
-  }),
-})
+export const ProjectIdShape = z.uuid().describe('ID of the project').meta({
+  example: 'proj_1234567890abcdef',
+});
+
+export const ProjectResponseSchema = BaseCreateProjectSchema.extend({ id: ProjectIdShape })
   .describe('Project response')
   .meta({
     ref: 'ProjectResponse',
@@ -77,8 +76,11 @@ export const ListProjectsResponseSchema = z
     ],
   });
 
-export const ReadProjectParamsSchema = z.object({ id: z.uuid() }).describe('Read project path parameters').meta({
-  ref: 'ReadProjectParams',
-  title: 'Read Project Parameters',
-  description: 'Path parameters for reading a project',
-});
+export const ReadProjectParamsSchema = z
+  .object({ projectId: ProjectIdShape })
+  .describe('Read project path parameters')
+  .meta({
+    ref: 'ReadProjectParams',
+    title: 'Read Project Parameters',
+    description: 'Path parameters for reading a project',
+  });

@@ -13,12 +13,12 @@ function authRouter() {
   const router = new Hono<HonoEnvironment>();
 
   return router
-    .get(...jwksRoute)
-    .post(...signUpRoute)
-    .post(...signInRoute)
-    .post(...signOutRoute)
-    .get(...tokenRoute)
-    .get(...sessionRoute)
+    .get(...jwksRoute())
+    .post(...signUpRoute())
+    .post(...signInRoute())
+    .post(...signOutRoute())
+    .get(...tokenRoute())
+    .get(...sessionRoute())
     .on(['POST', 'GET'], '**', c => getAuth(c).handler(c.req.raw));
 }
 

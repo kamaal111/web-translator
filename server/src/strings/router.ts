@@ -11,7 +11,7 @@ function stringsRouter() {
 
   return router
     .use(requireLoggedInSession())
-    .get(...listStringsRoute)
+    .get(...listStringsRoute())
     .put(...upsertTranslationsRoute)
     .post(...publishSnapshotRoute);
 }

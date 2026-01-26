@@ -1,7 +1,5 @@
-import type { IString } from '../../models/string';
+import type Project from '../../../projects/models/project';
 import type StringModel from '../../models/string';
-
-export type { StringsRepository };
 
 export type TranslationEntry = {
   key: string;
@@ -9,17 +7,8 @@ export type TranslationEntry = {
   translations: Record<string, string>;
 };
 
-interface StringsRepository {
-  createString: (payload: Omit<IString, 'id'>) => Promise<StringModel>;
+export interface StringsRepository {
+  list: (project: Project) => Promise<StringModel[]>;
 
-  list: (projectId: string) => Promise<StringModel[]>;
-
-  read: (id: string) => Promise<StringModel | null>;
-
-  getTranslationsForLocale: (
-    projectId: string,
-    locale: string,
-  ) => Promise<Array<{ key: string; value: string | null; context: string | null }>>;
-
-  upsertTranslations: (projectId: string, entries: TranslationEntry[]) => Promise<{ updatedCount: number }>;
+  upsertTranslations: (project: Project, entries: TranslationEntry[]) => Promise<{ updatedCount: number }>;
 }

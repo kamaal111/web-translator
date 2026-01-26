@@ -3,18 +3,17 @@ import assert from 'node:assert';
 import { describeRoute, resolver, validator } from 'hono-openapi';
 
 import type { HonoContext } from '../../context';
-import { getDatabase } from '../../context/database';
 import { OPENAPI_TAG } from '../constants';
 import { ProjectResponseSchema, ReadProjectParamsSchema, type ReadProjectParams } from '../schemas';
 import { dbProjectToResponse } from '../mappers';
 import { getSession } from '../../context/session';
 import { ErrorResponseSchema } from '../../schemas/error';
-import { ProjectNotFound } from '../exceptions';
+import { getValidatedProject } from '../utils';
 
 type ReadProjectInput = { out: { param: ReadProjectParams } };
 
 const readProjectRoute = [
-  '/:id',
+  '/:projectId',
   describeRoute({
     description: 'Get a single project by ID',
     tags: [OPENAPI_TAG],
@@ -44,13 +43,8 @@ const readProjectRoute = [
     const session = getSession(c);
     assert(session != null, 'Middleware should have made sure that session is present');
 
-    const db = getDatabase(c);
-    const { id } = c.req.valid('param');
-    const project = await db.projects.read(id);
-
-    if (project == null) {
-      throw new ProjectNotFound(c);
-    }
+    const { projectId } = c.req.valid('param');
+    const project = await getValidatedProject(c, projectId);
 
     return c.json(dbProjectToResponse(project), 200);
   },

@@ -17,8 +17,8 @@ class ProjectsClient {
     return this.projectsApi.postAppApiV1P({ createProjectPayload: payload });
   };
 
-  read = (id: string) => {
-    return this.projectsApi.getAppApiV1PId({ id });
+  read = (projectId: string) => {
+    return this.projectsApi.getAppApiV1PProjectId({ projectId });
   };
 }
 

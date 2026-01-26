@@ -12,40 +12,42 @@ import { getSession } from '../../context/session';
 
 type SessionInput = { out: { header: AuthenticationHeaders } };
 
-const sessionRoute = [
-  '/session',
-  describeRoute({
-    tags: [OPENAPI_TAG],
-    summary: 'Get session',
-    description:
-      'Get the current user session information. Can authenticate via either Authorization header (JWT bearer token) or session cookie.',
-    responses: {
-      200: {
-        description: 'Session retrieved successfully',
-        content: {
-          'application/json': {
-            schema: resolver(SessionResponseSchema),
+function sessionRoute() {
+  return [
+    '/session',
+    describeRoute({
+      tags: [OPENAPI_TAG],
+      summary: 'Get session',
+      description:
+        'Get the current user session information. Can authenticate via either Authorization header (JWT bearer token) or session cookie.',
+      responses: {
+        200: {
+          description: 'Session retrieved successfully',
+          content: {
+            'application/json': {
+              schema: resolver(SessionResponseSchema),
+            },
+          },
+        },
+        404: {
+          description: 'Session not found',
+          content: {
+            'application/json': {
+              schema: resolver(ErrorResponseSchema),
+            },
           },
         },
       },
-      404: {
-        description: 'Session not found',
-        content: {
-          'application/json': {
-            schema: resolver(ErrorResponseSchema),
-          },
-        },
-      },
-    },
-  }),
-  validator('header', AuthenticationHeadersSchema.partial()),
-  requireLoggedInSession(),
-  async (c: HonoContext<SessionInput>) => {
-    const session = getSession(c);
-    assert(session != null, 'Middleware should have made sure that session is present');
+    }),
+    validator('header', AuthenticationHeadersSchema.partial()),
+    requireLoggedInSession(),
+    async (c: HonoContext<SessionInput>) => {
+      const session = getSession(c);
+      assert(session != null, 'Middleware should have made sure that session is present');
 
-    return c.json(session, { status: 200 });
-  },
-] as const;
+      return c.json(session, { status: 200 });
+    },
+  ] as const;
+}
 
 export default sessionRoute;

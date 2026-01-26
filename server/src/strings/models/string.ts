@@ -7,7 +7,7 @@ export type IString = {
   projectId: string;
 };
 
-type StringArguments = ReplaceValue<IString, 'id', string | null | undefined>;
+type StringArguments = ReplaceValue<IString, 'id', IString['id'] | null | undefined>;
 
 class StringModel implements IString {
   id: string;

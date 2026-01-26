@@ -14,6 +14,7 @@ import {
 } from '../schemas';
 import { getSession } from '../../context/session';
 import { ErrorResponseSchema } from '../../schemas/error';
+import { getValidatedProject } from '../../projects';
 
 type UpsertTranslationsInput = {
   out: {
@@ -59,8 +60,9 @@ const upsertTranslationsRoute = [
     const { projectId } = c.req.valid('param');
     const payload = c.req.valid('json');
 
+    const project = await getValidatedProject(c, projectId);
     const result = await db.strings.upsertTranslations(
-      projectId,
+      project,
       payload.translations.map(t => ({
         key: t.key,
         context: t.context,
