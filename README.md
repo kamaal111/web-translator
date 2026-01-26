@@ -203,4 +203,4 @@ This runs format, lint, typecheck, tests, and builds for both server and web, al
 
 ## License
 
-Proprietary — see repository owner for details.
+MIT
