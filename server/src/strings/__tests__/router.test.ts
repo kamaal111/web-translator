@@ -278,5 +278,216 @@ describe('Strings API', () => {
         expect(translations.GREETING).toBe(expected);
       }
     });
+
+    test('should only update specified keys without affecting other strings (inArray test)', async () => {
+      await helper.signInAsDefaultUser();
+
+      const projectResponse = await helper.createProject({
+        name: 'InArray Test Project',
+        default_locale: 'en',
+        enabled_locales: ['en'],
+        public_read_key: 'pk_inarray_test',
+      });
+      const project = (await projectResponse.json()) as { id: string; public_read_key: string };
+
+      await helper.upsertTranslations(project.id, [
+        { key: 'KEY1', translations: { en: 'Original Value 1' } },
+        { key: 'KEY2', translations: { en: 'Original Value 2' } },
+        { key: 'KEY3', translations: { en: 'Original Value 3' } },
+      ]);
+
+      const headers = await helper.getDefaultUserHeaders();
+      const beforeResponse = await helper.app.request(`/app-api/v1/s/${project.id}`, {
+        method: 'GET',
+        headers,
+      });
+      const beforeStrings = (await beforeResponse.json()) as Array<{ key: string }>;
+      expect(beforeStrings).toHaveLength(3);
+
+      await helper.upsertTranslations(project.id, [{ key: 'KEY2', translations: { en: 'Updated Value 2' } }]);
+
+      const afterResponse = await helper.app.request(`/app-api/v1/s/${project.id}`, {
+        method: 'GET',
+        headers,
+      });
+      const afterStrings = (await afterResponse.json()) as Array<{ key: string }>;
+      expect(afterStrings).toHaveLength(3);
+
+      await helper.publishSnapshot(project.id, 'en');
+      const translationsResponse = await helper.app.request(`/api/v1/projects/${project.id}/translations/en`, {
+        headers: { 'x-public-key': project.public_read_key },
+      });
+      const translations = (await translationsResponse.json()) as Record<string, string>;
+
+      expect(translations.KEY1).toBe('Original Value 1');
+      expect(translations.KEY2).toBe('Updated Value 2');
+      expect(translations.KEY3).toBe('Original Value 3');
+
+      const upsertResponse = await helper.upsertTranslations(project.id, [
+        { key: 'KEY2', translations: { en: 'Updated Again' } },
+      ]);
+      const result = (await upsertResponse.json()) as { updated_count: number };
+      expect(result.updated_count).toBe(1);
+    });
+
+    test('should handle mix of new and existing keys without duplicates', async () => {
+      await helper.signInAsDefaultUser();
+
+      const projectResponse = await helper.createProject({
+        name: 'Mixed Keys Test Project',
+        default_locale: 'en',
+        enabled_locales: ['en', 'es'],
+        public_read_key: 'pk_mixed_keys',
+      });
+      const project = (await projectResponse.json()) as { id: string; public_read_key: string };
+
+      await helper.upsertTranslations(project.id, [
+        { key: 'EXISTING.KEY1', translations: { en: 'Existing 1' } },
+        { key: 'EXISTING.KEY2', translations: { en: 'Existing 2' } },
+      ]);
+
+      const headers = await helper.getDefaultUserHeaders();
+      const beforeResponse = await helper.app.request(`/app-api/v1/s/${project.id}`, {
+        method: 'GET',
+        headers,
+      });
+      const beforeStrings = (await beforeResponse.json()) as Array<{ key: string }>;
+      expect(beforeStrings).toHaveLength(2);
+
+      await helper.upsertTranslations(project.id, [
+        { key: 'EXISTING.KEY1', translations: { en: 'Updated 1', es: 'Actualizado 1' } },
+        { key: 'NEW.KEY', translations: { en: 'New', es: 'Nuevo' } },
+      ]);
+
+      const afterResponse = await helper.app.request(`/app-api/v1/s/${project.id}`, {
+        method: 'GET',
+        headers,
+      });
+      const afterStrings = (await afterResponse.json()) as Array<{ key: string }>;
+      expect(afterStrings).toHaveLength(3);
+
+      await helper.publishSnapshot(project.id, 'en');
+      await helper.publishSnapshot(project.id, 'es');
+
+      const enResponse = await helper.app.request(`/api/v1/projects/${project.id}/translations/en`, {
+        headers: { 'x-public-key': project.public_read_key },
+      });
+      const enTranslations = (await enResponse.json()) as Record<string, string>;
+      expect(enTranslations['EXISTING.KEY1']).toBe('Updated 1');
+      expect(enTranslations['EXISTING.KEY2']).toBe('Existing 2');
+      expect(enTranslations['NEW.KEY']).toBe('New');
+
+      const esResponse = await helper.app.request(`/api/v1/projects/${project.id}/translations/es`, {
+        headers: { 'x-public-key': project.public_read_key },
+      });
+      const esTranslations = (await esResponse.json()) as Record<string, string>;
+      expect(esTranslations['EXISTING.KEY1']).toBe('Actualizado 1');
+      expect(esTranslations['NEW.KEY']).toBe('Nuevo');
+      expect(esTranslations['EXISTING.KEY2']).toBeUndefined();
+    });
+
+    test('should correctly count translations in response', async () => {
+      await helper.signInAsDefaultUser();
+
+      const projectResponse = await helper.createProject({
+        name: 'Count Test Project',
+        default_locale: 'en',
+        enabled_locales: ['en', 'es', 'fr'],
+        public_read_key: 'pk_count_test',
+      });
+      const project = (await projectResponse.json()) as { id: string };
+
+      const upsertResponse = await helper.upsertTranslations(project.id, [
+        { key: 'KEY1', translations: { en: 'E1', es: 'S1', fr: 'F1' } },
+        { key: 'KEY2', translations: { en: 'E2' } },
+        { key: 'KEY3', translations: { es: 'S3', fr: 'F3' } },
+      ]);
+
+      expect(upsertResponse.status).toBe(200);
+      const result = (await upsertResponse.json()) as { updated_count: number };
+      expect(result.updated_count).toBe(6);
+    });
+
+    test('should reject empty translations array', async () => {
+      await helper.signInAsDefaultUser();
+
+      const projectResponse = await helper.createProject({
+        name: 'Empty Array Test Project',
+        default_locale: 'en',
+        enabled_locales: ['en'],
+        public_read_key: 'pk_empty_array',
+      });
+      const project = (await projectResponse.json()) as { id: string };
+
+      const upsertResponse = await helper.upsertTranslations(project.id, []);
+      expect(upsertResponse.status).toBe(400);
+    });
+
+    test('should efficiently batch update multiple string contexts', async () => {
+      await helper.signInAsDefaultUser();
+
+      const projectResponse = await helper.createProject({
+        name: 'Batch Update Test Project',
+        default_locale: 'en',
+        enabled_locales: ['en'],
+        public_read_key: 'pk_batch_update',
+      });
+      const project = (await projectResponse.json()) as { id: string; public_read_key: string };
+
+      await helper.upsertTranslations(project.id, [
+        { key: 'KEY1', context: 'Original Context 1', translations: { en: 'Value 1' } },
+        { key: 'KEY2', context: 'Original Context 2', translations: { en: 'Value 2' } },
+        { key: 'KEY3', context: 'Original Context 3', translations: { en: 'Value 3' } },
+        { key: 'KEY4', context: 'Original Context 4', translations: { en: 'Value 4' } },
+      ]);
+
+      await helper.upsertTranslations(project.id, [
+        { key: 'KEY1', context: 'Updated Context 1', translations: { en: 'Value 1' } },
+        { key: 'KEY2', context: 'Updated Context 2', translations: { en: 'Value 2' } },
+        { key: 'KEY3', context: 'Updated Context 3', translations: { en: 'Value 3' } },
+        { key: 'KEY4', context: 'Updated Context 4', translations: { en: 'Value 4' } },
+      ]);
+
+      const headers = await helper.getDefaultUserHeaders();
+      const response = await helper.app.request(`/app-api/v1/s/${project.id}`, {
+        method: 'GET',
+        headers,
+      });
+      const strings = (await response.json()) as Array<{ key: string; context: string | null }>;
+
+      expect(strings).toHaveLength(4);
+      expect(strings.find(s => s.key === 'KEY1')?.context).toBe('Updated Context 1');
+      expect(strings.find(s => s.key === 'KEY2')?.context).toBe('Updated Context 2');
+      expect(strings.find(s => s.key === 'KEY3')?.context).toBe('Updated Context 3');
+      expect(strings.find(s => s.key === 'KEY4')?.context).toBe('Updated Context 4');
+    });
+
+    test('should safely handle malicious input in context (SQL injection protection)', async () => {
+      await helper.signInAsDefaultUser();
+
+      const projectResponse = await helper.createProject({
+        name: 'SQL Injection Test Project',
+        default_locale: 'en',
+        enabled_locales: ['en'],
+        public_read_key: 'pk_sql_injection',
+      });
+      const project = (await projectResponse.json()) as { id: string };
+
+      const maliciousContext = "'; DROP TABLE strings; --";
+
+      await helper.upsertTranslations(project.id, [
+        { key: 'MALICIOUS.KEY', context: maliciousContext, translations: { en: 'Test Value' } },
+      ]);
+
+      const headers = await helper.getDefaultUserHeaders();
+      const response = await helper.app.request(`/app-api/v1/s/${project.id}`, {
+        method: 'GET',
+        headers,
+      });
+      const strings = (await response.json()) as Array<{ key: string; context: string | null }>;
+
+      expect(strings).toHaveLength(1);
+      expect(strings[0]?.context).toBe(maliciousContext);
+    });
   });
 });

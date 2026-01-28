@@ -1,6 +1,6 @@
 import assert from 'node:assert';
 
-import { eq, sql } from 'drizzle-orm';
+import { and, eq, sql, inArray } from 'drizzle-orm';
 
 import type { DrizzleDatabase } from '../../../db';
 import { strings, translations } from '../../../db/schema';
@@ -39,12 +39,10 @@ class StringsRepositoryImpl implements StringsRepository {
     const drizzle = getDrizzle(this.context);
     const keys = entries.map(e => e.key);
     const now = new Date();
-
     const existingStrings = await drizzle.query.strings.findMany({
-      where: () => sql`${strings.projectId} = ${project.id} AND ${strings.key} IN ${keys}`,
+      where: () => and(eq(strings.projectId, project.id), inArray(strings.key, keys)),
     });
     const existingKeyMap = new Map(existingStrings.map(s => [s.key, s.id]));
-
     const { stringsToInsert, stringsToUpdate, keyToIdMap } = categorizeEntries(
       entries,
       existingKeyMap,
@@ -73,12 +71,11 @@ function categorizeEntries(
   const stringsToInsert: (typeof strings.$inferInsert)[] = [];
   const stringsToUpdate: StringUpdate[] = [];
   const keyToIdMap = new Map<string, string>();
-
   for (const entry of entries) {
     const existingId = existingKeyMap.get(entry.key);
     if (existingId) {
       keyToIdMap.set(entry.key, existingId);
-      if (entry.context !== undefined) {
+      if (entry.context != null) {
         stringsToUpdate.push({ id: existingId, context: entry.context || null });
       }
     } else {
@@ -108,9 +105,20 @@ async function persistStrings(
     await drizzle.insert(strings).values(stringsToInsert);
   }
 
-  for (const update of stringsToUpdate) {
-    await drizzle.update(strings).set({ context: update.context, updatedAt: now }).where(eq(strings.id, update.id));
+  if (stringsToUpdate.length === 0) {
+    return;
   }
+
+  // Note: sql`` tagged templates use parameterized queries, preventing SQL injection
+  const ids = stringsToUpdate.map(u => u.id);
+  const contextCase = sql.join(
+    stringsToUpdate.map(u => sql`WHEN ${strings.id} = ${u.id} THEN ${u.context}`),
+    sql.raw(' '),
+  );
+  await drizzle
+    .update(strings)
+    .set({ context: sql`CASE ${contextCase} END`, updatedAt: now })
+    .where(inArray(strings.id, ids));
 }
 
 function buildTranslationInserts(

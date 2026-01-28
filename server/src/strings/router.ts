@@ -12,7 +12,7 @@ function stringsRouter() {
   return router
     .use(requireLoggedInSession())
     .get(...listStringsRoute())
-    .put(...upsertTranslationsRoute)
+    .put(...upsertTranslationsRoute())
     .post(...publishSnapshotRoute);
 }
 

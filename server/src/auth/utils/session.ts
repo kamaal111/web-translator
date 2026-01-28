@@ -127,7 +127,7 @@ async function verifyJwt(c: HonoContext): Promise<SessionResponse | null> {
 
 export function getSessionLocale(c: HonoContext): SupportedLocale {
   const headers = c.req.header();
-  const requestLanguage = headers['accept-language']?.split(',')[0]?.split(';')[0]?.split('-')[0];
+  const requestLanguage = headers['accept-language']?.split(',').at(0)?.split(';').at(0)?.split('-').at(0);
   if (requestLanguage == null) {
     return DEFAULT_LOCALE;
   }
