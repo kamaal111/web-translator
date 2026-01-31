@@ -4,11 +4,11 @@ import type { Hono } from 'hono';
 
 import { createApp } from '../..';
 import type { HonoEnvironment } from '..';
-import type { Logger } from '../types';
+import type { Logger, LogPayload } from '../types';
 
 describe('Context tests', () => {
-  let logCalls: Array<{ message: string; payload?: Record<string, string> }> = [];
-  const mockLoggerFn = mock((message: string, payload?: Record<string, string>) => {
+  let logCalls: Array<{ message: string; payload?: LogPayload }> = [];
+  const mockLoggerFn = mock((message: string, payload?: LogPayload) => {
     logCalls.push({ message, payload });
   });
   const mockLogger: Logger = {

@@ -1,5 +1,8 @@
 import { beforeAll, afterAll, describe, test, expect } from 'bun:test';
 import TestHelper from '../../__tests__/test-helper';
+import { ProjectResponseSchema } from '../../projects/schemas';
+import { GetTranslationsResponseSchema } from '../../strings/schemas';
+import { ErrorResponseSchema } from '../../schemas/error';
 
 const helper = new TestHelper();
 
@@ -41,16 +44,16 @@ describe('Public API - Get Translations', () => {
         enabled_locales: ['en'],
         public_read_key: 'pk_correct',
       });
-      const project = (await projectResponse.json()) as { id: string };
+      const project = ProjectResponseSchema.parse(await projectResponse.json());
 
       const response = await helper.app.request(`/api/v1/projects/${project.id}/translations/en`, {
         headers: {
           'x-public-key': 'pk_wrong',
         },
       });
-      expect(response.status).toBe(401);
-      const body = (await response.json()) as { message: string };
-      expect(body.message).toContain('Invalid public key');
+      expect(response.status).toBe(404);
+      const body = ErrorResponseSchema.parse(await response.json());
+      expect(body.message).toContain('Project not found');
     });
 
     test('should return 404 when no versions are published', async () => {
@@ -62,7 +65,7 @@ describe('Public API - Get Translations', () => {
         enabled_locales: ['en'],
         public_read_key: 'pk_empty_trans',
       });
-      const project = (await projectResponse.json()) as { id: string; public_read_key: string };
+      const project = ProjectResponseSchema.parse(await projectResponse.json());
 
       const response = await helper.app.request(`/api/v1/projects/${project.id}/translations/en`, {
         headers: {
@@ -71,8 +74,8 @@ describe('Public API - Get Translations', () => {
       });
       expect(response.status).toBe(404);
 
-      const body = (await response.json()) as { message: string };
-      expect(body.message).toContain('No published versions');
+      const body = ErrorResponseSchema.parse(await response.json());
+      expect(body.message).toContain('Project version not found');
     });
 
     test('should return empty object when snapshot has no translations', async () => {
@@ -84,10 +87,11 @@ describe('Public API - Get Translations', () => {
         enabled_locales: ['en'],
         public_read_key: 'pk_empty_snap',
       });
-      const project = (await projectResponse.json()) as { id: string; public_read_key: string };
+      const project = ProjectResponseSchema.parse(await projectResponse.json());
 
-      // Publish an empty snapshot (no translations yet)
-      await helper.publishSnapshot(project.id, 'en');
+      const { status } = await helper.publishSnapshot(project.id, 'en');
+
+      expect(status).toBe(201);
 
       const response = await helper.app.request(`/api/v1/projects/${project.id}/translations/en`, {
         headers: {
@@ -96,7 +100,7 @@ describe('Public API - Get Translations', () => {
       });
       expect(response.status).toBe(200);
 
-      const translations = await response.json();
+      const translations = GetTranslationsResponseSchema.parse(await response.json());
       expect(translations).toEqual({});
     });
 
@@ -109,7 +113,7 @@ describe('Public API - Get Translations', () => {
         enabled_locales: ['en', 'es', 'fr'],
         public_read_key: 'pk_trans_test',
       });
-      const project = (await projectResponse.json()) as { id: string; public_read_key: string };
+      const project = ProjectResponseSchema.parse(await projectResponse.json());
 
       // Create strings with translations in batch
       await helper.upsertTranslations(project.id, [
@@ -137,7 +141,7 @@ describe('Public API - Get Translations', () => {
       });
       expect(enResponse.status).toBe(200);
 
-      const enTranslations = (await enResponse.json()) as Record<string, string>;
+      const enTranslations = GetTranslationsResponseSchema.parse(await enResponse.json());
       expect(enTranslations).toEqual({
         'HOME.TITLE': 'Welcome Home',
         'HOME.SUBTITLE': 'Your dashboard',
@@ -151,7 +155,7 @@ describe('Public API - Get Translations', () => {
       });
       expect(esResponse.status).toBe(200);
 
-      const esTranslations = (await esResponse.json()) as Record<string, string>;
+      const esTranslations = GetTranslationsResponseSchema.parse(await esResponse.json());
       expect(esTranslations).toEqual({
         'HOME.TITLE': 'Bienvenido a Casa',
       });
@@ -166,7 +170,7 @@ describe('Public API - Get Translations', () => {
         enabled_locales: ['en', 'fr'],
         public_read_key: 'pk_partial',
       });
-      const project = (await projectResponse.json()) as { id: string; public_read_key: string };
+      const project = ProjectResponseSchema.parse(await projectResponse.json());
 
       // Create 3 strings but only translate 2 of them
       await helper.upsertTranslations(project.id, [
@@ -183,7 +187,7 @@ describe('Public API - Get Translations', () => {
           'x-public-key': project.public_read_key,
         },
       });
-      const translations = (await response.json()) as Record<string, string>;
+      const translations = GetTranslationsResponseSchema.parse(await response.json());
 
       expect(Object.keys(translations)).toHaveLength(2);
       expect(translations.KEY1).toBe('Value 1');
@@ -202,7 +206,7 @@ describe('Public API - Get Translations', () => {
           enabled_locales: ['en'],
           public_read_key: 'pk_large_trans',
         });
-        const project = (await projectResponse.json()) as { id: string; public_read_key: string };
+        const project = ProjectResponseSchema.parse(await projectResponse.json());
         const translationsCount = 10_000;
 
         // Create all translations in a single batch request
@@ -227,7 +231,7 @@ describe('Public API - Get Translations', () => {
 
         expect(response.status).toBe(200);
 
-        const translations = (await response.json()) as Record<string, string>;
+        const translations = GetTranslationsResponseSchema.parse(await response.json());
         expect(Object.keys(translations)).toHaveLength(translationsCount);
 
         // Should complete in reasonable time (under 50ms with JSONB)
@@ -250,7 +254,7 @@ describe('Public API - Get Translations', () => {
         enabled_locales: ['en'],
         public_read_key: 'pk_ver_404',
       });
-      const project = (await projectResponse.json()) as { id: string; public_read_key: string };
+      const project = ProjectResponseSchema.parse(await projectResponse.json());
 
       const response = await helper.app.request(`/api/v1/projects/${project.id}/translations/en?v=999`, {
         headers: {
@@ -259,8 +263,8 @@ describe('Public API - Get Translations', () => {
       });
       expect(response.status).toBe(404);
 
-      const body = (await response.json()) as { message: string };
-      expect(body.message).toContain('Version 999 not found');
+      const body = ErrorResponseSchema.parse(await response.json());
+      expect(body.message).toContain('Project version not found');
     });
 
     test('should return 400 for invalid version number', async () => {
@@ -272,7 +276,7 @@ describe('Public API - Get Translations', () => {
         enabled_locales: ['en'],
         public_read_key: 'pk_invalid_ver',
       });
-      const project = (await projectResponse.json()) as { id: string; public_read_key: string };
+      const project = ProjectResponseSchema.parse(await projectResponse.json());
 
       // Test non-numeric version
       const response = await helper.app.request(`/api/v1/projects/${project.id}/translations/en?v=abc`, {
@@ -301,33 +305,22 @@ describe('Public API - Get Translations', () => {
 
     test('should publish a snapshot and retrieve it by version', async () => {
       await helper.signInAsDefaultUser();
-
       const projectResponse = await helper.createProject({
         name: 'Version Test Project',
         default_locale: 'en',
         enabled_locales: ['en'],
         public_read_key: 'pk_version_test',
       });
-      const project = (await projectResponse.json()) as { id: string; public_read_key: string };
-
-      // Create initial translations
+      const project = ProjectResponseSchema.parse(await projectResponse.json());
       await helper.upsertTranslations(project.id, [
         { key: 'GREETING', translations: { en: 'Hello v1' } },
         { key: 'FAREWELL', translations: { en: 'Goodbye v1' } },
       ]);
 
-      // Publish version 1
       const publishResponse = await helper.publishSnapshot(project.id, 'en');
       expect(publishResponse.status).toBe(201);
-
-      const publishBody = (await publishResponse.json()) as {
-        version: number;
-        translation_count: number;
-        created_at: string;
-      };
-      expect(publishBody.version).toBe(1);
-      expect(publishBody.translation_count).toBe(2);
-      expect(publishBody.created_at).toBeDefined();
+      expect(publishResponse.body.version).toBe(1);
+      expect(publishResponse.body.translation_count).toBe(2);
 
       // Retrieve version 1
       const v1Response = await helper.app.request(`/api/v1/projects/${project.id}/translations/en?v=1`, {
@@ -337,7 +330,7 @@ describe('Public API - Get Translations', () => {
       });
       expect(v1Response.status).toBe(200);
 
-      const v1Translations = (await v1Response.json()) as Record<string, string>;
+      const v1Translations = GetTranslationsResponseSchema.parse(await v1Response.json());
       expect(v1Translations).toEqual({
         GREETING: 'Hello v1',
         FAREWELL: 'Goodbye v1',
@@ -353,7 +346,7 @@ describe('Public API - Get Translations', () => {
         enabled_locales: ['en'],
         public_read_key: 'pk_immutable',
       });
-      const project = (await projectResponse.json()) as { id: string; public_read_key: string };
+      const project = ProjectResponseSchema.parse(await projectResponse.json());
 
       // Create initial translations
       await helper.upsertTranslations(project.id, [{ key: 'MESSAGE', translations: { en: 'Original' } }]);
@@ -371,7 +364,7 @@ describe('Public API - Get Translations', () => {
           'x-public-key': project.public_read_key,
         },
       });
-      const v1Translations = (await v1Response.json()) as Record<string, string>;
+      const v1Translations = GetTranslationsResponseSchema.parse(await v1Response.json());
       expect(v1Translations.MESSAGE).toBe('Original');
 
       // Latest (no version param) should return version 2 with updated value
@@ -380,7 +373,7 @@ describe('Public API - Get Translations', () => {
           'x-public-key': project.public_read_key,
         },
       });
-      const latestTranslations = (await latestResponse.json()) as Record<string, string>;
+      const latestTranslations = GetTranslationsResponseSchema.parse(await latestResponse.json());
       expect(latestTranslations.MESSAGE).toBe('Updated');
     });
 
@@ -393,25 +386,22 @@ describe('Public API - Get Translations', () => {
         enabled_locales: ['en'],
         public_read_key: 'pk_multi_ver',
       });
-      const project = (await projectResponse.json()) as { id: string; public_read_key: string };
+      const project = ProjectResponseSchema.parse(await projectResponse.json());
 
       // Create and publish version 1
       await helper.upsertTranslations(project.id, [{ key: 'KEY', translations: { en: 'v1' } }]);
       const pub1 = await helper.publishSnapshot(project.id, 'en');
-      const pub1Body = (await pub1.json()) as { version: number };
-      expect(pub1Body.version).toBe(1);
+      expect(pub1.body.version).toBe(1);
 
       // Create and publish version 2
       await helper.upsertTranslations(project.id, [{ key: 'KEY', translations: { en: 'v2' } }]);
       const pub2 = await helper.publishSnapshot(project.id, 'en');
-      const pub2Body = (await pub2.json()) as { version: number };
-      expect(pub2Body.version).toBe(2);
+      expect(pub2.body.version).toBe(2);
 
       // Create and publish version 3
       await helper.upsertTranslations(project.id, [{ key: 'KEY', translations: { en: 'v3' } }]);
       const pub3 = await helper.publishSnapshot(project.id, 'en');
-      const pub3Body = (await pub3.json()) as { version: number };
-      expect(pub3Body.version).toBe(3);
+      expect(pub3.body.version).toBe(3);
 
       // Verify each version returns correct data
       for (let v = 1; v <= 3; v++) {
@@ -420,7 +410,7 @@ describe('Public API - Get Translations', () => {
             'x-public-key': project.public_read_key,
           },
         });
-        const translations = (await response.json()) as Record<string, string>;
+        const translations = GetTranslationsResponseSchema.parse(await response.json());
         expect(translations.KEY).toBe(`v${v}`);
       }
     });
@@ -434,39 +424,39 @@ describe('Public API - Get Translations', () => {
         enabled_locales: ['en', 'es'],
         public_read_key: 'pk_locale_ver',
       });
-      const project = (await projectResponse.json()) as { id: string; public_read_key: string };
+      const project = ProjectResponseSchema.parse(await projectResponse.json());
 
       // Create English translations and publish
       await helper.upsertTranslations(project.id, [{ key: 'HELLO', translations: { en: 'Hello EN v1' } }]);
       const enPub = await helper.publishSnapshot(project.id, 'en');
-      expect(((await enPub.json()) as { version: number }).version).toBe(1);
+      expect(enPub.body.version).toBe(1);
 
       // Create Spanish translations and publish
       await helper.upsertTranslations(project.id, [{ key: 'HELLO', translations: { es: 'Hola ES v1' } }]);
       const esPub = await helper.publishSnapshot(project.id, 'es');
-      expect(((await esPub.json()) as { version: number }).version).toBe(1);
+      expect(esPub.body.version).toBe(1);
 
       // Publish another English version
       await helper.upsertTranslations(project.id, [{ key: 'HELLO', translations: { en: 'Hello EN v2' } }]);
       const enPub2 = await helper.publishSnapshot(project.id, 'en');
-      expect(((await enPub2.json()) as { version: number }).version).toBe(2);
+      expect(enPub2.body.version).toBe(2);
 
       // Verify English has 2 versions
       const enV1 = await helper.app.request(`/api/v1/projects/${project.id}/translations/en?v=1`, {
         headers: { 'x-public-key': project.public_read_key },
       });
-      expect(((await enV1.json()) as Record<string, string>).HELLO).toBe('Hello EN v1');
+      expect(GetTranslationsResponseSchema.parse(await enV1.json()).HELLO).toBe('Hello EN v1');
 
       const enV2 = await helper.app.request(`/api/v1/projects/${project.id}/translations/en?v=2`, {
         headers: { 'x-public-key': project.public_read_key },
       });
-      expect(((await enV2.json()) as Record<string, string>).HELLO).toBe('Hello EN v2');
+      expect(GetTranslationsResponseSchema.parse(await enV2.json()).HELLO).toBe('Hello EN v2');
 
       // Spanish should only have version 1
       const esV1 = await helper.app.request(`/api/v1/projects/${project.id}/translations/es?v=1`, {
         headers: { 'x-public-key': project.public_read_key },
       });
-      expect(((await esV1.json()) as Record<string, string>).HELLO).toBe('Hola ES v1');
+      expect(GetTranslationsResponseSchema.parse(await esV1.json()).HELLO).toBe('Hola ES v1');
 
       // Spanish version 2 should not exist
       const esV2 = await helper.app.request(`/api/v1/projects/${project.id}/translations/es?v=2`, {
@@ -486,7 +476,7 @@ describe('Public API - Get Translations', () => {
           enabled_locales: ['en'],
           public_read_key: 'pk_large_ver',
         });
-        const project = (await projectResponse.json()) as { id: string; public_read_key: string };
+        const project = ProjectResponseSchema.parse(await projectResponse.json());
         const translationsCount = 10_000;
 
         // Create all translations in a single batch request
@@ -500,9 +490,8 @@ describe('Public API - Get Translations', () => {
         // Publish snapshot
         const publishResponse = await helper.publishSnapshot(project.id, 'en');
         expect(publishResponse.status).toBe(201);
-        const publishBody = (await publishResponse.json()) as { version: number; translation_count: number };
-        expect(publishBody.version).toBe(1);
-        expect(publishBody.translation_count).toBe(translationsCount);
+        expect(publishResponse.body.version).toBe(1);
+        expect(publishResponse.body.translation_count).toBe(translationsCount);
 
         // Measure versioned fetch performance (should be faster than live - single indexed JSONB read)
         const startTime = performance.now();
@@ -515,7 +504,7 @@ describe('Public API - Get Translations', () => {
 
         expect(response.status).toBe(200);
 
-        const translations = (await response.json()) as Record<string, string>;
+        const translations = GetTranslationsResponseSchema.parse(await response.json());
         expect(Object.keys(translations)).toHaveLength(translationsCount);
 
         // Versioned fetch should be fast (under 50ms - single indexed JSONB read)

@@ -6,7 +6,7 @@ import { createDrizzleDatabase, DrizzleClient, type Database, type DrizzleDataba
 import { type Auth, type SessionResponse, createAuth } from '../auth';
 import env from '../env';
 import { getLogger } from './logging';
-import type { Logger } from './types';
+import type { Logger, LogPayload } from './types';
 import packageJson from '../../package.json';
 import { getSession } from './session';
 
@@ -78,19 +78,19 @@ function makeDefaultLogger(c: HonoContext): Logger {
   };
 
   return {
-    info: (message: string, payload?: Record<string, string>) => {
+    info: (message: string, payload?: LogPayload) => {
       defaultPinoLogger.info({ ...basePayload(c), ...payload }, message);
     },
-    error: (message: string, payload?: Record<string, string>) => {
+    error: (message: string, payload?: LogPayload) => {
       defaultPinoLogger.error({ ...basePayload(c), ...payload }, message);
     },
-    warn: (message: string, payload?: Record<string, string>) => {
+    warn: (message: string, payload?: LogPayload) => {
       defaultPinoLogger.warn({ ...basePayload(c), ...payload }, message);
     },
-    debug: (message: string, payload?: Record<string, string>) => {
+    debug: (message: string, payload?: LogPayload) => {
       defaultPinoLogger.debug({ ...basePayload(c), ...payload }, message);
     },
-    silent: (message: string, payload?: Record<string, string>) => {
+    silent: (message: string, payload?: LogPayload) => {
       defaultPinoLogger.silent({ ...basePayload(c), ...payload }, message);
     },
   };

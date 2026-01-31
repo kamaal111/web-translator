@@ -81,9 +81,8 @@ paths:
         - in: path
           name: locale
           schema:
-            type: string
-            minLength: 1
             example: en
+            type: string
           required: true
           description: 'Locale code (e.g., en, es, fr)'
         - in: query
@@ -1097,12 +1096,6 @@ components:
           maximum: 9007199254740991
           description: The version number of the newly created snapshot
           example: 1
-        created_at:
-          type: string
-          format: date-time
-          pattern: "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d(?::[0-5]\\d(?:\\.\\d+)?)?(?:Z))$"
-          description: When this version was created
-          example: 2024-01-01T12:00:00.000Z
         translation_count:
           type: integer
           minimum: 0
@@ -1111,7 +1104,6 @@ components:
           example: 42
       required:
         - version
-        - created_at
         - translation_count
       description: Response after creating a new translation snapshot
       title: Publish Snapshot Response

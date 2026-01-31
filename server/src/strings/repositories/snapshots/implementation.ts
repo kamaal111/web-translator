@@ -4,10 +4,13 @@ import { and, desc, eq, sql } from 'drizzle-orm';
 
 import { strings, translations, translationSnapshots } from '../../../db/schema';
 import type { HonoContext } from '../../../context';
-import { getSession } from '../../../context/session';
 import { getDrizzle } from '../../../context/database';
-import type { SessionResponse } from '../../../auth';
-import type { SnapshotsRepository, TranslationSnapshot } from './types';
+import type { SnapshotsRepository } from './types';
+import { verifySessionIsSet } from '../../../auth/utils/session';
+import type Project from '../../../projects/models/project';
+import type TranslationSnapshot from './models';
+import { dbTranslationSnapshotToModel } from './mappers';
+import { newTranslationSnapshot, type ITranslationSnapshot } from './models';
 
 class SnapshotsRepositoryImpl implements SnapshotsRepository {
   private readonly context: HonoContext;
@@ -17,118 +20,63 @@ class SnapshotsRepositoryImpl implements SnapshotsRepository {
   }
 
   getSnapshot = async (projectId: string, locale: string, version: number): Promise<TranslationSnapshot | null> => {
-    // Public endpoint - no auth required
-    const result = await getDrizzle(this.context)
-      .select()
-      .from(translationSnapshots)
-      .where(
+    const snapshot = await getDrizzle(this.context).query.translationSnapshots.findFirst({
+      where: () =>
         and(
           eq(translationSnapshots.projectId, projectId),
           eq(translationSnapshots.locale, locale),
           eq(translationSnapshots.version, version),
         ),
-      )
-      .limit(1);
-
-    const row = result[0];
-    if (!row) {
+    });
+    if (!snapshot) {
       return null;
     }
 
-    return {
-      id: row.id,
-      projectId: row.projectId,
-      locale: row.locale,
-      version: row.version,
-      data: row.data,
-      createdAt: row.createdAt,
-    };
+    return dbTranslationSnapshotToModel(snapshot);
   };
 
   getLatestSnapshot = async (projectId: string, locale: string): Promise<TranslationSnapshot | null> => {
-    // Public endpoint - no auth required
-    // Uses the (project_id, locale) index with ORDER BY version DESC LIMIT 1
-    const result = await getDrizzle(this.context)
-      .select()
-      .from(translationSnapshots)
-      .where(and(eq(translationSnapshots.projectId, projectId), eq(translationSnapshots.locale, locale)))
-      .orderBy(desc(translationSnapshots.version))
-      .limit(1);
-
-    const row = result[0];
-    if (!row) {
+    const snapshot = await getDrizzle(this.context).query.translationSnapshots.findFirst({
+      where: () => and(eq(translationSnapshots.projectId, projectId), eq(translationSnapshots.locale, locale)),
+      orderBy: () => desc(translationSnapshots.version),
+    });
+    if (!snapshot) {
       return null;
     }
 
-    return {
-      id: row.id,
-      projectId: row.projectId,
-      locale: row.locale,
-      version: row.version,
-      data: row.data,
-      createdAt: row.createdAt,
-    };
+    return dbTranslationSnapshotToModel(snapshot);
   };
 
-  createSnapshot = async (projectId: string, locale: string): Promise<TranslationSnapshot> => {
-    this.getSession(); // Verify user is authenticated
+  createSnapshot = async (project: Project, locale: string): Promise<TranslationSnapshot> => {
+    const session = await verifySessionIsSet(this.context);
+    assert(session.user.id === project.userId, 'Should have been called with the user that owns the project');
 
-    const drizzle = getDrizzle(this.context);
-
-    // Get the next version number (max + 1, or 1 if none exist)
-    const versionResult = await drizzle
+    const db = getDrizzle(this.context);
+    const [versionRow] = await db
       .select({ maxVersion: sql<number>`COALESCE(MAX(${translationSnapshots.version}), 0)` })
       .from(translationSnapshots)
-      .where(and(eq(translationSnapshots.projectId, projectId), eq(translationSnapshots.locale, locale)));
-
-    const versionRow = versionResult[0];
+      .where(and(eq(translationSnapshots.projectId, project.id), eq(translationSnapshots.locale, locale)));
     assert(versionRow, 'SQL COALESCE should always return a row');
-    const nextVersion = versionRow.maxVersion + 1;
 
-    // Get current translations for this project/locale
-    const currentTranslations = await drizzle
-      .select({
-        key: strings.key,
-        value: translations.value,
-      })
+    const nextVersion = versionRow.maxVersion + 1;
+    const currentTranslations = await db
+      .select({ key: strings.key, value: translations.value })
       .from(strings)
       .innerJoin(translations, and(eq(translations.stringId, strings.id), eq(translations.locale, locale)))
-      .where(eq(strings.projectId, projectId));
-
-    // Build the data object
-    const data: Record<string, string> = {};
-    for (const row of currentTranslations) {
-      data[row.key] = row.value;
-    }
-
-    // Insert the new snapshot
-    const now = new Date();
-    const snapshot: TranslationSnapshot = {
+      .where(eq(strings.projectId, project.id));
+    const data = currentTranslations.reduce<Record<string, string>>((data, row) => {
+      return { ...data, [row.key]: row.value };
+    }, {});
+    const snapshotData: ITranslationSnapshot = {
       id: Bun.randomUUIDv7(),
-      projectId,
+      projectId: project.id,
       locale,
       version: nextVersion,
       data,
-      createdAt: now,
     };
+    await getDrizzle(this.context).insert(translationSnapshots).values(snapshotData);
 
-    await drizzle.insert(translationSnapshots).values({
-      id: snapshot.id,
-      projectId: snapshot.projectId,
-      locale: snapshot.locale,
-      version: snapshot.version,
-      data: snapshot.data,
-      createdAt: snapshot.createdAt,
-    });
-
-    return snapshot;
-  };
-
-  private getSession = (): SessionResponse => {
-    const session = getSession(this.context);
-    assert(session != null, 'This function should have been called with an authorized request');
-
-    return session;
+    return newTranslationSnapshot(snapshotData);
   };
 }
 

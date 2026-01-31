@@ -7,6 +7,8 @@ import type { DrizzleDatabase } from '../db';
 import { createApp } from '..';
 import env from '../env';
 import { AUTH_BASE_PATH } from '../auth';
+import { PublishSnapshotResponseSchema, type PublishSnapshotResponse } from '../strings/routes/publish-snapshot';
+import type { CreateProjectPayload } from '../projects/schemas';
 
 const { DATABASE_URL } = env;
 
@@ -104,12 +106,7 @@ class TestHelper {
     };
   };
 
-  createProject = async (data: {
-    name: string;
-    default_locale: string;
-    enabled_locales: string[];
-    public_read_key: string;
-  }) => {
+  createProject = async (data: CreateProjectPayload) => {
     const headers = await this.getDefaultUserHeaders();
     return this.app.request('/app-api/v1/p', {
       method: 'POST',
@@ -127,12 +124,17 @@ class TestHelper {
     });
   };
 
-  publishSnapshot = async (projectId: string, locale: string) => {
+  publishSnapshot = async (
+    projectId: string,
+    locale: string,
+  ): Promise<{ body: PublishSnapshotResponse; status: number }> => {
     const headers = await this.getDefaultUserHeaders();
-    return this.app.request(`/app-api/v1/s/${projectId}/translations/${locale}/publish`, {
+    const response = await this.app.request(`/app-api/v1/s/${projectId}/translations/${locale}/publish`, {
       method: 'POST',
       headers,
     });
+
+    return { body: PublishSnapshotResponseSchema.parse(await response.json()), status: response.status };
   };
 
   private createDbContext = async (): Promise<{ db: DrizzleDatabase; cleanUpPool: Pool; name: string }> => {

@@ -1,11 +1,5 @@
-export type TranslationSnapshot = {
-  id: string;
-  projectId: string;
-  locale: string;
-  version: number;
-  data: Record<string, string>;
-  createdAt: Date;
-};
+import type Project from '../../../projects/models/project';
+import type TranslationSnapshot from './models';
 
 export interface SnapshotsRepository {
   /**
@@ -25,5 +19,5 @@ export interface SnapshotsRepository {
    * Auto-increments version number.
    * Returns the created snapshot.
    */
-  createSnapshot(projectId: string, locale: string): Promise<TranslationSnapshot>;
+  createSnapshot(project: Project, locale: string): Promise<TranslationSnapshot>;
 }

@@ -1,13 +1,15 @@
-import assert from 'node:assert';
-
 import { describeRoute, resolver, validator } from 'hono-openapi';
-import { z } from 'zod';
+import z from 'zod';
 
 import type { HonoContext } from '../../context';
 import { getDatabase } from '../../context/database';
 import { OPENAPI_TAG } from '../constants';
-import { getSession } from '../../context/session';
 import { ErrorResponseSchema } from '../../schemas/error';
+import { getValidatedProject } from '../../projects';
+
+type PublishSnapshotInput = { out: { param: z.infer<typeof PublishSnapshotParamsSchema> } };
+
+export type PublishSnapshotResponse = z.infer<typeof PublishSnapshotResponseSchema>;
 
 const PublishSnapshotParamsSchema = z.object({
   projectId: z.uuid().meta({
@@ -26,10 +28,6 @@ export const PublishSnapshotResponseSchema = z
       description: 'The version number of the newly created snapshot',
       example: 1,
     }),
-    created_at: z.iso.datetime().meta({
-      description: 'When this version was created',
-      example: '2024-01-01T12:00:00.000Z',
-    }),
     translation_count: z.number().int().nonnegative().meta({
       description: 'Number of translations in this snapshot',
       example: 42,
@@ -41,12 +39,6 @@ export const PublishSnapshotResponseSchema = z
     title: 'Publish Snapshot Response',
     description: 'Response after creating a new translation snapshot',
   });
-
-type PublishSnapshotInput = {
-  out: {
-    param: z.infer<typeof PublishSnapshotParamsSchema>;
-  };
-};
 
 const publishSnapshotRoute = [
   '/:projectId/translations/:locale/publish',
@@ -77,22 +69,12 @@ const publishSnapshotRoute = [
   }),
   validator('param', PublishSnapshotParamsSchema),
   async (c: HonoContext<PublishSnapshotInput>) => {
-    const session = getSession(c);
-    assert(session != null, 'Middleware should have made sure that session is present');
-
     const db = getDatabase(c);
     const { projectId, locale } = c.req.valid('param');
+    const project = await getValidatedProject(c, projectId);
+    const snapshot = await db.snapshots.createSnapshot(project, locale);
 
-    const snapshot = await db.snapshots.createSnapshot(projectId, locale);
-
-    return c.json(
-      {
-        version: snapshot.version,
-        created_at: snapshot.createdAt.toISOString(),
-        translation_count: Object.keys(snapshot.data).length,
-      },
-      201,
-    );
+    return c.json({ version: snapshot.version, translation_count: Object.keys(snapshot.data).length }, 201);
   },
 ] as const;
 

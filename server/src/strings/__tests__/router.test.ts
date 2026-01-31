@@ -1,5 +1,7 @@
 import { beforeAll, afterAll, describe, test, expect } from 'bun:test';
 import TestHelper from '../../__tests__/test-helper';
+import { ProjectResponseSchema } from '../../projects/schemas';
+import { ListStringsResponseSchema, UpsertTranslationsResponseSchema, GetTranslationsResponseSchema } from '../schemas';
 
 const helper = new TestHelper();
 
@@ -24,7 +26,7 @@ describe('Strings API', () => {
         public_read_key: 'pk_test_empty',
       });
       expect(projectResponse.status).toBe(201);
-      const project = (await projectResponse.json()) as { id: string };
+      const project = ProjectResponseSchema.parse(await projectResponse.json());
 
       // List strings for the project
       const headers = await helper.getDefaultUserHeaders();
@@ -49,7 +51,7 @@ describe('Strings API', () => {
         enabled_locales: ['en', 'es', 'fr'],
         public_read_key: 'pk_test_strings',
       });
-      const project = (await projectResponse.json()) as { id: string };
+      const project = ProjectResponseSchema.parse(await projectResponse.json());
 
       // Create multiple strings with translations using upsert
       await helper.upsertTranslations(project.id, [
@@ -67,12 +69,7 @@ describe('Strings API', () => {
       });
       expect(response.status).toBe(200);
 
-      const strings = (await response.json()) as Array<{
-        id: string;
-        key: string;
-        context: string | null;
-        project_id: string;
-      }>;
+      const strings = ListStringsResponseSchema.parse(await response.json());
       expect(Array.isArray(strings)).toBe(true);
       expect(strings).toHaveLength(4);
 
@@ -103,7 +100,7 @@ describe('Strings API', () => {
         enabled_locales: ['en'],
         public_read_key: 'pk_proj1',
       });
-      const project1 = (await project1Response.json()) as { id: string };
+      const project1 = ProjectResponseSchema.parse(await project1Response.json());
 
       const project2Response = await helper.createProject({
         name: 'Project 2',
@@ -111,7 +108,7 @@ describe('Strings API', () => {
         enabled_locales: ['en'],
         public_read_key: 'pk_proj2',
       });
-      const project2 = (await project2Response.json()) as { id: string };
+      const project2 = ProjectResponseSchema.parse(await project2Response.json());
 
       // Create strings in both projects
       await helper.upsertTranslations(project1.id, [
@@ -128,7 +125,7 @@ describe('Strings API', () => {
         method: 'GET',
         headers,
       });
-      const strings1 = (await response1.json()) as Array<{ key: string }>;
+      const strings1 = ListStringsResponseSchema.parse(await response1.json());
       expect(strings1).toHaveLength(1);
       expect(strings1[0]?.key).toBe('PROJECT1.KEY');
 
@@ -137,7 +134,7 @@ describe('Strings API', () => {
         method: 'GET',
         headers,
       });
-      const strings2 = (await response2.json()) as Array<{ key: string }>;
+      const strings2 = ListStringsResponseSchema.parse(await response2.json());
       expect(strings2).toHaveLength(1);
       expect(strings2[0]?.key).toBe('PROJECT2.KEY');
     });
@@ -162,7 +159,7 @@ describe('Strings API', () => {
         enabled_locales: ['en', 'es'],
         public_read_key: 'pk_upsert_test',
       });
-      const project = (await projectResponse.json()) as { id: string };
+      const project = ProjectResponseSchema.parse(await projectResponse.json());
 
       const upsertResponse = await helper.upsertTranslations(project.id, [
         {
@@ -177,7 +174,7 @@ describe('Strings API', () => {
       ]);
 
       expect(upsertResponse.status).toBe(200);
-      const result = (await upsertResponse.json()) as { updated_count: number };
+      const result = UpsertTranslationsResponseSchema.parse(await upsertResponse.json());
       expect(result.updated_count).toBe(3); // 2 en + 1 es
 
       // Verify strings were created
@@ -186,7 +183,7 @@ describe('Strings API', () => {
         method: 'GET',
         headers,
       });
-      const strings = (await listResponse.json()) as Array<{ key: string; context: string | null }>;
+      const strings = ListStringsResponseSchema.parse(await listResponse.json());
       expect(strings).toHaveLength(2);
 
       const key1 = strings.find(s => s.key === 'NEW.KEY1');
@@ -202,7 +199,7 @@ describe('Strings API', () => {
         enabled_locales: ['en'],
         public_read_key: 'pk_update_test',
       });
-      const project = (await projectResponse.json()) as { id: string; public_read_key: string };
+      const project = ProjectResponseSchema.parse(await projectResponse.json());
 
       // Create initial translation
       await helper.upsertTranslations(project.id, [
@@ -221,7 +218,7 @@ describe('Strings API', () => {
       const response = await helper.app.request(`/api/v1/projects/${project.id}/translations/en`, {
         headers: { 'x-public-key': project.public_read_key },
       });
-      const translations = (await response.json()) as Record<string, string>;
+      const translations = GetTranslationsResponseSchema.parse(await response.json());
       expect(translations['UPDATE.KEY']).toBe('Updated Value');
 
       // Verify context was updated
@@ -230,7 +227,7 @@ describe('Strings API', () => {
         method: 'GET',
         headers,
       });
-      const strings = (await listResponse.json()) as Array<{ key: string; context: string | null }>;
+      const strings = ListStringsResponseSchema.parse(await listResponse.json());
       const updatedString = strings.find(s => s.key === 'UPDATE.KEY');
       expect(updatedString?.context).toBe('Updated context');
     });
@@ -244,7 +241,7 @@ describe('Strings API', () => {
         enabled_locales: ['en', 'es', 'fr', 'de'],
         public_read_key: 'pk_multi_locale',
       });
-      const project = (await projectResponse.json()) as { id: string; public_read_key: string };
+      const project = ProjectResponseSchema.parse(await projectResponse.json());
 
       await helper.upsertTranslations(project.id, [
         {
@@ -274,7 +271,7 @@ describe('Strings API', () => {
         const response = await helper.app.request(`/api/v1/projects/${project.id}/translations/${locale}`, {
           headers: { 'x-public-key': project.public_read_key },
         });
-        const translations = (await response.json()) as Record<string, string>;
+        const translations = GetTranslationsResponseSchema.parse(await response.json());
         expect(translations.GREETING).toBe(expected);
       }
     });
@@ -288,7 +285,7 @@ describe('Strings API', () => {
         enabled_locales: ['en'],
         public_read_key: 'pk_inarray_test',
       });
-      const project = (await projectResponse.json()) as { id: string; public_read_key: string };
+      const project = ProjectResponseSchema.parse(await projectResponse.json());
 
       await helper.upsertTranslations(project.id, [
         { key: 'KEY1', translations: { en: 'Original Value 1' } },
@@ -301,7 +298,7 @@ describe('Strings API', () => {
         method: 'GET',
         headers,
       });
-      const beforeStrings = (await beforeResponse.json()) as Array<{ key: string }>;
+      const beforeStrings = ListStringsResponseSchema.parse(await beforeResponse.json());
       expect(beforeStrings).toHaveLength(3);
 
       await helper.upsertTranslations(project.id, [{ key: 'KEY2', translations: { en: 'Updated Value 2' } }]);
@@ -310,14 +307,14 @@ describe('Strings API', () => {
         method: 'GET',
         headers,
       });
-      const afterStrings = (await afterResponse.json()) as Array<{ key: string }>;
+      const afterStrings = ListStringsResponseSchema.parse(await afterResponse.json());
       expect(afterStrings).toHaveLength(3);
 
       await helper.publishSnapshot(project.id, 'en');
       const translationsResponse = await helper.app.request(`/api/v1/projects/${project.id}/translations/en`, {
         headers: { 'x-public-key': project.public_read_key },
       });
-      const translations = (await translationsResponse.json()) as Record<string, string>;
+      const translations = GetTranslationsResponseSchema.parse(await translationsResponse.json());
 
       expect(translations.KEY1).toBe('Original Value 1');
       expect(translations.KEY2).toBe('Updated Value 2');
@@ -326,7 +323,7 @@ describe('Strings API', () => {
       const upsertResponse = await helper.upsertTranslations(project.id, [
         { key: 'KEY2', translations: { en: 'Updated Again' } },
       ]);
-      const result = (await upsertResponse.json()) as { updated_count: number };
+      const result = UpsertTranslationsResponseSchema.parse(await upsertResponse.json());
       expect(result.updated_count).toBe(1);
     });
 
@@ -339,7 +336,7 @@ describe('Strings API', () => {
         enabled_locales: ['en', 'es'],
         public_read_key: 'pk_mixed_keys',
       });
-      const project = (await projectResponse.json()) as { id: string; public_read_key: string };
+      const project = ProjectResponseSchema.parse(await projectResponse.json());
 
       await helper.upsertTranslations(project.id, [
         { key: 'EXISTING.KEY1', translations: { en: 'Existing 1' } },
@@ -351,7 +348,7 @@ describe('Strings API', () => {
         method: 'GET',
         headers,
       });
-      const beforeStrings = (await beforeResponse.json()) as Array<{ key: string }>;
+      const beforeStrings = ListStringsResponseSchema.parse(await beforeResponse.json());
       expect(beforeStrings).toHaveLength(2);
 
       await helper.upsertTranslations(project.id, [
@@ -363,7 +360,7 @@ describe('Strings API', () => {
         method: 'GET',
         headers,
       });
-      const afterStrings = (await afterResponse.json()) as Array<{ key: string }>;
+      const afterStrings = ListStringsResponseSchema.parse(await afterResponse.json());
       expect(afterStrings).toHaveLength(3);
 
       await helper.publishSnapshot(project.id, 'en');
@@ -372,7 +369,7 @@ describe('Strings API', () => {
       const enResponse = await helper.app.request(`/api/v1/projects/${project.id}/translations/en`, {
         headers: { 'x-public-key': project.public_read_key },
       });
-      const enTranslations = (await enResponse.json()) as Record<string, string>;
+      const enTranslations = GetTranslationsResponseSchema.parse(await enResponse.json());
       expect(enTranslations['EXISTING.KEY1']).toBe('Updated 1');
       expect(enTranslations['EXISTING.KEY2']).toBe('Existing 2');
       expect(enTranslations['NEW.KEY']).toBe('New');
@@ -380,7 +377,7 @@ describe('Strings API', () => {
       const esResponse = await helper.app.request(`/api/v1/projects/${project.id}/translations/es`, {
         headers: { 'x-public-key': project.public_read_key },
       });
-      const esTranslations = (await esResponse.json()) as Record<string, string>;
+      const esTranslations = GetTranslationsResponseSchema.parse(await esResponse.json());
       expect(esTranslations['EXISTING.KEY1']).toBe('Actualizado 1');
       expect(esTranslations['NEW.KEY']).toBe('Nuevo');
       expect(esTranslations['EXISTING.KEY2']).toBeUndefined();
@@ -395,7 +392,7 @@ describe('Strings API', () => {
         enabled_locales: ['en', 'es', 'fr'],
         public_read_key: 'pk_count_test',
       });
-      const project = (await projectResponse.json()) as { id: string };
+      const project = ProjectResponseSchema.parse(await projectResponse.json());
 
       const upsertResponse = await helper.upsertTranslations(project.id, [
         { key: 'KEY1', translations: { en: 'E1', es: 'S1', fr: 'F1' } },
@@ -404,7 +401,7 @@ describe('Strings API', () => {
       ]);
 
       expect(upsertResponse.status).toBe(200);
-      const result = (await upsertResponse.json()) as { updated_count: number };
+      const result = UpsertTranslationsResponseSchema.parse(await upsertResponse.json());
       expect(result.updated_count).toBe(6);
     });
 
@@ -417,7 +414,7 @@ describe('Strings API', () => {
         enabled_locales: ['en'],
         public_read_key: 'pk_empty_array',
       });
-      const project = (await projectResponse.json()) as { id: string };
+      const project = ProjectResponseSchema.parse(await projectResponse.json());
 
       const upsertResponse = await helper.upsertTranslations(project.id, []);
       expect(upsertResponse.status).toBe(400);
@@ -432,7 +429,7 @@ describe('Strings API', () => {
         enabled_locales: ['en'],
         public_read_key: 'pk_batch_update',
       });
-      const project = (await projectResponse.json()) as { id: string; public_read_key: string };
+      const project = ProjectResponseSchema.parse(await projectResponse.json());
 
       await helper.upsertTranslations(project.id, [
         { key: 'KEY1', context: 'Original Context 1', translations: { en: 'Value 1' } },
@@ -453,7 +450,7 @@ describe('Strings API', () => {
         method: 'GET',
         headers,
       });
-      const strings = (await response.json()) as Array<{ key: string; context: string | null }>;
+      const strings = ListStringsResponseSchema.parse(await response.json());
 
       expect(strings).toHaveLength(4);
       expect(strings.find(s => s.key === 'KEY1')?.context).toBe('Updated Context 1');
@@ -471,7 +468,7 @@ describe('Strings API', () => {
         enabled_locales: ['en'],
         public_read_key: 'pk_sql_injection',
       });
-      const project = (await projectResponse.json()) as { id: string };
+      const project = ProjectResponseSchema.parse(await projectResponse.json());
 
       const maliciousContext = "'; DROP TABLE strings; --";
 
@@ -484,7 +481,7 @@ describe('Strings API', () => {
         method: 'GET',
         headers,
       });
-      const strings = (await response.json()) as Array<{ key: string; context: string | null }>;
+      const strings = ListStringsResponseSchema.parse(await response.json());
 
       expect(strings).toHaveLength(1);
       expect(strings[0]?.context).toBe(maliciousContext);

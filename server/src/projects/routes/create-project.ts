@@ -9,45 +9,47 @@ import { ErrorResponseSchema } from '../../schemas/error';
 
 type CreateProjectInput = { out: { json: CreateProjectPayload } };
 
-const createProjectRoute = [
-  '/',
-  describeRoute({
-    description: 'Create project',
-    tags: [OPENAPI_TAG],
-    responses: {
-      201: {
-        description: 'Successful response',
-        content: {
-          'application/json': { schema: resolver(ProjectResponseSchema) },
+function createProjectRoute() {
+  return [
+    '/',
+    describeRoute({
+      description: 'Create project',
+      tags: [OPENAPI_TAG],
+      responses: {
+        201: {
+          description: 'Successful response',
+          content: {
+            'application/json': { schema: resolver(ProjectResponseSchema) },
+          },
+        },
+        400: {
+          description: 'Bad request - Invalid payload schema or validation errors',
+          content: {
+            'application/json': { schema: resolver(ErrorResponseSchema) },
+          },
+        },
+        404: {
+          description: 'Not authenticated',
+          content: {
+            'application/json': { schema: resolver(ErrorResponseSchema) },
+          },
+        },
+        409: {
+          description: 'Conflict - Project with this name already exists for the user',
+          content: {
+            'application/json': { schema: resolver(ErrorResponseSchema) },
+          },
         },
       },
-      400: {
-        description: 'Bad request - Invalid payload schema or validation errors',
-        content: {
-          'application/json': { schema: resolver(ErrorResponseSchema) },
-        },
-      },
-      404: {
-        description: 'Not authenticated',
-        content: {
-          'application/json': { schema: resolver(ErrorResponseSchema) },
-        },
-      },
-      409: {
-        description: 'Conflict - Project with this name already exists for the user',
-        content: {
-          'application/json': { schema: resolver(ErrorResponseSchema) },
-        },
-      },
-    },
-  }),
-  validator('json', CreateProjectPayloadSchema),
-  async (c: HonoContext<CreateProjectInput>) => {
-    const payload = requestCreateProjectPayloadToDbPayload(c.req.valid('json'));
-    const project = await getDatabase(c).projects.createProject(payload);
+    }),
+    validator('json', CreateProjectPayloadSchema),
+    async (c: HonoContext<CreateProjectInput>) => {
+      const payload = requestCreateProjectPayloadToDbPayload(c.req.valid('json'));
+      const project = await getDatabase(c).projects.createProject(payload);
 
-    return c.json(dbProjectToResponse(project), 201);
-  },
-] as const;
+      return c.json(dbProjectToResponse(project), 201);
+    },
+  ] as const;
+}
 
 export default createProjectRoute;

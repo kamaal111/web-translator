@@ -4,7 +4,9 @@ import path from 'node:path';
 import { APP_API_BASE_PATH } from '../../constants/common';
 import { ROUTE_NAME } from '../constants';
 import TestHelper from '../../__tests__/test-helper';
-import type { ProjectResponse, ListProjectsResponse } from '../schemas';
+import { ProjectResponseSchema, ListProjectsResponseSchema } from '../schemas';
+import { ErrorResponseSchema } from '../../schemas/error';
+import { AuthResponseSchema } from '../../auth/schemas/responses';
 
 const BASE_PATH = path.join(APP_API_BASE_PATH, ROUTE_NAME);
 
@@ -32,7 +34,7 @@ describe('Projects Router Integration Tests', () => {
       });
 
       expect(response.status).toBe(201);
-      const data = (await response.json()) as ProjectResponse;
+      const data = ProjectResponseSchema.parse(await response.json());
       expect(data.id).toBeDefined();
       expect(typeof data.id).toBe('string');
       expect(data.name).toBe(projectData.name);
@@ -57,7 +59,7 @@ describe('Projects Router Integration Tests', () => {
       });
 
       expect(response.status).toBe(201);
-      const data = (await response.json()) as ProjectResponse;
+      const data = ProjectResponseSchema.parse(await response.json());
       expect(data.enabled_locales).toContain('en-US');
       expect(data.enabled_locales[0]).toBe('en-US');
       expect(data.enabled_locales).toContain('fr-FR');
@@ -81,7 +83,7 @@ describe('Projects Router Integration Tests', () => {
       });
 
       expect(response.status).toBe(201);
-      const data = (await response.json()) as ProjectResponse;
+      const data = ProjectResponseSchema.parse(await response.json());
       expect(data.enabled_locales.length).toBe(3);
       expect(new Set(data.enabled_locales).size).toBe(3);
       expect(data.enabled_locales).toContain('en-US');
@@ -194,7 +196,7 @@ describe('Projects Router Integration Tests', () => {
       });
 
       expect(response.status).toBe(201);
-      const data = (await response.json()) as ProjectResponse;
+      const data = ProjectResponseSchema.parse(await response.json());
       expect(data.name).toBe('Whitespace App');
     });
 
@@ -203,7 +205,7 @@ describe('Projects Router Integration Tests', () => {
       await helper.signUpUser(customUserEmail, 'Project Owner');
 
       const signInResponse = await helper.signInUser(customUserEmail);
-      const { token } = (await signInResponse.json()) as { token: string };
+      const { token } = AuthResponseSchema.parse(await signInResponse.json());
       const cookies = signInResponse.headers.get('set-cookie') ?? '';
 
       const projectData = {
@@ -224,7 +226,7 @@ describe('Projects Router Integration Tests', () => {
       });
 
       expect(response.status).toBe(201);
-      const data = (await response.json()) as ProjectResponse;
+      const data = ProjectResponseSchema.parse(await response.json());
       expect(data.id).toBeDefined();
       expect(data.name).toBe(projectData.name);
     });
@@ -245,7 +247,7 @@ describe('Projects Router Integration Tests', () => {
       });
 
       expect(response.status).toBe(201);
-      const data = (await response.json()) as ProjectResponse;
+      const data = ProjectResponseSchema.parse(await response.json());
       expect(data.enabled_locales).toContain('en-US');
       expect(data.enabled_locales.length).toBe(1);
     });
@@ -279,7 +281,7 @@ describe('Projects Router Integration Tests', () => {
       });
 
       expect(secondResponse.status).toBe(409);
-      const errorData = (await secondResponse.json()) as { message: string; code: string };
+      const errorData = ErrorResponseSchema.parse(await secondResponse.json());
       expect(errorData.code).toBe('PROJECT_NAME_ALREADY_EXISTS');
       expect(errorData.message).toBe('A project with this name already exists');
     });
@@ -305,7 +307,7 @@ describe('Projects Router Integration Tests', () => {
       await helper.signUpUser(secondUserEmail, 'Second User');
 
       const signInResponse = await helper.signInUser(secondUserEmail);
-      const { token } = (await signInResponse.json()) as { token: string };
+      const { token } = AuthResponseSchema.parse(await signInResponse.json());
       const cookies = signInResponse.headers.get('set-cookie') ?? '';
 
       const secondUserHeaders = {
@@ -326,7 +328,7 @@ describe('Projects Router Integration Tests', () => {
       });
 
       expect(secondResponse.status).toBe(201);
-      const data = (await secondResponse.json()) as ProjectResponse;
+      const data = ProjectResponseSchema.parse(await secondResponse.json());
       expect(data.name).toBe(projectData.name);
     });
   });
@@ -337,7 +339,7 @@ describe('Projects Router Integration Tests', () => {
       await helper.signUpUser(newUserEmail, 'No Project User');
 
       const signInResponse = await helper.signInUser(newUserEmail);
-      const { token } = (await signInResponse.json()) as { token: string };
+      const { token } = AuthResponseSchema.parse(await signInResponse.json());
       const cookies = signInResponse.headers.get('set-cookie') ?? '';
 
       const headers = {
@@ -352,7 +354,7 @@ describe('Projects Router Integration Tests', () => {
       });
 
       expect(response.status).toBe(200);
-      const data = (await response.json()) as ListProjectsResponse;
+      const data = ListProjectsResponseSchema.parse(await response.json());
       expect(Array.isArray(data)).toBe(true);
       expect(data.length).toBe(0);
     });
@@ -392,7 +394,7 @@ describe('Projects Router Integration Tests', () => {
       });
 
       expect(response.status).toBe(200);
-      const data = (await response.json()) as ListProjectsResponse;
+      const data = ListProjectsResponseSchema.parse(await response.json());
       expect(Array.isArray(data)).toBe(true);
       expect(data.length).toBeGreaterThanOrEqual(2);
 
@@ -412,7 +414,7 @@ describe('Projects Router Integration Tests', () => {
       await helper.signUpUser(user2Email, 'Isolation Test User');
 
       const user2SignInResponse = await helper.signInUser(user2Email);
-      const { token: user2Token } = (await user2SignInResponse.json()) as { token: string };
+      const { token: user2Token } = AuthResponseSchema.parse(await user2SignInResponse.json());
       const user2Cookies = user2SignInResponse.headers.get('set-cookie') ?? '';
       const user2Headers = {
         'Content-Type': 'application/json',
@@ -461,8 +463,8 @@ describe('Projects Router Integration Tests', () => {
       expect(user1Response.status).toBe(200);
       expect(user2Response.status).toBe(200);
 
-      const user1Data = (await user1Response.json()) as ListProjectsResponse;
-      const user2Data = (await user2Response.json()) as ListProjectsResponse;
+      const user1Data = ListProjectsResponseSchema.parse(await user1Response.json());
+      const user2Data = ListProjectsResponseSchema.parse(await user2Response.json());
 
       const user1HasUser2Project = user1Data.some(p => p.name === user2Project.name);
       const user2HasUser1Project = user2Data.some(p => p.name === user1Project.name);
@@ -504,7 +506,7 @@ describe('Projects Router Integration Tests', () => {
       });
 
       expect(createResponse.status).toBe(201);
-      const createdProject = (await createResponse.json()) as ProjectResponse;
+      const createdProject = ProjectResponseSchema.parse(await createResponse.json());
 
       const response = await helper.app.request(`${BASE_PATH}/${createdProject.id}`, {
         method: 'GET',
@@ -512,7 +514,7 @@ describe('Projects Router Integration Tests', () => {
       });
 
       expect(response.status).toBe(200);
-      const data = (await response.json()) as ProjectResponse;
+      const data = ProjectResponseSchema.parse(await response.json());
       expect(data.id).toBe(createdProject.id);
       expect(data.name).toBe(projectData.name);
       expect(data.default_locale).toBe(projectData.default_locale);
@@ -541,7 +543,7 @@ describe('Projects Router Integration Tests', () => {
       });
 
       expect(response.status).toBe(404);
-      const data = (await response.json()) as { message: string; code: string };
+      const data = ErrorResponseSchema.parse(await response.json());
       expect(data.code).toBe('NOT_FOUND');
       expect(data.message).toBe('Project not found');
     });
@@ -563,13 +565,13 @@ describe('Projects Router Integration Tests', () => {
       });
 
       expect(createResponse.status).toBe(201);
-      const createdProject = (await createResponse.json()) as ProjectResponse;
+      const createdProject = ProjectResponseSchema.parse(await createResponse.json());
 
       const user2Email = 'anotheruser@example.com';
       await helper.signUpUser(user2Email, 'Another User');
 
       const user2SignInResponse = await helper.signInUser(user2Email);
-      const { token: user2Token } = (await user2SignInResponse.json()) as { token: string };
+      const { token: user2Token } = AuthResponseSchema.parse(await user2SignInResponse.json());
       const user2Cookies = user2SignInResponse.headers.get('set-cookie') ?? '';
       const user2Headers = {
         'Content-Type': 'application/json',
@@ -583,7 +585,7 @@ describe('Projects Router Integration Tests', () => {
       });
 
       expect(response.status).toBe(404);
-      const data = (await response.json()) as { message: string; code: string };
+      const data = ErrorResponseSchema.parse(await response.json());
       expect(data.code).toBe('NOT_FOUND');
     });
 

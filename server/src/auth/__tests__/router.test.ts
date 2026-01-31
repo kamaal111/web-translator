@@ -4,6 +4,8 @@ import path from 'node:path';
 import { APP_API_BASE_PATH } from '../../constants/common';
 import { ROUTE_NAME } from '../constants';
 import TestHelper from '../../__tests__/test-helper';
+import { AuthResponseSchema, SessionResponseSchema, JWKSResponseSchema } from '../schemas/responses';
+import { ErrorResponseSchema } from '../../schemas/error';
 
 const BASE_PATH = path.join(APP_API_BASE_PATH, ROUTE_NAME);
 
@@ -19,7 +21,7 @@ describe('Auth Router Integration Tests', () => {
       const response = await helper.signUpUser('newuser@example.com', 'Test User');
 
       expect(response.status).toBe(201);
-      const data = (await response.json()) as { token: string };
+      const data = AuthResponseSchema.parse(await response.json());
       expect(data.token).toBeDefined();
       expect(typeof data.token).toBe('string');
 
@@ -35,7 +37,7 @@ describe('Auth Router Integration Tests', () => {
       const response = await helper.signUpUser('duplicate@example.com', 'Second User');
 
       expect(response.status).toBe(409);
-      const data = (await response.json()) as { message: string };
+      const data = ErrorResponseSchema.parse(await response.json());
       expect(data.message).toBeDefined();
     });
 
@@ -81,7 +83,7 @@ describe('Auth Router Integration Tests', () => {
       const response = await helper.signInUser(testUser.email);
 
       expect(response.status).toBe(200);
-      const data = (await response.json()) as { token: string };
+      const data = AuthResponseSchema.parse(await response.json());
       expect(data.token).toBeDefined();
       expect(typeof data.token).toBe('string');
 
@@ -123,7 +125,7 @@ describe('Auth Router Integration Tests', () => {
       // Create user and sign in to get a session token
       const signUpResponse = await helper.signUpUser('signout@example.com', 'Sign Out User');
 
-      const data = (await signUpResponse.json()) as { token: string };
+      const data = AuthResponseSchema.parse(await signUpResponse.json());
       sessionToken = data.token;
     });
 
@@ -158,7 +160,7 @@ describe('Auth Router Integration Tests', () => {
       // Create user and sign in to get a session token
       const signUpResponse = await helper.signUpUser('session@example.com', 'Session User');
 
-      const data = (await signUpResponse.json()) as { token: string };
+      const data = AuthResponseSchema.parse(await signUpResponse.json());
       sessionToken = data.token;
       cookies = signUpResponse.headers.get('set-cookie') ?? '';
     });
@@ -173,7 +175,7 @@ describe('Auth Router Integration Tests', () => {
       });
 
       expect(response.status).toBe(200);
-      const data = (await response.json()) as { session: unknown; user: { email: string } };
+      const data = SessionResponseSchema.parse(await response.json());
       expect(data.session).toBeDefined();
       expect(data.user).toBeDefined();
       expect(data.user.email).toBe('session@example.com');
@@ -204,7 +206,7 @@ describe('Auth Router Integration Tests', () => {
       // Create user and sign in to get a session token
       const signUpResponse = await helper.signUpUser('token@example.com', 'Token User');
 
-      const data = (await signUpResponse.json()) as { token: string };
+      const data = AuthResponseSchema.parse(await signUpResponse.json());
       sessionToken = data.token;
     });
 
@@ -215,7 +217,7 @@ describe('Auth Router Integration Tests', () => {
       });
 
       expect(response.status).toBe(200);
-      const data = (await response.json()) as { token: string };
+      const data = AuthResponseSchema.parse(await response.json());
       expect(data.token).toBeDefined();
       expect(typeof data.token).toBe('string');
     });
@@ -236,7 +238,7 @@ describe('Auth Router Integration Tests', () => {
       });
 
       expect(response.status).toBe(200);
-      const data = (await response.json()) as { keys: unknown[] };
+      const data = JWKSResponseSchema.parse(await response.json());
       expect(data.keys).toBeDefined();
       expect(Array.isArray(data.keys)).toBe(true);
     });
@@ -257,7 +259,7 @@ describe('Auth Router Integration Tests', () => {
       const signUpResponse = await helper.signUpUser('flow@example.com', 'Flow User');
 
       expect(signUpResponse.status).toBe(201);
-      const signUpData = (await signUpResponse.json()) as { token: string };
+      const signUpData = AuthResponseSchema.parse(await signUpResponse.json());
       const token1 = signUpData.token;
       const cookies1 = signUpResponse.headers.get('set-cookie') ?? '';
 
@@ -271,7 +273,7 @@ describe('Auth Router Integration Tests', () => {
       });
 
       expect(sessionResponse.status).toBe(200);
-      const sessionData = (await sessionResponse.json()) as { user: { email: string } };
+      const sessionData = SessionResponseSchema.parse(await sessionResponse.json());
       expect(sessionData.user.email).toBe('flow@example.com');
 
       // 3. Sign out
@@ -288,7 +290,7 @@ describe('Auth Router Integration Tests', () => {
       const signInResponse = await helper.signInUser('flow@example.com');
 
       expect(signInResponse.status).toBe(200);
-      const signInData = (await signInResponse.json()) as { token: string };
+      const signInData = AuthResponseSchema.parse(await signInResponse.json());
       expect(signInData.token).toBeDefined();
 
       // 5. Get JWT token
@@ -298,7 +300,7 @@ describe('Auth Router Integration Tests', () => {
       });
 
       expect(tokenResponse.status).toBe(200);
-      const tokenData = (await tokenResponse.json()) as { token: string };
+      const tokenData = AuthResponseSchema.parse(await tokenResponse.json());
       expect(tokenData.token).toBeDefined();
     });
   });

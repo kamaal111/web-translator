@@ -1,4 +1,6 @@
-type LogFn = (message: string, payload?: Record<string, string>) => void;
+export type LogPayload = Record<string, string | null | undefined> | undefined | null;
+
+type LogFn = (message: string, payload?: LogPayload) => void;
 
 export interface Logger {
   info: LogFn;

@@ -6,7 +6,7 @@ import getTranslationsRoute from './routes/get-translations';
 function publicApiRouter() {
   const router = new Hono<HonoEnvironment>();
 
-  return router.get(...getTranslationsRoute);
+  return router.get(...getTranslationsRoute());
 }
 
 export default publicApiRouter;

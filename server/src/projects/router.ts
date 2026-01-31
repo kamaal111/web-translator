@@ -11,9 +11,9 @@ function projectsRouter() {
 
   return router
     .use(requireLoggedInSession())
-    .post(...createProjectRoute)
-    .get(...listProjectsRoute)
-    .get(...readProjectRoute);
+    .post(...createProjectRoute())
+    .get(...listProjectsRoute())
+    .get(...readProjectRoute());
 }
 
 export default projectsRouter;

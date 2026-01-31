@@ -19,3 +19,12 @@ export class ProjectNotFound extends NotFound {
     });
   }
 }
+
+export class ProjectVersionNotFound extends NotFound {
+  constructor(c: HonoContext) {
+    super(c, {
+      message: 'Project version not found',
+      name: 'ProjectVersionNotFound',
+    });
+  }
+}

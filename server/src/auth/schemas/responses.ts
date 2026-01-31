@@ -72,3 +72,12 @@ export const SessionResponseSchema = z
       },
     },
   });
+
+export const JWKSResponseSchema = z
+  .object({ keys: z.array(z.unknown()).meta({ description: 'Array of JSON Web Keys' }) })
+  .describe('JWKS response')
+  .meta({
+    ref: 'JWKSResponse',
+    title: 'JWKS Response',
+    description: 'Response containing JSON Web Keys for token verification',
+  });
