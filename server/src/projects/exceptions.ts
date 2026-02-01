@@ -28,3 +28,12 @@ export class ProjectVersionNotFound extends NotFound {
     });
   }
 }
+
+export class StringNotFound extends NotFound {
+  constructor(c: HonoContext) {
+    super(c, {
+      message: 'String not found',
+      name: 'StringNotFound',
+    });
+  }
+}
