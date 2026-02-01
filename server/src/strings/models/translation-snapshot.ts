@@ -13,6 +13,8 @@ class TranslationSnapshot implements ITranslationSnapshot {
   version: number;
   data: Record<string, string>;
 
+  private readonly __brand!: void;
+
   constructor(params: ITranslationSnapshot) {
     this.id = params.id;
     this.projectId = params.projectId;

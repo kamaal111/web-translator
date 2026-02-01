@@ -1,9 +1,10 @@
 import path from 'node:path';
 
 import z from 'zod';
+import { cloneRawRequest } from 'hono/request';
 
 import type { HonoContext } from '../../context';
-import { getValueFromSetCookie, makeNewRequest } from '../../utils/request';
+import { getValueFromSetCookie } from '../../utils/request';
 import { getLogger } from '../../context/logging';
 import { BetterAuthException } from '../exceptions';
 import { APIException, Unauthorized } from '../../exceptions';
@@ -29,7 +30,7 @@ export async function handleAuthRequest<Schema extends z.ZodType>(
   c: HonoContext,
   options: { responseSchema: Schema; requireSessionToken?: boolean },
 ): Promise<{ jsonResponse: z.infer<Schema>; sessionToken: string | null; headers: Headers }> {
-  const request = await makeNewRequest(c);
+  const request = await cloneRawRequest(c.req);
   const response = await getAuth(c).handler(request);
   const jsonResponse: unknown = await response.json();
   const exceptionResult = BetterAuthExceptionSchema.safeParse(jsonResponse);

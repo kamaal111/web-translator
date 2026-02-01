@@ -8,9 +8,9 @@ import { getDrizzle } from '../../../context/database';
 import type { SnapshotsRepository } from './types';
 import { verifySessionIsSet } from '../../../auth/utils/session';
 import type Project from '../../../projects/models/project';
-import type TranslationSnapshot from './models';
-import { dbTranslationSnapshotToModel } from './mappers';
-import { newTranslationSnapshot, type ITranslationSnapshot } from './models';
+import type TranslationSnapshot from '../../models/translation-snapshot';
+import { dbTranslationSnapshotToModel } from '../../mappers/translation-snapshot';
+import { newTranslationSnapshot, type ITranslationSnapshot } from '../../models/translation-snapshot';
 
 class SnapshotsRepositoryImpl implements SnapshotsRepository {
   private readonly context: HonoContext;

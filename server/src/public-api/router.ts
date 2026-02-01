@@ -1,7 +1,7 @@
 import { Hono } from 'hono';
 
 import type { HonoEnvironment } from '../context';
-import getTranslationsRoute from './routes/get-translations';
+import { getTranslationsRoute } from '../strings';
 
 function publicApiRouter() {
   const router = new Hono<HonoEnvironment>();

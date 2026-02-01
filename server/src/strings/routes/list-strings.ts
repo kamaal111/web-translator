@@ -7,13 +7,14 @@ import { OPENAPI_TAG } from '../constants';
 import { ListStringsResponseSchema } from '../schemas';
 
 import { ErrorResponseSchema } from '../../schemas/error';
-import { dbStringToResponse } from '../mappers';
 import { ProjectIdShape } from '../../projects/schemas';
 import { getValidatedProject } from '../../projects';
+import { dbStringToResponse } from '../mappers/strings';
+import { PartialAuthenticationHeadersSchema, type PartialAuthenticationHeaders } from '../../schemas/headers';
 
 type ListStringsParams = z.infer<typeof ListStringsParamsSchema>;
 
-type ListStringsInput = { out: { param: ListStringsParams } };
+type ListStringsInput = { out: { param: ListStringsParams; header: PartialAuthenticationHeaders } };
 
 const ListStringsParamsSchema = z.object({
   projectId: ProjectIdShape,
@@ -40,6 +41,7 @@ function listStringsRoute() {
         },
       },
     }),
+    validator('header', PartialAuthenticationHeadersSchema),
     validator('param', ListStringsParamsSchema),
     async (c: HonoContext<ListStringsInput>) => {
       const { projectId } = c.req.valid('param');

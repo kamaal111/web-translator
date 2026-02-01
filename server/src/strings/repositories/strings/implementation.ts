@@ -11,6 +11,10 @@ import type { HonoContext } from '../../../context';
 import { getDrizzle } from '../../../context/database';
 import { verifySessionIsSet } from '../../../auth/utils/session';
 import type Project from '../../../projects/models/project';
+import type Translation from '../../models/translation';
+import { newTranslation } from '../../models/translation';
+import { translationModelToDbInsert } from '../../mappers/translation';
+import { stringModelToDbInsert } from '../../mappers/strings';
 
 type StringUpdate = { id: string; context: string | null };
 
@@ -64,11 +68,11 @@ function categorizeEntries(
   projectId: string,
   now: Date,
 ): {
-  stringsToInsert: (typeof strings.$inferInsert)[];
+  stringsToInsert: StringModel[];
   stringsToUpdate: StringUpdate[];
   keyToIdMap: Map<string, string>;
 } {
-  const stringsToInsert: (typeof strings.$inferInsert)[] = [];
+  const stringsToInsert: StringModel[] = [];
   const stringsToUpdate: StringUpdate[] = [];
   const keyToIdMap = new Map<string, string>();
   for (const entry of entries) {
@@ -81,14 +85,16 @@ function categorizeEntries(
     } else {
       const newId = Bun.randomUUIDv7();
       keyToIdMap.set(entry.key, newId);
-      stringsToInsert.push({
-        id: newId,
-        key: entry.key,
-        context: entry.context || null,
-        projectId,
-        createdAt: now,
-        updatedAt: now,
-      });
+      stringsToInsert.push(
+        newString({
+          id: newId,
+          key: entry.key,
+          context: entry.context || null,
+          projectId,
+          createdAt: now,
+          updatedAt: now,
+        }),
+      );
     }
   }
 
@@ -97,12 +103,12 @@ function categorizeEntries(
 
 async function persistStrings(
   drizzle: DrizzleDatabase,
-  stringsToInsert: (typeof strings.$inferInsert)[],
+  stringsToInsert: StringModel[],
   stringsToUpdate: StringUpdate[],
   now: Date,
 ): Promise<void> {
   if (stringsToInsert.length > 0) {
-    await drizzle.insert(strings).values(stringsToInsert);
+    await drizzle.insert(strings).values(stringsToInsert.map(stringModelToDbInsert));
   }
 
   if (stringsToUpdate.length === 0) {
@@ -125,39 +131,29 @@ function buildTranslationInserts(
   entries: TranslationEntry[],
   keyToIdMap: Map<string, string>,
   now: Date,
-): (typeof translations.$inferInsert)[] {
-  const translationsToUpsert: (typeof translations.$inferInsert)[] = [];
-
+): Translation[] {
+  const translationsToUpsert: Translation[] = [];
   for (const entry of entries) {
     const stringId = keyToIdMap.get(entry.key);
     assert(stringId, 'String ID should exist at this point');
 
     for (const [locale, value] of Object.entries(entry.translations)) {
-      translationsToUpsert.push({
-        id: Bun.randomUUIDv7(),
-        stringId,
-        locale,
-        value,
-        createdAt: now,
-        updatedAt: now,
-      });
+      const translation = newTranslation({ stringId, locale, value, createdAt: now, updatedAt: now, id: null });
+      translationsToUpsert.push(translation);
     }
   }
 
   return translationsToUpsert;
 }
 
-async function upsertTranslationsBatch(
-  drizzle: DrizzleDatabase,
-  translationsToUpsert: (typeof translations.$inferInsert)[],
-): Promise<void> {
+async function upsertTranslationsBatch(drizzle: DrizzleDatabase, translationsToUpsert: Translation[]): Promise<void> {
   if (translationsToUpsert.length === 0) {
     return;
   }
 
   await drizzle
     .insert(translations)
-    .values(translationsToUpsert)
+    .values(translationsToUpsert.map(translationModelToDbInsert))
     .onConflictDoUpdate({
       target: [translations.stringId, translations.locale],
       set: { value: sql`excluded.value`, updatedAt: sql`excluded.updated_at` },

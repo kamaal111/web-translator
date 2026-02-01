@@ -6,8 +6,9 @@ import { ProjectResponseSchema, ReadProjectParamsSchema, type ReadProjectParams 
 import { dbProjectToResponse } from '../mappers';
 import { ErrorResponseSchema } from '../../schemas/error';
 import { getValidatedProject } from '../utils';
+import { PartialAuthenticationHeadersSchema, type PartialAuthenticationHeaders } from '../../schemas/headers';
 
-type ReadProjectInput = { out: { param: ReadProjectParams } };
+type ReadProjectInput = { out: { param: ReadProjectParams; header: PartialAuthenticationHeaders } };
 
 function readProjectRoute() {
   return [
@@ -36,6 +37,7 @@ function readProjectRoute() {
         },
       },
     }),
+    validator('header', PartialAuthenticationHeadersSchema),
     validator('param', ReadProjectParamsSchema),
     async (c: HonoContext<ReadProjectInput>) => {
       const { projectId } = c.req.valid('param');

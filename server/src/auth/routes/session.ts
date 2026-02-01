@@ -4,13 +4,13 @@ import { describeRoute, resolver, validator } from 'hono-openapi';
 
 import { OPENAPI_TAG } from '../constants';
 import requireLoggedInSession from '../middleware/require-logged-in-session';
-import { AuthenticationHeadersSchema, type AuthenticationHeaders } from '../../schemas/headers';
+import { PartialAuthenticationHeadersSchema, type PartialAuthenticationHeaders } from '../../schemas/headers';
 import { SessionResponseSchema } from '../schemas/responses';
 import { ErrorResponseSchema } from '../../schemas/error';
 import type { HonoContext } from '../../context';
 import { getSession } from '../../context/session';
 
-type SessionInput = { out: { header: AuthenticationHeaders } };
+type SessionInput = { out: { header: PartialAuthenticationHeaders } };
 
 function sessionRoute() {
   return [
@@ -39,7 +39,7 @@ function sessionRoute() {
         },
       },
     }),
-    validator('header', AuthenticationHeadersSchema.partial()),
+    validator('header', PartialAuthenticationHeadersSchema),
     requireLoggedInSession(),
     async (c: HonoContext<SessionInput>) => {
       const session = getSession(c);

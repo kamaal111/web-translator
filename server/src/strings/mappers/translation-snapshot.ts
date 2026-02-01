@@ -1,6 +1,5 @@
-import type { translationSnapshots } from '../../../db/schema/translation-snapshots';
-import type TranslationSnapshot from './models';
-import { newTranslationSnapshot } from './models';
+import type { translationSnapshots } from '../../db/schema';
+import TranslationSnapshot, { newTranslationSnapshot } from '../models/translation-snapshot';
 
 export function dbTranslationSnapshotToModel(
   dbTranslationSnapshot: typeof translationSnapshots.$inferInsert,

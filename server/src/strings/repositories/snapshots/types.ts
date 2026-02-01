@@ -1,5 +1,5 @@
 import type Project from '../../../projects/models/project';
-import type TranslationSnapshot from './models';
+import type TranslationSnapshot from '../../models/translation-snapshot';
 
 export interface SnapshotsRepository {
   /**

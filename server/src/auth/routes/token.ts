@@ -1,10 +1,10 @@
 import z from 'zod';
 import { describeRoute, resolver } from 'hono-openapi';
+import { cloneRawRequest } from 'hono/request';
 
 import { OPENAPI_TAG, TOKEN_ROUTE_NAME } from '../constants';
 import type { HonoContext } from '../../context';
 import { ErrorResponseSchema } from '../../schemas/error';
-import { makeNewRequest } from '../../utils/request';
 import { SessionNotFound } from '../exceptions';
 import { parseTokenResponseAndCreateHeaders } from '../utils/request';
 import { getAuth } from '../../context/auth';
@@ -42,7 +42,7 @@ function tokenRoute() {
       },
     }),
     async (c: HonoContext) => {
-      const request = await makeNewRequest(c);
+      const request = await cloneRawRequest(c.req);
       const response = await getAuth(c).handler(request);
       if (!response.ok) {
         throw new SessionNotFound(c);

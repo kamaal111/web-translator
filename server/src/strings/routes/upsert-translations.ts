@@ -15,11 +15,13 @@ import {
 import { getSession } from '../../context/session';
 import { ErrorResponseSchema } from '../../schemas/error';
 import { getValidatedProject } from '../../projects';
+import { PartialAuthenticationHeadersSchema, type PartialAuthenticationHeaders } from '../../schemas/headers';
 
 type UpsertTranslationsInput = {
   out: {
     json: UpsertTranslationsPayload;
     param: UpsertTranslationsParams;
+    header: PartialAuthenticationHeaders;
   };
 };
 
@@ -51,6 +53,7 @@ function upsertTranslationsRoute() {
         },
       },
     }),
+    validator('header', PartialAuthenticationHeadersSchema),
     validator('param', UpsertTranslationsParamsSchema),
     validator('json', UpsertTranslationsPayloadSchema),
     async (c: HonoContext<UpsertTranslationsInput>) => {

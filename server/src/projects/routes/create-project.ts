@@ -6,8 +6,9 @@ import { OPENAPI_TAG } from '../constants';
 import { CreateProjectPayloadSchema, ProjectResponseSchema, type CreateProjectPayload } from '../schemas';
 import { dbProjectToResponse, requestCreateProjectPayloadToDbPayload } from '../mappers';
 import { ErrorResponseSchema } from '../../schemas/error';
+import { PartialAuthenticationHeadersSchema, type PartialAuthenticationHeaders } from '../../schemas/headers';
 
-type CreateProjectInput = { out: { json: CreateProjectPayload } };
+type CreateProjectInput = { out: { json: CreateProjectPayload; header: PartialAuthenticationHeaders } };
 
 function createProjectRoute() {
   return [
@@ -42,6 +43,7 @@ function createProjectRoute() {
         },
       },
     }),
+    validator('header', PartialAuthenticationHeadersSchema),
     validator('json', CreateProjectPayloadSchema),
     async (c: HonoContext<CreateProjectInput>) => {
       const payload = requestCreateProjectPayloadToDbPayload(c.req.valid('json'));

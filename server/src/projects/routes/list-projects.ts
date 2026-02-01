@@ -1,4 +1,4 @@
-import { describeRoute, resolver } from 'hono-openapi';
+import { describeRoute, resolver, validator } from 'hono-openapi';
 
 import type { HonoContext } from '../../context';
 import { getDatabase } from '../../context/database';
@@ -6,6 +6,9 @@ import { OPENAPI_TAG } from '../constants';
 import { ListProjectsResponseSchema } from '../schemas';
 import { dbProjectToResponse } from '../mappers';
 import { ErrorResponseSchema } from '../../schemas/error';
+import { PartialAuthenticationHeadersSchema, type PartialAuthenticationHeaders } from '../../schemas/headers';
+
+type ListProjectsInput = { out: { header: PartialAuthenticationHeaders } };
 
 function listProjectsRoute() {
   return [
@@ -28,7 +31,8 @@ function listProjectsRoute() {
         },
       },
     }),
-    async (c: HonoContext) => {
+    validator('header', PartialAuthenticationHeadersSchema),
+    async (c: HonoContext<ListProjectsInput>) => {
       const db = getDatabase(c);
       const projects = await db.projects.list();
 

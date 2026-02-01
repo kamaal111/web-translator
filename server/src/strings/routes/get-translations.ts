@@ -1,16 +1,13 @@
 import { describeRoute, resolver, validator } from 'hono-openapi';
 import { z } from 'zod';
 import { LocaleShape } from '@wt/schemas';
-
+import { Project, ProjectIdShape, ProjectNotFound, ProjectVersionNotFound } from '../../projects';
+import { GetTranslationsResponseSchema } from '../schemas';
+import { ErrorResponseSchema } from '../../schemas/error';
 import type { HonoContext } from '../../context';
 import { getDatabase } from '../../context/database';
-import { ErrorResponseSchema } from '../../schemas/error';
-import { GetTranslationsResponseSchema } from '../../strings/schemas';
-import { ProjectIdShape } from '../../projects/schemas';
-import { ProjectNotFound, ProjectVersionNotFound } from '../../projects/exceptions';
 import { getLogger } from '../../context/logging';
-import type Project from '../../projects/models/project';
-import type TranslationSnapshot from '../../strings/repositories/snapshots/models';
+import type TranslationSnapshot from '../models/translation-snapshot';
 
 const OPENAPI_TAG = 'Translations';
 

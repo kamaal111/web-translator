@@ -19,6 +19,8 @@ class Project implements IProject {
   publicKey: string;
   userId: string;
 
+  private readonly __brand!: void;
+
   constructor(params: ProjectArguments) {
     this.id = params.id || Bun.randomUUIDv7();
     this.name = params.name;
