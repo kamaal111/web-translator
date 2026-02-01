@@ -1,5 +1,28 @@
 import type Project from '../../../projects/models/project';
+import type StringModel from '../../models/string';
 import type TranslationSnapshot from '../../models/translation-snapshot';
+
+/**
+ * Version history item with author information from snapshots
+ */
+interface SnapshotVersionItem {
+  version: number;
+  value: string;
+  createdAt: Date;
+  createdBy: {
+    id: string;
+    name: string;
+  };
+}
+
+/**
+ * Paginated snapshot versions result
+ */
+export interface PaginatedSnapshotVersions {
+  versions: SnapshotVersionItem[];
+  totalVersions: number;
+  hasMore: boolean;
+}
 
 export interface SnapshotsRepository {
   /**
@@ -20,4 +43,21 @@ export interface SnapshotsRepository {
    * Returns the created snapshot.
    */
   createSnapshot(project: Project, locale: string): Promise<TranslationSnapshot>;
+
+  /**
+   * Get all locales that have snapshots for a project.
+   */
+  getLocalesWithSnapshots(project: Project): Promise<Set<string>>;
+
+  /**
+   * Get version history for a specific string key across multiple locales.
+   * Returns a map of locale -> PaginatedSnapshotVersions.
+   */
+  getVersionsForStringAcrossLocales(
+    project: Project,
+    locales: string[],
+    str: StringModel,
+    page: number,
+    pageSize: number,
+  ): Promise<Map<string, PaginatedSnapshotVersions>>;
 }

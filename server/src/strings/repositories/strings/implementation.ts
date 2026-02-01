@@ -6,7 +6,7 @@ import type { DrizzleDatabase } from '../../../db';
 import { strings, translations } from '../../../db/schema';
 import type StringModel from '../../models/string';
 import { newString } from '../../models/string';
-import type { StringsRepository, TranslationEntry } from './types';
+import type { StringsRepository, TranslationEntry, DraftWithAuthor } from './types';
 import type { HonoContext } from '../../../context';
 import { getDrizzle } from '../../../context/database';
 import { verifySessionIsSet } from '../../../auth/utils/session';
@@ -43,9 +43,10 @@ class StringsRepositoryImpl implements StringsRepository {
     const drizzle = getDrizzle(this.context);
     const keys = entries.map(e => e.key);
     const now = new Date();
-    const existingStrings = await drizzle.query.strings.findMany({
-      where: () => and(eq(strings.projectId, project.id), inArray(strings.key, keys)),
-    });
+    const existingStrings = await drizzle
+      .select({ key: strings.key, id: strings.id })
+      .from(strings)
+      .where(and(eq(strings.projectId, project.id), inArray(strings.key, keys)));
     const existingKeyMap = new Map(existingStrings.map(s => [s.key, s.id]));
     const { stringsToInsert, stringsToUpdate, keyToIdMap } = categorizeEntries(
       entries,
@@ -59,6 +60,64 @@ class StringsRepositoryImpl implements StringsRepository {
     await upsertTranslationsBatch(drizzle, translationsToUpsert);
 
     return { updatedCount: translationsToUpsert.length };
+  };
+
+  findByKey = async (project: Project, key: string): Promise<StringModel | null> => {
+    const session = await verifySessionIsSet(this.context);
+    assert(project.userId === session.user.id, 'Project should belong to the user');
+
+    const stringRecord = await getDrizzle(this.context).query.strings.findFirst({
+      where: () => and(eq(strings.projectId, project.id), eq(strings.key, key)),
+    });
+    if (!stringRecord) {
+      return null;
+    }
+
+    return newString(stringRecord);
+  };
+
+  getDraftTranslationsLocales = async (str: StringModel, locale?: string): Promise<Set<string>> => {
+    await verifySessionIsSet(this.context);
+    const conditions = [eq(translations.stringId, str.id)];
+    if (locale) {
+      conditions.push(eq(translations.locale, locale));
+    }
+
+    const results = await getDrizzle(this.context)
+      .select({ locale: translations.locale })
+      .from(translations)
+      .where(and(...conditions));
+
+    return new Set(results.map(dt => dt.locale));
+  };
+
+  getDraftTranslationsForLocales = async (
+    str: StringModel,
+    locales: string[],
+  ): Promise<Map<string, DraftWithAuthor>> => {
+    if (locales.length === 0) {
+      return new Map();
+    }
+
+    const session = await verifySessionIsSet(this.context);
+    const results = await getDrizzle(this.context)
+      .select({ locale: translations.locale, value: translations.value, updatedAt: translations.updatedAt })
+      .from(translations)
+      .where(and(eq(translations.stringId, str.id), inArray(translations.locale, locales)));
+
+    return results.reduce((draftsMap, row) => {
+      draftsMap.set(row.locale, {
+        locale: row.locale,
+        value: row.value,
+        updatedAt: row.updatedAt,
+        updatedBy: {
+          id: session.user.id,
+          name: session.user.name,
+        },
+      });
+
+      return draftsMap;
+    }, new Map<string, DraftWithAuthor>());
   };
 }
 

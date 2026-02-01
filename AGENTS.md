@@ -23,6 +23,12 @@
   - This is enforced by ESLint rules and will cause lint failures
   - Use `unknown` when the type is truly unknown, then narrow it with type guards
   - Use proper generics and type constraints instead of escaping the type system
+- **NEVER use non-null assertion operator (!)** - always use proper type narrowing or assertions
+  - This is enforced by ESLint rules and will cause lint failures
+  - Use `assert` from `node:assert` to document guarantees: `assert(value, 'Expected value to exist')`
+  - Use type guards or optional chaining when appropriate
+  - Example: Instead of `foo!.bar`, use `assert(foo, 'Expected foo to exist'); foo.bar`
+  - This is NON-NEGOTIABLE - force unwrapping hides potential runtime errors
 - **NEVER run dev servers yourself** (e.g., `bun run dev`, `just dev-server`) - they run in background and are difficult to kill
 - **NEVER perform destructive git operations** (e.g., `git checkout`, `git stash`, `git reset`, `git rebase`) - these change the working directory state
 - **ALWAYS use justfile commands** when available for debugging and development tasks (check `just` to list available commands)
@@ -114,6 +120,13 @@ The project is a monorepo with the following structure:
     3. ONLY THEN claim the work is complete
   - Example: When fixing SPA routing, write tests for all route patterns FIRST, then implement the fix
   - This is NON-NEGOTIABLE - tests are the only way to verify correctness
+- **ALWAYS verify test setup operations succeed before continuing**
+  - When calling helper methods or APIs during test setup, ALWAYS check the response status
+  - ❌ WRONG: `await helper.upsertTranslations(...); await helper.publishSnapshot(...);`
+  - ✅ CORRECT: `const response = await helper.upsertTranslations(...); expect(response.status).toBe(200);`
+  - Never proceed with test assertions if setup operations might have failed
+  - This ensures tests fail fast with clear error messages when setup fails, not during assertions
+  - Applies to all operations that modify state: creating records, updating data, publishing changes, etc.
 - **Component Testing (Web):**
   - **ALWAYS use `screen` from `@testing-library/react` for queries** - NEVER use `within(container)` or `document.querySelector()`
   - Import: `import { screen } from '@testing-library/react'`
@@ -123,6 +136,13 @@ The project is a monorepo with the following structure:
     - `document.querySelector('.some-class')`
   - Correct pattern: `render(...); screen.getBy...()`
   - Using `screen` aligns with Testing Library best practices and makes tests more maintainable and accessible
+  - **NEVER wrap `getBy*` queries with `waitFor`** - use `findBy*` instead:
+    - ❌ WRONG: `await waitFor(() => { expect(screen.getByText('foo')).toBeDefined(); })`
+    - ✅ CORRECT: `await screen.findByText('foo')`
+    - ❌ WRONG: `await waitFor(() => screen.getByText('foo'))`
+    - ✅ CORRECT: `await screen.findByText('foo')`
+    - The `findBy*` queries already wait and retry automatically - they ARE the async version of `getBy*`
+    - Only use `waitFor` for complex assertions that aren't covered by queries (e.g., checking mock call counts after state changes)
 
 ### Server Test Setup with TestHelper
 

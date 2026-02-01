@@ -1,3 +1,23 @@
 {
-  "folders": [{ "path": "server" }, { "path": "web" }, { "path": "modules" }, { "path": ".", "name": "root" }],
+  "folders": [
+    {
+      "path": "server",
+    },
+    {
+      "path": "web",
+    },
+    {
+      "path": "modules",
+    },
+    {
+      "path": ".",
+      "name": "root",
+    },
+  ],
+  "settings": {
+    "chat.tools.terminal.autoApprove": {
+      ".specify/scripts/bash/check-prerequisites.sh": true,
+      "bunx": true,
+    },
+  },
 }
