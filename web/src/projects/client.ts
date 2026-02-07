@@ -1,6 +1,11 @@
 import { ProjectApi } from '@/generated/api-client/src/apis/ProjectApi';
 import type { Configuration } from '@/generated/api-client/src/runtime';
-import type { CreateProjectPayload } from '@/generated/api-client/src';
+import type {
+  CreateProjectPayload,
+  GetAppApiV1PProjectIdStringsStringKeyVersionsRequest,
+  PatchAppApiV1PProjectIdStringsStringKeyTranslationsRequest,
+  UpdateDraftTranslationsResponse,
+} from '@/generated/api-client/src';
 
 class ProjectsClient {
   private readonly projectsApi: ProjectApi;
@@ -19,6 +24,16 @@ class ProjectsClient {
 
   read = (projectId: string) => {
     return this.projectsApi.getAppApiV1PProjectId({ projectId });
+  };
+
+  listStringVersions = (request: GetAppApiV1PProjectIdStringsStringKeyVersionsRequest) => {
+    return this.projectsApi.getAppApiV1PProjectIdStringsStringKeyVersions(request);
+  };
+
+  updateDraftTranslations = async (
+    request: PatchAppApiV1PProjectIdStringsStringKeyTranslationsRequest,
+  ): Promise<UpdateDraftTranslationsResponse> => {
+    return this.projectsApi.patchAppApiV1PProjectIdStringsStringKeyTranslations(request);
   };
 }
 

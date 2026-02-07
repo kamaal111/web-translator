@@ -1,5 +1,6 @@
 import { describeRoute, resolver, validator } from 'hono-openapi';
 import { EmailPasswordSignInPayloadSchema, type EmailPasswordSignInPayload } from '@wt/schemas';
+import { ErrorResponseSchema } from '@wt/schemas';
 
 import { AuthResponseSchema } from '../schemas/responses';
 import type { HonoContext } from '../../context';
@@ -7,7 +8,6 @@ import { getHeadersWithJwtAfterAuth, handleAuthRequest } from '../utils/request'
 import { ServerInternal } from '../../exceptions';
 import { getLogger } from '../../context/logging';
 import { TokenHeadersDescription } from '../schemas/headers';
-import { ErrorResponseSchema } from '../../schemas/error';
 import { OPENAPI_TAG } from '../constants';
 
 type SignInInput = { out: { json: EmailPasswordSignInPayload } };

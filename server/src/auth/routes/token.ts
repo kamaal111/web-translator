@@ -1,10 +1,10 @@
 import z from 'zod';
 import { describeRoute, resolver } from 'hono-openapi';
 import { cloneRawRequest } from 'hono/request';
+import { ErrorResponseSchema } from '@wt/schemas';
 
 import { OPENAPI_TAG, TOKEN_ROUTE_NAME } from '../constants';
 import type { HonoContext } from '../../context';
-import { ErrorResponseSchema } from '../../schemas/error';
 import { SessionNotFound } from '../exceptions';
 import { parseTokenResponseAndCreateHeaders } from '../utils/request';
 import { getAuth } from '../../context/auth';

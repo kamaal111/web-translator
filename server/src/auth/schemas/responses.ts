@@ -1,7 +1,5 @@
 import z from 'zod';
-import { LocaleShape } from '@wt/schemas';
-
-import { ApiCommonDatetimeShape } from '../../schemas/common';
+import { ApiCommonDatetimeShape, LocaleShape } from '@wt/schemas';
 
 export const AuthResponseSchema = z
   .object({

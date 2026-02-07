@@ -1,11 +1,11 @@
 import { describeRoute, resolver, validator } from 'hono-openapi';
+import { ErrorResponseSchema } from '@wt/schemas';
 
 import type { HonoContext } from '../../context';
 import { getDatabase } from '../../context/database';
 import { OPENAPI_TAG } from '../constants';
 import { CreateProjectPayloadSchema, ProjectResponseSchema, type CreateProjectPayload } from '../schemas';
 import { dbProjectToResponse, requestCreateProjectPayloadToDbPayload } from '../mappers';
-import { ErrorResponseSchema } from '../../schemas/error';
 import { PartialAuthenticationHeadersSchema, type PartialAuthenticationHeaders } from '../../schemas/headers';
 
 type CreateProjectInput = { out: { json: CreateProjectPayload; header: PartialAuthenticationHeaders } };

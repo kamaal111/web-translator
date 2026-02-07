@@ -1,9 +1,9 @@
 import { describeRoute, resolver, validator } from 'hono-openapi';
 import { z } from 'zod';
-import { LocaleShape } from '@wt/schemas';
+import { LocaleShape, ErrorResponseSchema } from '@wt/schemas';
+
 import { Project, ProjectIdShape, ProjectNotFound, ProjectVersionNotFound } from '../../projects';
 import { GetTranslationsResponseSchema } from '../schemas';
-import { ErrorResponseSchema } from '../../schemas/error';
 import type { HonoContext } from '../../context';
 import { getDatabase } from '../../context/database';
 import { getLogger } from '../../context/logging';

@@ -7,6 +7,7 @@ import { strings, translations } from '../../../db/schema';
 import type StringModel from '../../models/string';
 import { newString } from '../../models/string';
 import type { StringsRepository, TranslationEntry } from './types';
+import DraftWithAuthor, { newDraftWithAuthor } from '../../models/draft-with-author';
 import type { HonoContext } from '../../../context';
 import { getDrizzle } from '../../../context/database';
 import { verifySessionIsSet } from '../../../auth/utils/session';
@@ -15,6 +16,9 @@ import type Translation from '../../models/translation';
 import { newTranslation } from '../../models/translation';
 import { translationModelToDbInsert } from '../../mappers/translation';
 import { stringModelToDbInsert } from '../../mappers/strings';
+import { ConcurrentModificationException } from '../../../projects/exceptions';
+import { toISO8601String } from '../../../utils/dates';
+import { getLogger } from '../../../context/logging';
 
 type StringUpdate = { id: string; context: string | null };
 
@@ -43,9 +47,10 @@ class StringsRepositoryImpl implements StringsRepository {
     const drizzle = getDrizzle(this.context);
     const keys = entries.map(e => e.key);
     const now = new Date();
-    const existingStrings = await drizzle.query.strings.findMany({
-      where: () => and(eq(strings.projectId, project.id), inArray(strings.key, keys)),
-    });
+    const existingStrings = await drizzle
+      .select({ key: strings.key, id: strings.id })
+      .from(strings)
+      .where(and(eq(strings.projectId, project.id), inArray(strings.key, keys)));
     const existingKeyMap = new Map(existingStrings.map(s => [s.key, s.id]));
     const { stringsToInsert, stringsToUpdate, keyToIdMap } = categorizeEntries(
       entries,
@@ -59,6 +64,158 @@ class StringsRepositoryImpl implements StringsRepository {
     await upsertTranslationsBatch(drizzle, translationsToUpsert);
 
     return { updatedCount: translationsToUpsert.length };
+  };
+
+  findByKey = async (project: Project, key: string): Promise<StringModel | null> => {
+    const session = await verifySessionIsSet(this.context);
+    assert(project.userId === session.user.id, 'Project should belong to the user');
+
+    const stringRecord = await getDrizzle(this.context).query.strings.findFirst({
+      where: () => and(eq(strings.projectId, project.id), eq(strings.key, key)),
+    });
+    if (!stringRecord) {
+      return null;
+    }
+
+    return newString(stringRecord);
+  };
+
+  getDraftTranslationsLocales = async (str: StringModel, locale?: string): Promise<Set<string>> => {
+    await verifySessionIsSet(this.context);
+    const conditions = [eq(translations.stringId, str.id)];
+    if (locale) {
+      conditions.push(eq(translations.locale, locale));
+    }
+
+    const results = await getDrizzle(this.context)
+      .select({ locale: translations.locale })
+      .from(translations)
+      .where(and(...conditions));
+
+    return new Set(results.map(dt => dt.locale));
+  };
+
+  getDraftTranslationsForLocales = async (
+    str: StringModel,
+    locales: string[],
+  ): Promise<Map<string, DraftWithAuthor>> => {
+    if (locales.length === 0) {
+      return new Map();
+    }
+
+    const session = await verifySessionIsSet(this.context);
+    const results = await getDrizzle(this.context)
+      .select({ locale: translations.locale, value: translations.value, updatedAt: translations.updatedAt })
+      .from(translations)
+      .where(and(eq(translations.stringId, str.id), inArray(translations.locale, locales)));
+
+    return results.reduce((draftsMap, row) => {
+      draftsMap.set(
+        row.locale,
+        newDraftWithAuthor({
+          locale: row.locale,
+          value: row.value,
+          updatedAt: row.updatedAt,
+          updatedBy: {
+            id: session.user.id,
+            name: session.user.name,
+          },
+        }),
+      );
+
+      return draftsMap;
+    }, new Map<string, DraftWithAuthor>());
+  };
+
+  updateDraft = async (
+    project: Project,
+    stringRecord: StringModel,
+    translationsMap: Record<string, string>,
+    ifUnmodifiedSince?: Date,
+  ): Promise<DraftWithAuthor[]> => {
+    const session = await verifySessionIsSet(this.context);
+    assert(project.userId === session.user.id, 'Project should belong to the user');
+    assert(stringRecord.projectId === project.id, 'Given string should belong to the project');
+
+    const drizzle = getDrizzle(this.context);
+    const locales = Object.keys(translationsMap);
+
+    await this.checkForConcurrentModifications(project, stringRecord, locales, ifUnmodifiedSince, drizzle);
+
+    const now = new Date();
+    const translationsToUpdate = Object.entries(translationsMap).map(([locale, value]) => {
+      return newTranslation({
+        stringId: stringRecord.id,
+        locale,
+        value,
+        createdAt: now,
+        updatedAt: now,
+        id: null,
+      });
+    });
+    await drizzle
+      .insert(translations)
+      .values(translationsToUpdate.map(translationModelToDbInsert))
+      .onConflictDoUpdate({
+        target: [translations.stringId, translations.locale],
+        set: { value: sql`excluded.value`, updatedAt: sql`excluded.updated_at` },
+      });
+
+    return translationsToUpdate.map(t =>
+      newDraftWithAuthor({
+        locale: t.locale,
+        value: t.value,
+        updatedAt: now,
+        updatedBy: {
+          id: session.user.id,
+          name: session.user.name,
+        },
+      }),
+    );
+  };
+
+  private checkForConcurrentModifications = async (
+    project: Project,
+    stringRecord: StringModel,
+    locales: string[],
+    ifUnmodifiedSince: Date | undefined,
+    drizzle: DrizzleDatabase,
+  ): Promise<void> => {
+    if (!ifUnmodifiedSince || locales.length === 0) {
+      return;
+    }
+
+    const existingTranslations = await drizzle
+      .select({ locale: translations.locale, updatedAt: translations.updatedAt })
+      .from(translations)
+      .where(and(eq(translations.stringId, stringRecord.id), inArray(translations.locale, locales)));
+    const conflictingTranslation = existingTranslations.find(existing => existing.updatedAt > ifUnmodifiedSince);
+    if (!conflictingTranslation) {
+      return;
+    }
+
+    const draftsMap = await this.getDraftTranslationsForLocales(stringRecord, locales);
+    const draft = draftsMap.get(conflictingTranslation.locale);
+    getLogger(this.context).error('Concurrent modification detected', {
+      project_id: project.id,
+      string_key: stringRecord.key,
+      requested_locales: locales.join(', '),
+    });
+
+    throw new ConcurrentModificationException(this.context, {
+      message: 'Another user modified this translation recently. Review changes and retry.',
+      conflictDetails: draft
+        ? {
+            locale: conflictingTranslation.locale,
+            lastModifiedAt: toISO8601String(draft.updatedAt),
+            lastModifiedBy: draft.updatedBy,
+          }
+        : {
+            locale: conflictingTranslation.locale,
+            lastModifiedAt: toISO8601String(new Date()),
+            lastModifiedBy: { id: 'unknown', name: 'Unknown' },
+          },
+    });
   };
 }
 

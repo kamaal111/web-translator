@@ -1,10 +1,10 @@
 import { describeRoute, resolver, validator } from 'hono-openapi';
+import { ErrorResponseSchema } from '@wt/schemas';
 
 import type { HonoContext } from '../../context';
 import { OPENAPI_TAG } from '../constants';
 import { ProjectResponseSchema, ReadProjectParamsSchema, type ReadProjectParams } from '../schemas';
 import { dbProjectToResponse } from '../mappers';
-import { ErrorResponseSchema } from '../../schemas/error';
 import { getValidatedProject } from '../utils';
 import { PartialAuthenticationHeadersSchema, type PartialAuthenticationHeaders } from '../../schemas/headers';
 

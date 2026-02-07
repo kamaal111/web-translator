@@ -1,3 +1,5 @@
+import assert from 'node:assert';
+
 import js from '@eslint/js';
 import globals from 'globals';
 import tseslint from 'typescript-eslint';
@@ -6,6 +8,10 @@ import reactRefresh from 'eslint-plugin-react-refresh';
 import pluginReact from 'eslint-plugin-react';
 import { defineConfig, globalIgnores } from 'eslint/config';
 import pluginQuery from '@tanstack/eslint-plugin-query';
+
+const recommendedReactPluginConfig = pluginReact.configs.flat.recommended;
+
+assert(recommendedReactPluginConfig);
 
 export default defineConfig([
   globalIgnores([
@@ -24,7 +30,7 @@ export default defineConfig([
       tseslint.configs.recommended,
       reactHooks.configs.flat.recommended,
       reactRefresh.configs.vite,
-      pluginReact.configs.flat.recommended!,
+      recommendedReactPluginConfig,
     ],
     languageOptions: { ecmaVersion: 2020, globals: { ...globals.node, ...globals.browser } },
     settings: {
@@ -56,6 +62,7 @@ export default defineConfig([
       '@typescript-eslint/no-unsafe-call': 'error',
       '@typescript-eslint/no-unsafe-member-access': 'error',
       '@typescript-eslint/no-unsafe-return': 'error',
+      '@typescript-eslint/no-non-null-assertion': 'error',
     },
   },
   {

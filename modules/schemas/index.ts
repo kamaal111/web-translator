@@ -1,5 +1,19 @@
 import z from 'zod';
 
+// Common shapes used across the API
+export const ApiCommonDatetimeShape = z.iso.datetime({ offset: true });
+
+export const ErrorResponseSchema = z
+  .object({
+    message: z.string().meta({ description: 'Error message' }),
+    code: z.string().optional().meta({ description: 'Error code' }),
+  })
+  .describe('ErrorResponse')
+  .meta({
+    title: 'Error Response',
+    description: 'Error response containing error message and optional error code',
+  });
+
 export type EmailPasswordSignInPayload = z.infer<typeof EmailPasswordSignInPayloadSchema>;
 
 export const LocaleShape = z
@@ -118,3 +132,22 @@ export const BaseCreateProjectSchema = z.object({
     example: 'pk_1234567890abcdef',
   }),
 });
+
+export const ConflictErrorResponseSchema = ErrorResponseSchema.extend({
+  context: z.object({
+    conflictDetails: z.object({
+      locale: LocaleShape,
+      lastModifiedAt: ApiCommonDatetimeShape,
+      lastModifiedBy: z.object({
+        id: z.string(),
+        name: z.string(),
+      }),
+    }),
+  }),
+}).meta({
+  ref: 'ConflictErrorResponse',
+  title: 'Conflict Error Response',
+  description: 'Response when a concurrent modification is detected',
+});
+
+export type ConflictErrorResponse = z.infer<typeof ConflictErrorResponseSchema>;
