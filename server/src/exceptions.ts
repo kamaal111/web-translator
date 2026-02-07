@@ -61,12 +61,23 @@ export class ServerInternal extends APIException {
   }
 }
 
+export class BadRequestException extends APIException {
+  constructor(c: HonoContext, options: { message: string; code?: string; name?: string }) {
+    super(c, 400, {
+      message: options.message,
+      code: options.code ?? 'BAD_REQUEST',
+      name: options?.name,
+    });
+  }
+}
+
 export class Conflict extends APIException {
-  constructor(c: HonoContext, options?: { message?: string; code?: string; name?: string }) {
+  constructor(c: HonoContext, options?: { message?: string; code?: string; name?: string; context?: unknown }) {
     super(c, 409, {
       message: options?.message ?? 'Conflict',
       code: options?.code ?? 'CONFLICT',
-      name: options?.name,
+      name: options?.name ?? 'Conflict',
+      context: options?.context,
     });
   }
 }

@@ -1,10 +1,12 @@
-import { Box, Text, Heading, Card, Badge, Flex } from '@radix-ui/themes';
+import { Box, Text, Heading, Card, Badge, Flex, Button } from '@radix-ui/themes';
 import * as Accordion from '@radix-ui/react-accordion';
 import { ChevronDownIcon } from '@radix-ui/react-icons';
 import { FormattedMessage, useIntl, FormattedDate } from 'react-intl';
+import { useState } from 'react';
 
 import type { LocaleVersionHistory, DraftInfo, VersionHistoryItem } from '@/generated/api-client/src';
 import useStringVersions from '@/projects/hooks/use-string-versions';
+import DraftEditor from '@/projects/components/draft-editor/draft-editor';
 import messages from './messages';
 
 import './string-version-history.css';
@@ -14,63 +16,59 @@ interface StringVersionHistoryProps {
   stringKey: string;
 }
 
-function DraftSection({ draft }: { draft: DraftInfo | null }) {
-  const intl = useIntl();
+function StringVersionHistory({ projectId, stringKey }: StringVersionHistoryProps) {
+  const { versionHistory, isLoading, isError } = useStringVersions({
+    projectId,
+    stringKey,
+  });
 
-  if (!draft) {
+  if (isLoading) {
     return (
-      <Box className="string-version-history-version string-version-history-draft">
-        <Flex justify="between" align="center" mb="2">
-          <Badge color="amber">
-            <FormattedMessage {...messages.draftLabel} />
-          </Badge>
-        </Flex>
-        <Text size="2" color="gray" as="p">
-          <FormattedMessage {...messages.noDraft} />
+      <Box className="string-version-history">
+        <Text>
+          <FormattedMessage {...messages.loading} />
         </Text>
       </Box>
     );
   }
 
-  return (
-    <Box className="string-version-history-version string-version-history-draft">
-      <Flex justify="between" align="center" mb="2">
-        <Badge color="amber">
-          <FormattedMessage {...messages.draftLabel} />
-        </Badge>
-        <Text size="1" color="gray">
-          <FormattedMessage
-            {...messages.updatedAt}
-            values={{
-              date: (
-                <FormattedDate
-                  value={draft.updatedAt}
-                  year="numeric"
-                  month="short"
-                  day="numeric"
-                  hour="2-digit"
-                  minute="2-digit"
-                />
-              ),
-            }}
-          />
-          {draft.updatedBy.name && (
-            <>
-              {' '}
-              <FormattedMessage {...messages.by} values={{ name: draft.updatedBy.name }} />
-            </>
-          )}
+  if (isError || !versionHistory) {
+    return (
+      <Box className="string-version-history">
+        <Text color="red">
+          <FormattedMessage {...messages.errorLoading} />
         </Text>
-      </Flex>
-      <Text
-        size="2"
-        as="p"
-        className="string-version-history-value"
-        aria-label={intl.formatMessage(messages.draftLabel)}
-      >
-        {draft.value}
-      </Text>
-    </Box>
+      </Box>
+    );
+  }
+
+  const { locales } = versionHistory;
+
+  return (
+    <Card className="string-version-history">
+      <Heading as="h3" size="4" mb="4">
+        <FormattedMessage {...messages.title} />: <code>{stringKey}</code>
+      </Heading>
+
+      {locales.length === 0 ? (
+        <Text color="gray">
+          <FormattedMessage {...messages.noVersions} />
+        </Text>
+      ) : (
+        <Flex direction="column" gap="2">
+          <Accordion.Root type="multiple">
+            {locales.map(localeHistory => (
+              <LocaleSection
+                key={localeHistory.locale}
+                localeHistory={localeHistory}
+                projectId={projectId}
+                stringKey={stringKey}
+              />
+            ))}
+          </Accordion.Root>
+        </Flex>
+      )}
+    </Card>
   );
 }
 
@@ -124,7 +122,15 @@ function VersionItem({ item }: { item: VersionHistoryItem }) {
   );
 }
 
-function LocaleSection({ localeHistory }: { localeHistory: LocaleVersionHistory }) {
+function LocaleSection({
+  localeHistory,
+  projectId,
+  stringKey,
+}: {
+  localeHistory: LocaleVersionHistory;
+  projectId: string;
+  stringKey: string;
+}) {
   const intl = useIntl();
   const { locale, draft, versions } = localeHistory;
 
@@ -145,7 +151,7 @@ function LocaleSection({ localeHistory }: { localeHistory: LocaleVersionHistory 
       </Accordion.Header>
       <Accordion.Content className="string-version-history-accordion-content">
         <Flex direction="column" gap="3" pt="3">
-          <DraftSection draft={draft} />
+          <DraftSection draft={draft} projectId={projectId} stringKey={stringKey} locale={locale} />
           {versions.length > 0 ? (
             versions.map(item => <VersionItem key={item.version} item={item} />)
           ) : (
@@ -159,54 +165,105 @@ function LocaleSection({ localeHistory }: { localeHistory: LocaleVersionHistory 
   );
 }
 
-function StringVersionHistory({ projectId, stringKey }: StringVersionHistoryProps) {
-  const { versionHistory, isLoading, isError } = useStringVersions({
-    projectId,
-    stringKey,
-  });
+function DraftSection({
+  draft,
+  projectId,
+  stringKey,
+  locale,
+}: {
+  draft: DraftInfo | null;
+  projectId: string;
+  stringKey: string;
+  locale: string;
+}) {
+  const intl = useIntl();
+  const [isEditing, setIsEditing] = useState(false);
 
-  if (isLoading) {
+  if (!draft) {
     return (
-      <Box className="string-version-history">
-        <Text>
-          <FormattedMessage {...messages.loading} />
+      <Box className="string-version-history-version string-version-history-draft">
+        <Flex justify="between" align="center" mb="2">
+          <Badge color="amber">
+            <FormattedMessage {...messages.draftLabel} />
+          </Badge>
+        </Flex>
+        <Text size="2" color="gray" as="p">
+          <FormattedMessage {...messages.noDraft} />
         </Text>
       </Box>
     );
   }
 
-  if (isError || !versionHistory) {
+  if (isEditing) {
     return (
-      <Box className="string-version-history">
-        <Text color="red">
-          <FormattedMessage {...messages.errorLoading} />
-        </Text>
+      <Box className="string-version-history-version string-version-history-draft">
+        <Flex justify="between" align="center" mb="2">
+          <Badge color="amber">
+            <FormattedMessage {...messages.draftLabel} />
+          </Badge>
+        </Flex>
+        <DraftEditor
+          projectId={projectId}
+          stringKey={stringKey}
+          locale={locale}
+          initialValue={draft.value}
+          updatedAt={draft.updatedAt.toISOString()}
+          onSave={() => setIsEditing(false)}
+          onCancel={() => setIsEditing(false)}
+        />
       </Box>
     );
   }
-
-  const { locales } = versionHistory;
 
   return (
-    <Card className="string-version-history">
-      <Heading as="h3" size="4" mb="4">
-        <FormattedMessage {...messages.title} />: <code>{stringKey}</code>
-      </Heading>
-
-      {locales.length === 0 ? (
-        <Text color="gray">
-          <FormattedMessage {...messages.noVersions} />
-        </Text>
-      ) : (
-        <Flex direction="column" gap="2">
-          <Accordion.Root type="multiple">
-            {locales.map(localeHistory => (
-              <LocaleSection key={localeHistory.locale} localeHistory={localeHistory} />
-            ))}
-          </Accordion.Root>
+    <Box className="string-version-history-version string-version-history-draft">
+      <Flex justify="between" align="center" mb="2">
+        <Badge color="amber">
+          <FormattedMessage {...messages.draftLabel} />
+        </Badge>
+        <Flex gap="2" align="center">
+          <Text size="1" color="gray">
+            <FormattedMessage
+              {...messages.updatedAt}
+              values={{
+                date: (
+                  <FormattedDate
+                    value={draft.updatedAt}
+                    year="numeric"
+                    month="short"
+                    day="numeric"
+                    hour="2-digit"
+                    minute="2-digit"
+                  />
+                ),
+              }}
+            />
+            {draft.updatedBy.name && (
+              <>
+                {' '}
+                <FormattedMessage {...messages.by} values={{ name: draft.updatedBy.name }} />
+              </>
+            )}
+          </Text>
+          <Button
+            size="1"
+            variant="soft"
+            onClick={() => setIsEditing(true)}
+            aria-label={intl.formatMessage(messages.editDraft)}
+          >
+            <FormattedMessage {...messages.edit} />
+          </Button>
         </Flex>
-      )}
-    </Card>
+      </Flex>
+      <Text
+        size="2"
+        as="p"
+        className="string-version-history-value"
+        aria-label={intl.formatMessage(messages.draftLabel)}
+      >
+        {draft.value}
+      </Text>
+    </Box>
   );
 }
 

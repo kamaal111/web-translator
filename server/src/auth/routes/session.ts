@@ -1,12 +1,12 @@
 import assert from 'node:assert';
 
 import { describeRoute, resolver, validator } from 'hono-openapi';
+import { ErrorResponseSchema } from '@wt/schemas';
 
 import { OPENAPI_TAG } from '../constants';
 import requireLoggedInSession from '../middleware/require-logged-in-session';
 import { PartialAuthenticationHeadersSchema, type PartialAuthenticationHeaders } from '../../schemas/headers';
 import { SessionResponseSchema } from '../schemas/responses';
-import { ErrorResponseSchema } from '../../schemas/error';
 import type { HonoContext } from '../../context';
 import { getSession } from '../../context/session';
 

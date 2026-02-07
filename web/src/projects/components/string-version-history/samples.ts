@@ -1,7 +1,6 @@
 import type { ListStringVersionsResponse } from '@/generated/api-client/src';
 
 export const mockStringVersionHistory: ListStringVersionsResponse = {
-  stringKey: 'HOME.TITLE',
   locales: [
     {
       locale: 'en',

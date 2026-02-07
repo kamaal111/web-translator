@@ -1,5 +1,6 @@
 import z from 'zod';
 import { describeRoute, resolver, validator } from 'hono-openapi';
+import { ErrorResponseSchema } from '@wt/schemas';
 
 import type { HonoContext } from '../../context';
 import { getDatabase } from '../../context/database';
@@ -12,7 +13,6 @@ import {
   type ListStringVersionsQuery,
   type ListStringVersionsResponse,
 } from '../schemas';
-import { ErrorResponseSchema } from '../../schemas/error';
 import { getValidatedProject } from '../utils';
 import { PartialAuthenticationHeadersSchema, type PartialAuthenticationHeaders } from '../../schemas/headers';
 import { StringNotFound } from '../exceptions';

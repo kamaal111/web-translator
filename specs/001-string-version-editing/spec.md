@@ -11,7 +11,7 @@
 
 - Q: Draft vs Snapshot Editing - The current spec mentions "editing unpublished strings," but based on your clarification, users actually edit the **draft** (strings table), not snapshots. Which behavior is correct? → A: Users edit the draft (strings table) only; all snapshots are immutable and read-only for reference
 - Q: Draft Initialization on First Edit - When a user wants to edit a string that has snapshots but no draft yet exists in the strings table, how should the draft be created? → A: Every project has 1 strings model (the draft) that persists continuously; users edit this single draft and publish creates snapshots without recreating the draft
-- Q: Version Comparison Scope - When users compare versions (User Story 3 - P3), which versions should be available for comparison? → A: Compare any two snapshots, or compare draft vs any snapshot
+- Q: Version Comparison Scope - When users compare versions (User Story 4 - P3), which versions should be available for comparison? → A: Compare any two snapshots, or compare draft vs any snapshot
 - Q: Display Organization in Project Page - When showing all strings with their version history in the project page, how should the information be organized? → A: List strings, expand each to show snapshots + draft with version indicators
 - Q: Concurrent Editing Protection - The edge cases mention concurrent editing. How should the system handle when two users try to edit the same draft string simultaneously? → A: Last-write-wins with warning if another user saved recently
 
@@ -34,7 +34,27 @@ Users need to see the complete history of changes to their project strings, incl
 
 ---
 
-### User Story 2 - Edit Draft Strings (Priority: P2)
+### User Story 2 - Publish Draft to Create Snapshot (Priority: P1)
+
+Users need to publish their draft strings to create immutable snapshots, capturing the current state of translations at a specific point in time. This is the core mechanism for creating version history.
+
+**Why this priority**: This is foundational - without the ability to publish, users cannot create the snapshots that the entire feature depends on. Publishing must exist before editing or comparing versions makes sense. This is how version history is actually created.
+
+**Independent Test**: Can be fully tested by publishing a draft and verifying that a new immutable snapshot is created with timestamp, author, and content matching the current draft. The draft must remain editable after publishing. Delivers immediate value by enabling users to checkpoint their work and create audit trails.
+
+**Acceptance Scenarios**:
+
+1. **Given** a project with a draft that differs from the latest snapshot, **When** a user clicks the "Publish" button, **Then** a new immutable snapshot is created from the current draft state
+2. **Given** a user publishes a draft, **When** the publish completes successfully, **Then** the new snapshot appears in version history with the current timestamp and the user as the author
+3. **Given** a user publishes a draft, **When** the publish completes, **Then** the draft remains editable and continues to exist for further modifications
+4. **Given** a draft that matches the latest snapshot exactly, **When** a user attempts to publish, **Then** the system displays a warning that no changes exist and prompts for confirmation
+5. **Given** multiple users are working on the same project, **When** one user publishes, **Then** other users see the new snapshot in their version history immediately upon refresh
+6. **Given** a user is about to publish, **When** they click publish, **Then** the system displays a preview showing what will change compared to the latest snapshot (if one exists)
+7. **Given** a project with no snapshots yet, **When** a user publishes for the first time, **Then** the first snapshot is created successfully and marked as the initial version
+
+---
+
+### User Story 3 - Edit Draft Strings (Priority: P2)
 
 Users need to modify the draft version of strings (strings table) to correct errors, improve translations, or update content before publishing a new snapshot.
 
@@ -53,7 +73,7 @@ Users need to modify the draft version of strings (strings table) to correct err
 
 ---
 
-### User Story 3 - Compare Versions (Priority: P3)
+### User Story 4 - Compare Versions (Priority: P3)
 
 Users need to compare different versions side-by-side to understand what changed between snapshots or between the current draft and any published snapshot.
 
@@ -73,11 +93,15 @@ Users need to compare different versions side-by-side to understand what changed
 ### Edge Cases
 
 - When two users edit the same draft simultaneously, last-write-wins with a warning displayed if another user saved within the last few minutes
+- When two users attempt to publish simultaneously, the second publish must handle potential conflicts gracefully
 - Strings with very long content (thousands of characters) must render and be editable without performance degradation
 - Snapshots are immutable and cannot be deleted; if a project is deleted, all associated snapshots are retained for audit purposes
 - Rapid successive edits to the draft are handled gracefully with debouncing or optimistic updates
 - Draft content always displays the most recent saved state even when viewing historical snapshots
 - When the draft differs from the latest snapshot, visual indicators clearly show unsaved changes exist
+- Publishing when the draft is identical to the latest snapshot should warn but allow user to proceed (creating a duplicate snapshot if they confirm)
+- Network failures during publish must be handled gracefully; either the snapshot is fully created or not at all (atomic operation)
+- If a publish operation fails partway through, the draft must remain unchanged and editable
 
 ## Requirements _(mandatory)_
 
@@ -100,6 +124,13 @@ Users need to compare different versions side-by-side to understand what changed
 - **FR-015**: System MUST display appropriate error messages when draft edit operations fail
 - **FR-016**: System MUST warn users if they are about to overwrite recent changes made by another user (last-write-wins with warning)
 - **FR-017**: System MUST display when the draft was last modified and by whom
+- **FR-018**: System MUST provide a "Publish" action that creates an immutable snapshot from the current draft state
+- **FR-019**: System MUST record the timestamp and author when creating a snapshot via publish
+- **FR-020**: System MUST keep the draft editable after publishing (draft continues to exist)
+- **FR-021**: System MUST treat publish operations as atomic (either fully succeed or fully fail)
+- **FR-022**: System MUST display a preview or confirmation showing changes before publishing
+- **FR-023**: System MUST warn users when attempting to publish a draft that matches the latest snapshot
+- **FR-024**: System MUST provide appropriate error messages when publish operations fail
 
 ### Key Entities _(include if feature involves data)_
 
@@ -119,3 +150,6 @@ Users need to compare different versions side-by-side to understand what changed
 - **SC-005**: System prevents 100% of attempts to edit translation snapshots (published versions)
 - **SC-006**: Version history displays correctly for projects with up to 10,000 string snapshots
 - **SC-007**: Users report 90% confidence in understanding string change history
+- **SC-008**: Users can publish a draft and see the new snapshot in version history within 3 seconds
+- **SC-009**: 100% of publish operations are atomic (full success or full failure, no partial states)
+- **SC-010**: Users can successfully publish at least 1000 snapshots per project without performance degradation
