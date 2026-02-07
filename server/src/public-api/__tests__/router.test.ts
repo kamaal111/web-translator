@@ -1,8 +1,10 @@
 import { beforeAll, afterAll, describe, test, expect } from 'bun:test';
+
+import { ErrorResponseSchema } from '@wt/schemas';
+
 import TestHelper from '../../__tests__/test-helper';
 import { ProjectResponseSchema } from '../../projects/schemas';
 import { GetTranslationsResponseSchema } from '../../strings/schemas';
-import { ErrorResponseSchema } from '../../schemas/error';
 
 const helper = new TestHelper();
 

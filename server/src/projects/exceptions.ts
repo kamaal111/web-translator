@@ -1,6 +1,30 @@
 import { Conflict, NotFound } from '../exceptions';
 import type { HonoContext } from '../context';
 
+export class ConcurrentModificationException extends Conflict {
+  constructor(
+    c: HonoContext,
+    options: {
+      message: string;
+      conflictDetails: {
+        locale: string;
+        lastModifiedAt: string;
+        lastModifiedBy: {
+          id: string;
+          name: string;
+        };
+      };
+    },
+  ) {
+    super(c, {
+      message: options.message,
+      code: 'CONCURRENT_MODIFICATION',
+      name: 'ConcurrentModificationException',
+      context: { conflictDetails: options.conflictDetails },
+    });
+  }
+}
+
 export class ProjectNameAlreadyExists extends Conflict {
   constructor(c: HonoContext) {
     super(c, {

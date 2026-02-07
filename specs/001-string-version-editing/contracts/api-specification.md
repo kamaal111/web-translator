@@ -216,7 +216,115 @@ All endpoints require authentication via Better Auth session.
 
 ---
 
-### 3. Compare String Versions (P3)
+### 3. Publish Draft to Create Snapshot
+
+**Endpoint**: `POST /app-api/v1/projects/:projectId/publish`
+
+**Purpose**: Publish all current draft translations to create new immutable snapshots for selected locales. This captures the current state of all draft strings at a specific point in time.
+
+**Path Parameters**:
+
+- `projectId` (string, required): Project ID
+
+**Request Body**:
+
+```json
+{
+  "locales": ["en", "es"], // Optional: specific locales to publish. If omitted, publishes all enabled locales
+  "force": false // Optional: if true, publish even if no changes detected
+}
+```
+
+**Response** (200 OK):
+
+```json
+{
+  "published": [
+    {
+      "locale": "en",
+      "version": 4,
+      "snapshotId": "snap-789",
+      "stringCount": 42,
+      "createdAt": "2026-02-07T15:30:00Z"
+    },
+    {
+      "locale": "es",
+      "version": 3,
+      "snapshotId": "snap-790",
+      "stringCount": 42,
+      "createdAt": "2026-02-07T15:30:00Z"
+    }
+  ],
+  "createdBy": {
+    "id": "user-123",
+    "name": "Alice Developer"
+  }
+}
+```
+
+**Response** (409 Conflict):
+
+```json
+{
+  "error": "No changes detected",
+  "message": "Draft translations are identical to the latest snapshot. Use force=true to publish anyway.",
+  "affectedLocales": ["en", "es"]
+}
+```
+
+**Response** (400 Bad Request):
+
+```json
+{
+  "error": "Validation failed",
+  "message": "Locale 'fr' is not enabled for this project",
+  "field": "locales"
+}
+```
+
+**Response** (404 Not Found):
+
+```json
+{
+  "error": "Project not found",
+  "message": "No project with ID 'proj-123' found"
+}
+```
+
+**Response** (403 Forbidden):
+
+```json
+{
+  "error": "Access denied",
+  "message": "You do not have permission to publish this project"
+}
+```
+
+**Response** (500 Internal Server Error):
+
+```json
+{
+  "error": "Publish failed",
+  "message": "Failed to create snapshot. Please try again.",
+  "details": {
+    "partialSuccess": false,
+    "failedLocales": ["en"]
+  }
+}
+```
+
+**Notes**:
+
+- Publish operation is atomic per locale (either fully succeeds or fully fails)
+- If publishing multiple locales and one fails, others may still succeed (check `partialSuccess`)
+- Version numbers are automatically incremented per locale
+- All draft strings for the project are included in the snapshot
+- Empty drafts (no strings) return 400 Bad Request
+- Snapshot `data` field contains all draft translations as `{ "STRING.KEY": "value" }` JSONB
+
+---
+
+### 4. Compare String Versions (P3)
 
 **Endpoint**: `GET /app-api/v1/projects/:projectId/strings/:stringKey/compare`
 

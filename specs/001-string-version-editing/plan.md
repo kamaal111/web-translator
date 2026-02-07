@@ -7,11 +7,12 @@
 
 ## Summary
 
-Add version history viewing and draft editing capabilities to the project page. Users will be able to:
+Add version history viewing, draft publishing, and draft editing capabilities to the project page. Users will be able to:
 
 1. View all translation snapshots (immutable published versions) in chronological order
-2. Edit the current draft (strings table) which persists continuously between publishes
-3. Compare different versions (P3 enhancement)
+2. Publish the current draft to create new immutable snapshots
+3. Edit the current draft (strings table) which persists continuously between publishes
+4. Compare different versions (P3 enhancement)
 
 Technical approach leverages existing database schema (`strings` table for drafts, `translationSnapshots` table for immutable versions) and extends the project page UI to display version history with expandable/collapsible string rows.
 
@@ -127,6 +128,7 @@ server/
 │   ├── projects/
 │   │   ├── routes/
 │   │   │   ├── list-string-versions.ts      # NEW: GET /:projectId/strings/:stringId/versions
+│   │   │   ├── publish-snapshot.ts           # NEW: POST /:projectId/publish
 │   │   │   ├── update-draft-string.ts        # NEW: PATCH /:projectId/strings/:stringId/draft
 │   │   │   └── compare-versions.ts           # NEW (P3): GET /:projectId/strings/:stringId/compare
 │   │   ├── repositories/

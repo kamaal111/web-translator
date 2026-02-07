@@ -107,7 +107,6 @@ describe('StringVersionHistory', () => {
 
   test('should render "No versions found" when locales array is empty', async () => {
     mockListStringVersions.mockResolvedValue({
-      stringKey: 'HOME.TITLE',
       locales: [],
     });
 

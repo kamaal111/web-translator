@@ -8,11 +8,12 @@ This guide provides a quick overview for developers implementing the string vers
 
 ## Overview
 
-This feature adds three main capabilities to the project page:
+This feature adds four main capabilities to the project page:
 
 1. **View version history** - Display all published snapshots and current draft for each string
-2. **Edit draft strings** - Allow users to modify draft translations before publishing
-3. **Compare versions** - Side-by-side comparison of any two versions (P3 priority)
+2. **Publish drafts** - Create immutable snapshots from current draft translations
+3. **Edit draft strings** - Allow users to modify draft translations before publishing
+4. **Compare versions** - Side-by-side comparison of any two versions (P3 priority)
 
 ## Architecture
 
@@ -58,23 +59,34 @@ This feature adds three main capabilities to the project page:
   - Implement pagination (20 items per page)
   - Add Zod schema validation
 
+- [ ] **Create route handler**: `server/src/projects/routes/publish-snapshot.ts`
+  - POST endpoint for publishing drafts
+  - Creates immutable snapshots from current draft
+  - Atomic operations with transaction support
+  - Change detection (409 if no changes)
+  - Validates locales against project's `enabledLocales`
+
 - [ ] **Create route handler**: `server/src/projects/routes/update-draft-string.ts`
   - PATCH endpoint for draft updates
   - Conflict detection using `updatedAt` timestamps
-  - Validate locales against project's `enabledLocales`
+  - Validates locales against project's `enabledLocales`
   - Return 409 on concurrent edits within 5 minutes
 
 - [ ] **Extend repositories**:
   - `server/src/projects/repositories/strings-repository.ts`: Add `getVersionHistory()`
+  - `server/src/projects/repositories/snapshots-repository.ts`: Add `getSnapshotsByProjectAndLocale()`, `createSnapshot()`
   - `server/src/projects/repositories/translations-repository.ts`: Add `updateDraft()` with conflict check
 
 - [ ] **Add schemas**: `server/src/projects/schemas.ts`
   - `ListStringVersionsQuerySchema` (stringKey, locale, page, pageSize)
+  - `PublishSnapshotBodySchema` (locales, force)
+  - `PublishSnapshotResponseSchema`
   - `UpdateDraftTranslationsBodySchema` (translations: Record<locale, value>, ifUnmodifiedSince)
   - Response schemas for OpenAPI docs
 
 - [ ] **Write tests**: `server/src/projects/__tests__/`
   - `list-string-versions.test.ts` (TestHelper for setup)
+  - `publish-snapshot.test.ts` (test atomic operations and change detection)
   - `update-draft-string.test.ts` (test conflict detection)
 
 - [ ] **Update router**: `server/src/projects/router.ts`
@@ -89,6 +101,12 @@ This feature adds three main capabilities to the project page:
   - `string-version-history.css` (Tailwind styling)
   - `messages.ts` (i18n with react-intl)
 
+- [ ] **Create component**: `web/src/projects/components/publish-button/`
+  - `publish-button.tsx` (button with confirmation dialog)
+  - `publish-button.test.tsx`
+  - `publish-button.css`
+  - `messages.ts`
+
 - [ ] **Create component**: `web/src/projects/components/draft-editor/`
   - `draft-editor.tsx` (editable textarea with save/cancel)
   - `draft-editor.test.tsx`
@@ -97,9 +115,11 @@ This feature adds three main capabilities to the project page:
 
 - [ ] **Create hooks**: `web/src/projects/hooks/`
   - `use-string-versions.ts` (fetch version history, pagination)
+  - `use-publish.ts` (publish logic and state management)
   - `use-draft-editor.ts` (edit state, save, conflict handling)
 
 - [ ] **Extend page**: `web/src/pages/project/project.tsx`
+  - Integrate PublishButton component in page header
   - Integrate StringVersionHistory component
   - Add expand/collapse UI for string list
   - Update `messages.ts` with new i18n keys
@@ -233,12 +253,17 @@ console.timeEnd('version-history-load');
    - Frontend: `StringVersionHistory` component (read-only)
    - Tests: Full coverage
 
-2. **P2**: User Story 2 - Edit Draft Strings
+2. **P1**: User Story 2 - Publish Draft to Create Snapshot
+   - Backend: `publish-snapshot` endpoint
+   - Frontend: `PublishButton` component
+   - Tests: Including atomic operations and change detection
+
+3. **P2**: User Story 3 - Edit Draft Strings
    - Backend: `update-draft-string` endpoint
    - Frontend: `DraftEditor` component
    - Tests: Including conflict detection
 
-3. **P3**: User Story 3 - Compare Versions (deferred)
+4. **P3**: User Story 4 - Compare Versions (deferred)
    - Backend: `compare-versions` endpoint
    - Frontend: `VersionComparison` component
    - Tests: Full coverage

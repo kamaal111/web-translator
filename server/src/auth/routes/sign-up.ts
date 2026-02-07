@@ -1,12 +1,11 @@
 import { describeRoute, resolver, validator } from 'hono-openapi';
-import { EmailPasswordSignUpPayloadSchema, type EmailPasswordSignUpPayload } from '@wt/schemas';
+import { EmailPasswordSignUpPayloadSchema, type EmailPasswordSignUpPayload, ErrorResponseSchema } from '@wt/schemas';
 
 import { AuthResponseSchema } from '../schemas/responses';
 import type { HonoContext } from '../../context';
 import { getHeadersWithJwtAfterAuth, handleAuthRequest } from '../utils/request';
 import { ServerInternal } from '../../exceptions';
 import { getLogger } from '../../context/logging';
-import { ErrorResponseSchema } from '../../schemas/error';
 import { OPENAPI_TAG } from '../constants';
 import { TokenHeadersDescription } from '../schemas/headers';
 

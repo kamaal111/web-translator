@@ -6,6 +6,7 @@ import createProjectRoute from './routes/create-project';
 import listProjectsRoute from './routes/list-projects';
 import readProjectRoute from './routes/read-project';
 import listStringVersionsRoute from './routes/list-string-versions';
+import updateDraftTranslationsRoute from './routes/update-draft-string';
 
 function projectsRouter() {
   const router = new Hono<HonoEnvironment>();
@@ -15,7 +16,8 @@ function projectsRouter() {
     .post(...createProjectRoute())
     .get(...listProjectsRoute())
     .get(...listStringVersionsRoute())
-    .get(...readProjectRoute());
+    .get(...readProjectRoute())
+    .patch(...updateDraftTranslationsRoute());
 }
 
 export default projectsRouter;

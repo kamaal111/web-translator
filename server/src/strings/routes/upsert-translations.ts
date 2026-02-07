@@ -1,6 +1,7 @@
 import assert from 'node:assert';
 
 import { describeRoute, resolver, validator } from 'hono-openapi';
+import { ErrorResponseSchema } from '@wt/schemas';
 
 import type { HonoContext } from '../../context';
 import { getDatabase } from '../../context/database';
@@ -13,7 +14,6 @@ import {
   type UpsertTranslationsParams,
 } from '../schemas';
 import { getSession } from '../../context/session';
-import { ErrorResponseSchema } from '../../schemas/error';
 import { getValidatedProject } from '../../projects';
 import { PartialAuthenticationHeadersSchema, type PartialAuthenticationHeaders } from '../../schemas/headers';
 

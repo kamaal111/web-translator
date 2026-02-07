@@ -1,7 +1,5 @@
 import z from 'zod';
-import { BaseCreateProjectSchema, LocaleShape } from '@wt/schemas';
-
-import { ApiCommonDatetimeShape } from '../schemas/common';
+import { ApiCommonDatetimeShape, BaseCreateProjectSchema, LocaleShape } from '@wt/schemas';
 
 export type ProjectResponse = z.infer<typeof ProjectResponseSchema>;
 
@@ -213,6 +211,71 @@ export const ListStringVersionsResponseSchema = z
             pageSize: 20,
             totalVersions: 1,
             hasMore: false,
+          },
+        },
+      ],
+    },
+  });
+
+// Update Draft Translations Schemas
+
+export type UpdateDraftTranslationsBody = z.infer<typeof UpdateDraftTranslationsBodySchema>;
+
+export type UpdateDraftTranslationsResponse = z.infer<typeof UpdateDraftTranslationsResponseSchema>;
+
+export const UpdateDraftTranslationsBodySchema = z
+  .object({
+    translations: z
+      .record(LocaleShape, z.string().trim().min(1, 'Translation value cannot be empty'))
+      .describe('Map of locale codes to translation values'),
+    ifUnmodifiedSince: ApiCommonDatetimeShape.optional().describe('Optional ISO 8601 timestamp for conflict detection'),
+  })
+  .describe('Update draft translations request body')
+  .meta({
+    ref: 'UpdateDraftTranslationsBody',
+    title: 'Update Draft Translations Body',
+    description: 'Request body for updating draft translations with optional conflict detection',
+    example: {
+      translations: {
+        en: 'New Welcome Message',
+        es: 'Nuevo Mensaje de Bienvenida',
+      },
+      ifUnmodifiedSince: '2026-02-01T10:00:00Z',
+    },
+  });
+
+const UpdatedTranslationSchema = z
+  .object({
+    locale: LocaleShape.describe('Locale code'),
+    value: z.string().describe('Updated translation value'),
+    updatedAt: ApiCommonDatetimeShape.describe('ISO 8601 timestamp of update'),
+    updatedBy: UserInfoSchema.describe('User who performed the update'),
+  })
+  .describe('Updated translation information')
+  .meta({
+    ref: 'UpdatedTranslation',
+    title: 'Updated Translation',
+    description: 'Information about a successfully updated translation',
+  });
+
+export const UpdateDraftTranslationsResponseSchema = z
+  .object({
+    updated: z.array(UpdatedTranslationSchema).describe('List of successfully updated translations'),
+  })
+  .describe('Update draft translations response')
+  .meta({
+    ref: 'UpdateDraftTranslationsResponse',
+    title: 'Update Draft Translations Response',
+    description: 'Response containing updated translation details',
+    example: {
+      updated: [
+        {
+          locale: 'en',
+          value: 'New Welcome Message',
+          updatedAt: '2026-02-01T11:00:00Z',
+          updatedBy: {
+            id: 'user-123',
+            name: 'Alice Developer',
           },
         },
       ],

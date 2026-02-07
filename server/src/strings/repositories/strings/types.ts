@@ -1,24 +1,12 @@
 import type Project from '../../../projects/models/project';
 import type StringModel from '../../models/string';
+import type DraftWithAuthor from '../../models/draft-with-author';
 
 export type TranslationEntry = {
   key: string;
   context?: string | null;
   translations: Record<string, string>;
 };
-
-/**
- * Draft translation information with author details
- */
-export interface DraftWithAuthor {
-  locale: string;
-  value: string;
-  updatedAt: Date;
-  updatedBy: {
-    id: string;
-    name: string;
-  };
-}
 
 export interface StringsRepository {
   list: (project: Project) => Promise<StringModel[]>;
@@ -41,4 +29,16 @@ export interface StringsRepository {
    * Returns a map of locale -> DraftWithAuthor.
    */
   getDraftTranslationsForLocales: (str: StringModel, locales: string[]) => Promise<Map<string, DraftWithAuthor>>;
+
+  /**
+   * Update draft translations for a string.
+   * Optionally check for conflicts using ifUnmodifiedSince timestamp.
+   * Returns the updated translations with author information.
+   */
+  updateDraft: (
+    project: Project,
+    stringRecord: StringModel,
+    translationsMap: Record<string, string>,
+    ifUnmodifiedSince?: Date,
+  ) => Promise<DraftWithAuthor[]>;
 }

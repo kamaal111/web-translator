@@ -65,6 +65,14 @@ const messages = defineMessages({
     id: 'STRING_VERSION_HISTORY.LOAD_MORE',
     defaultMessage: 'Load more versions',
   },
+  edit: {
+    id: 'STRING_VERSION_HISTORY.EDIT',
+    defaultMessage: 'Edit',
+  },
+  editDraft: {
+    id: 'STRING_VERSION_HISTORY.EDIT_DRAFT',
+    defaultMessage: 'Edit draft translation',
+  },
 });
 
 export default messages;

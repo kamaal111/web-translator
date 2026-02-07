@@ -1,11 +1,12 @@
 import { describe, expect, test, beforeAll, afterAll } from 'bun:test';
 import path from 'node:path';
 
+import { ErrorResponseSchema } from '@wt/schemas';
+
 import { APP_API_BASE_PATH } from '../../constants/common';
 import { ROUTE_NAME } from '../constants';
 import TestHelper from '../../__tests__/test-helper';
 import { ProjectResponseSchema, ListProjectsResponseSchema } from '../schemas';
-import { ErrorResponseSchema } from '../../schemas/error';
 import { AuthResponseSchema } from '../../auth/schemas/responses';
 
 const BASE_PATH = path.join(APP_API_BASE_PATH, ROUTE_NAME);
