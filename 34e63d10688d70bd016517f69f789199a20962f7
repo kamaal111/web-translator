@@ -1,0 +1,99 @@
+server/src/strings/__tests__/router.test.ts
+  1a3c3ba1321257f3 1,14-44,46-49,56-57,62,71,86-87,89-90,92,96,100-137,139-157,161-164,175,186,188,192,202,205-206,210,221-222,227-228,238,250-251,263-264,266,271,278,292,297-298,314,316-319,322-323,330
+web/src/common/messages.ts
+  5a01ecaac76260e5 7
+specs/001-string-version-editing/tasks.md
+  5a01ecaac76260e5 52-97,129,206-210,216-222,226-233,237-241,420-423,430,457,459-464,549,553-557,559,564-567,572,580-587,596-598,610,620,629-631,633,637-639,641
+  f89ed80997efd054 349-394,399-410
+  75db4ab81fd570e5 434,513-521,568-570,589,595,603-604,615,625,643,649,652,654
+server/src/strings/repositories/strings/implementation.ts
+  1a3c3ba1321257f3 32,34,38-39,44-56
+web/src/pages/login/messages.ts
+  5a01ecaac76260e5 7,12
+server/src/strings/routes/list-strings.ts
+  1a3c3ba1321257f3 48
+web/src/projects/components/strings-list/strings-list.test.tsx
+  5a01ecaac76260e5 1-82,84-90,98-109
+web/src/pages/project/messages.ts
+  5a01ecaac76260e5 7
+web/src/projects/components/strings-list/samples.ts
+  1a3c3ba1321257f3 9,16,23
+server/src/db/schema/strings.ts
+  1a3c3ba1321257f3 48-58
+server/src/strings/repositories/strings/types.ts
+  1a3c3ba1321257f3 12,14
+server/src/strings/mappers/strings.ts
+  1a3c3ba1321257f3 11
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.0.42",
+  "base_commit_sha": "34e63d10688d70bd016517f69f789199a20962f7",
+  "prompts": {
+    "1a3c3ba1321257f3": {
+      "agent_id": {
+        "tool": "github-copilot",
+        "id": "051ad5e8-0151-4c2d-82c2-4274c37e698d",
+        "model": "unknown"
+      },
+      "human_author": "Kamaal Farah <kamaal.f1@gmail.com>",
+      "messages": [],
+      "total_additions": 370,
+      "total_deletions": 465,
+      "accepted_lines": 183,
+      "overriden_lines": 6
+    },
+    "5a01ecaac76260e5": {
+      "agent_id": {
+        "tool": "github-copilot",
+        "id": "5b7483bd-e687-453f-9795-23ed4f5850d3",
+        "model": "unknown"
+      },
+      "human_author": "Kamaal Farah <kamaal.f1@gmail.com>",
+      "messages": [],
+      "total_additions": 365,
+      "total_deletions": 208,
+      "accepted_lines": 225,
+      "overriden_lines": 2
+    },
+    "75db4ab81fd570e5": {
+      "agent_id": {
+        "tool": "github-copilot",
+        "id": "26ee02e5-3859-4bf7-a27e-d2d9736e9b2b",
+        "model": "unknown"
+      },
+      "human_author": "Kamaal Farah <kamaal.f1@gmail.com>",
+      "messages": [],
+      "total_additions": 23,
+      "total_deletions": 10,
+      "accepted_lines": 23,
+      "overriden_lines": 0
+    },
+    "ee341e490f25aab7": {
+      "agent_id": {
+        "tool": "github-copilot",
+        "id": "843df844-1679-4e7b-8e73-75a3b9ef5e89",
+        "model": "unknown"
+      },
+      "human_author": "Kamaal Farah <kamaal.f1@gmail.com>",
+      "messages": [],
+      "total_additions": 20,
+      "total_deletions": 17,
+      "accepted_lines": 18,
+      "overriden_lines": 0
+    },
+    "f89ed80997efd054": {
+      "agent_id": {
+        "tool": "github-copilot",
+        "id": "9c342c0e-f410-4b88-8bf0-2763494e4267",
+        "model": "unknown"
+      },
+      "human_author": "Kamaal Farah <kamaal.f1@gmail.com>",
+      "messages": [],
+      "total_additions": 58,
+      "total_deletions": 12,
+      "accepted_lines": 58,
+      "overriden_lines": 0
+    }
+  }
+}
