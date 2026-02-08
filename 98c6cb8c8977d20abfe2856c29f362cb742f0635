@@ -1,0 +1,42 @@
+specs/002-bulk-string-editor/plan.md
+  75db4ab81fd570e5 1-1538
+specs/002-bulk-string-editor/README.md
+  cb0c21642473c403 1-54
+specs/002-bulk-string-editor/tasks.md
+  75db4ab81fd570e5 1-558
+specs/002-bulk-string-editor/spec.md
+  cb0c21642473c403 1-412
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.0.42",
+  "base_commit_sha": "98c6cb8c8977d20abfe2856c29f362cb742f0635",
+  "prompts": {
+    "75db4ab81fd570e5": {
+      "agent_id": {
+        "tool": "github-copilot",
+        "id": "26ee02e5-3859-4bf7-a27e-d2d9736e9b2b",
+        "model": "unknown"
+      },
+      "human_author": "Kamaal Farah <kamaal.f1@gmail.com>",
+      "messages": [],
+      "total_additions": 2096,
+      "total_deletions": 0,
+      "accepted_lines": 2096,
+      "overriden_lines": 0
+    },
+    "cb0c21642473c403": {
+      "agent_id": {
+        "tool": "github-copilot",
+        "id": "3f4cbc5d-a251-4da5-b6e7-55699d6d392f",
+        "model": "unknown"
+      },
+      "human_author": "Kamaal Farah <kamaal.f1@gmail.com>",
+      "messages": [],
+      "total_additions": 466,
+      "total_deletions": 0,
+      "accepted_lines": 466,
+      "overriden_lines": 0
+    }
+  }
+}
