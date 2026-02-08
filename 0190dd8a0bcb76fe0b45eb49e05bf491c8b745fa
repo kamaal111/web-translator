@@ -1,0 +1,152 @@
+web/src/projects/components/publish-button/publish-button.test.tsx
+  fbfad954238593de 1-59,61-66,68-99,101-116,118-124,126-169
+server/src/projects/schemas.ts
+  fbfad954238593de 4-7,288-362
+server/src/projects/routes/publish-snapshot.ts
+  fbfad954238593de 1-3,5-20,25-73,75,77,84,86,88-92,97-101,104-111,126,133,150-153,155-162,165-172,174,176-179,181-185,187-190,192-194
+server/src/projects/router.ts
+  fbfad954238593de 10,22
+web/src/projects/components/publish-button/messages.ts
+  fbfad954238593de 1-3,5-6,8,10-11,13,15-16,18,20-22,24,26-27,29,31-32,34,36-37,39,41-42,44,46-47,49-52
+  094a2ba15a09016f 4,7,9,12,14,17,19,23,25,28,30,33,35,38,40,43,45,48
+web/src/projects/components/project-details/project-details.tsx
+  fbfad954238593de 8,35-36,38,40
+server/src/strings/routes/publish-snapshot.ts
+  f58a7becdef7bc77 15,28,39,41-43,57
+specs/001-string-version-editing/tasks.md
+  fbfad954238593de 108-112,118-125,129-136,140-144
+web/src/projects/components/publish-button/publish-button.css
+  fbfad954238593de 1-14
+server/src/__tests__/test-helper.ts
+  f58a7becdef7bc77 11-12,133,140
+server/src/strings/repositories/snapshots/implementation.ts
+  fbfad954238593de 171
+  53ae23f147912503 3,219-223
+AGENTS.md
+  f58a7becdef7bc77 231-237
+server/src/projects/__tests__/publish-snapshot.test.ts
+  fbfad954238593de 1-99,101-412
+web/src/projects/hooks/use-publish.ts
+  db55f36aa20a6182 3,40-41
+  f58a7becdef7bc77 6
+  fbfad954238593de 2,4-5,7-9,11-13,16-17,26-28,30-31,36-37,39,42-44,46-49,51-53,56,58-63,66,68-71
+server/src/strings/repositories/snapshots/types.ts
+  fbfad954238593de 63-64
+  0b0bb6cbce12a5f3 65-73,75-80
+web/src/projects/client.ts
+  5dee0f10a6027166 7,42-43
+  fbfad954238593de 40
+web/src/projects/components/publish-button/publish-button.tsx
+  fbfad954238593de 1-17,20-24,27-31,33-34,36-39,41-45,47-56,58,60-64,66,68-76
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.0.42",
+  "base_commit_sha": "0190dd8a0bcb76fe0b45eb49e05bf491c8b745fa",
+  "prompts": {
+    "094a2ba15a09016f": {
+      "agent_id": {
+        "tool": "github-copilot",
+        "id": "e73e85d7-8197-47ee-b059-367d939c3941",
+        "model": "unknown"
+      },
+      "human_author": "Kamaal Farah <kamaal.f1@gmail.com>",
+      "messages": [],
+      "total_additions": 18,
+      "total_deletions": 9,
+      "accepted_lines": 18,
+      "overriden_lines": 0
+    },
+    "0b0bb6cbce12a5f3": {
+      "agent_id": {
+        "tool": "github-copilot",
+        "id": "620dbb97-f2c3-4864-a2ae-b3217007dd51",
+        "model": "unknown"
+      },
+      "human_author": "Kamaal Farah <kamaal.f1@gmail.com>",
+      "messages": [],
+      "total_additions": 36,
+      "total_deletions": 0,
+      "accepted_lines": 15,
+      "overriden_lines": 1
+    },
+    "53ae23f147912503": {
+      "agent_id": {
+        "tool": "github-copilot",
+        "id": "837fbf6a-913e-4165-9e25-ebaf6338a03c",
+        "model": "unknown"
+      },
+      "human_author": "Kamaal Farah <kamaal.f1@gmail.com>",
+      "messages": [],
+      "total_additions": 6,
+      "total_deletions": 2,
+      "accepted_lines": 6,
+      "overriden_lines": 0
+    },
+    "5dee0f10a6027166": {
+      "agent_id": {
+        "tool": "github-copilot",
+        "id": "3381b0a5-c050-4385-ba55-a813416f8f13",
+        "model": "unknown"
+      },
+      "human_author": "Kamaal Farah <kamaal.f1@gmail.com>",
+      "messages": [],
+      "total_additions": 7,
+      "total_deletions": 52,
+      "accepted_lines": 4,
+      "overriden_lines": 0
+    },
+    "770b26ef099dacba": {
+      "agent_id": {
+        "tool": "github-copilot",
+        "id": "56b69bb3-ed7b-42a0-8e37-e0e86a1c3b79",
+        "model": "unknown"
+      },
+      "human_author": "Kamaal Farah <kamaal.f1@gmail.com>",
+      "messages": [],
+      "total_additions": 0,
+      "total_deletions": 1,
+      "accepted_lines": 0,
+      "overriden_lines": 0
+    },
+    "db55f36aa20a6182": {
+      "agent_id": {
+        "tool": "github-copilot",
+        "id": "49ca3e79-a04f-447b-87f9-b7b4bc35d0a7",
+        "model": "unknown"
+      },
+      "human_author": "Kamaal Farah <kamaal.f1@gmail.com>",
+      "messages": [],
+      "total_additions": 5,
+      "total_deletions": 5,
+      "accepted_lines": 3,
+      "overriden_lines": 0
+    },
+    "f58a7becdef7bc77": {
+      "agent_id": {
+        "tool": "github-copilot",
+        "id": "43dd27fa-3ce2-4394-8e20-40b30b527218",
+        "model": "unknown"
+      },
+      "human_author": "Kamaal Farah <kamaal.f1@gmail.com>",
+      "messages": [],
+      "total_additions": 28,
+      "total_deletions": 25,
+      "accepted_lines": 19,
+      "overriden_lines": 0
+    },
+    "fbfad954238593de": {
+      "agent_id": {
+        "tool": "github-copilot",
+        "id": "ff2c2537-167a-49d1-bb9c-fbb3c2dfec32",
+        "model": "unknown"
+      },
+      "human_author": "Kamaal Farah <kamaal.f1@gmail.com>",
+      "messages": [],
+      "total_additions": 1201,
+      "total_deletions": 30,
+      "accepted_lines": 974,
+      "overriden_lines": 68
+    }
+  }
+}
