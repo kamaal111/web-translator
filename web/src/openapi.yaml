@@ -420,6 +420,91 @@ paths:
           application/json:
             schema:
               $ref: '#/components/schemas/UpdateDraftTranslationsBody'
+  '/app-api/v1/p/{projectId}/publish':
+    post:
+      operationId: postApp-apiV1P:projectIdPublish
+      description: Publish all current draft translations to create new immutable snapshots for selected locales. This captures the current state of all draft strings at a specific point in time.
+      tags:
+        - Project
+      responses:
+        '200':
+          description: Snapshots published successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PublishSnapshotResponse'
+        '400':
+          description: Invalid request parameters or no draft translations
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    description: Error message
+                  code:
+                    description: Error code
+                    type: string
+                required:
+                  - message
+                description: Error response containing error message and optional error code
+                title: Error Response
+        '404':
+          description: Project not found
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    description: Error message
+                  code:
+                    description: Error code
+                    type: string
+                required:
+                  - message
+                description: Error response containing error message and optional error code
+                title: Error Response
+        '409':
+          description: No changes detected (draft matches latest snapshot)
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    description: Error message
+                  code:
+                    description: Error code
+                    type: string
+                required:
+                  - message
+                description: Error response containing error message and optional error code
+                title: Error Response
+      parameters:
+        - in: header
+          name: authorization
+          schema:
+            type: string
+            example: Bearer f21wcpz7Aokmlh2MB632MZpTgfruPc62
+          description: Bearer token for authentication
+        - in: path
+          name: projectId
+          schema:
+            type: string
+            format: uuid
+            pattern: '^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$'
+            example: proj_1234567890abcdef
+          required: true
+          description: ID of the project
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PublishSnapshotBody'
   /app-api/v1/auth/sign-up/email:
     post:
       operationId: postApp-apiV1AuthSign-upEmail
@@ -820,7 +905,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/PublishSnapshotResponse'
+                $ref: '#/components/schemas/PublishLocaleSnapshotResponse'
         '400':
           description: Bad request - Invalid parameters
           content:
@@ -1254,6 +1339,96 @@ components:
           en: New Welcome Message
           es: Nuevo Mensaje de Bienvenida
         ifUnmodifiedSince: 2026-02-01T10:00:00Z
+    PublishedLocale:
+      type: object
+      properties:
+        locale:
+          description: Locale code
+          type: string
+        version:
+          type: integer
+          exclusiveMinimum: 0
+          maximum: 9007199254740991
+          description: Version number of the new snapshot
+        snapshotId:
+          type: string
+          description: ID of the created snapshot
+        stringCount:
+          type: integer
+          minimum: 0
+          maximum: 9007199254740991
+          description: Number of strings in the snapshot
+        createdAt:
+          type: string
+          format: date-time
+          pattern: "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d(?::[0-5]\\d(?:\\.\\d+)?)?(?:Z|([+-](?:[01]\\d|2[0-3]):[0-5]\\d)))$"
+          description: ISO 8601 timestamp of snapshot creation
+      required:
+        - locale
+        - version
+        - snapshotId
+        - stringCount
+        - createdAt
+      description: Details of a published locale snapshot
+      title: Published Locale
+    PublishUserInfo:
+      type: object
+      properties:
+        id:
+          type: string
+          description: User ID
+        name:
+          type: string
+          description: User display name
+      required:
+        - id
+        - name
+      description: User who performed the publish
+      title: Publish User Info
+    PublishSnapshotResponse:
+      type: object
+      properties:
+        published:
+          type: array
+          items:
+            $ref: '#/components/schemas/PublishedLocale'
+          description: Published locale snapshots
+        createdBy:
+          $ref: '#/components/schemas/PublishUserInfo'
+      required:
+        - published
+        - createdBy
+      description: Response containing details of published snapshots
+      title: Publish Snapshot Response
+      example:
+        published:
+          - locale: en
+            version: 4
+            snapshotId: snap-789
+            stringCount: 42
+            createdAt: 2026-02-07T15:30:00Z
+        createdBy:
+          id: user-123
+          name: Alice Developer
+    PublishSnapshotBody:
+      type: object
+      properties:
+        locales:
+          description: 'Specific locales to publish. If omitted, publishes all enabled locales'
+          type: array
+          items:
+            type: string
+        force:
+          default: false
+          description: 'If true, publish even if no changes detected'
+          type: boolean
+      description: Request body for publishing draft translations to create immutable snapshots
+      title: Publish Snapshot Body
+      example:
+        locales:
+          - en
+          - es
+        force: false
     AuthResponse:
       type: object
       properties:
@@ -1532,7 +1707,7 @@ components:
           - key: HOME.SUBTITLE
             translations:
               en: Your personal dashboard
-    PublishSnapshotResponse:
+    PublishLocaleSnapshotResponse:
       type: object
       properties:
         version:
@@ -1550,8 +1725,8 @@ components:
       required:
         - version
         - translation_count
-      description: Response after creating a new translation snapshot
-      title: Publish Snapshot Response
+      description: Response after creating a new translation snapshot for a locale
+      title: Publish Locale Snapshot Response
   parameters:
     ListStringVersionsQuery:
       in: query

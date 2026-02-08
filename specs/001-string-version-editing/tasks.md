@@ -105,43 +105,43 @@ This is a monorepo with `server/` and `web/` directories at the repository root.
 
 > **NOTE: Write these tests FIRST, ensure they FAIL before implementation**
 
-- [ ] T027 [P] [US2] Write server test for POST /projects/:projectId/publish endpoint in `server/src/projects/__tests__/publish-snapshot.test.ts` using TestHelper
-- [ ] T028 [P] [US2] Write server test for publishing specific locales in `server/src/projects/__tests__/publish-snapshot.test.ts`
-- [ ] T029 [P] [US2] Write server test for conflict detection (409 when no changes) in `server/src/projects/__tests__/publish-snapshot.test.ts`
-- [ ] T030 [P] [US2] Write server test for atomic publish operations (transaction rollback on failure) in `server/src/projects/__tests__/publish-snapshot.test.ts`
-- [ ] T031 [P] [US2] Write component test for PublishButton component in `web/src/projects/components/publish-button/publish-button.test.tsx` using screen from @testing-library/react
+- [x] T027 [P] [US2] Write server test for POST /projects/:projectId/publish endpoint in `server/src/projects/__tests__/publish-snapshot.test.ts` using TestHelper
+- [x] T028 [P] [US2] Write server test for publishing specific locales in `server/src/projects/__tests__/publish-snapshot.test.ts`
+- [x] T029 [P] [US2] Write server test for conflict detection (409 when no changes) in `server/src/projects/__tests__/publish-snapshot.test.ts`
+- [x] T030 [P] [US2] Write server test for atomic publish operations (transaction rollback on failure) in `server/src/projects/__tests__/publish-snapshot.test.ts`
+- [x] T031 [P] [US2] Write component test for PublishButton component in `web/src/projects/components/publish-button/publish-button.test.tsx` using screen from @testing-library/react
 
 ### Implementation for User Story 2
 
 #### Backend (Server)
 
-- [ ] T032 [P] [US2] Add Zod schemas for publish endpoint in `server/src/projects/schemas.ts` (PublishSnapshotBodySchema, PublishSnapshotResponseSchema)
-- [ ] T033 [P] [US2] Extend SnapshotsRepository with createSnapshot() method in `server/src/projects/repositories/snapshots-repository.ts`
-- [ ] T034 [P] [US2] Add method to calculate next version number in `server/src/projects/repositories/snapshots-repository.ts`
-- [ ] T035 [US2] Create route handler for POST /projects/:projectId/publish in `server/src/projects/routes/publish-snapshot.ts` with transaction support
-- [ ] T036 [US2] Implement change detection comparing draft vs latest snapshot in `server/src/projects/routes/publish-snapshot.ts`
-- [ ] T037 [US2] Add validation for enabled locales and empty drafts in `server/src/projects/routes/publish-snapshot.ts`
-- [ ] T038 [US2] Register publish-snapshot route in `server/src/projects/router.ts` with authentication middleware
-- [ ] T039 [US2] Add OpenAPI documentation decorators to publish-snapshot endpoint
+- [x] T032 [P] [US2] Add Zod schemas for publish endpoint in `server/src/projects/schemas.ts` (PublishSnapshotBodySchema, PublishSnapshotResponseSchema)
+- [x] T033 [P] [US2] Extend SnapshotsRepository with createSnapshot() method in `server/src/projects/repositories/snapshots-repository.ts`
+- [x] T034 [P] [US2] Add method to calculate next version number in `server/src/projects/repositories/snapshots-repository.ts`
+- [x] T035 [US2] Create route handler for POST /projects/:projectId/publish in `server/src/projects/routes/publish-snapshot.ts` with transaction support
+- [x] T036 [US2] Implement change detection comparing draft vs latest snapshot in `server/src/projects/routes/publish-snapshot.ts`
+- [x] T037 [US2] Add validation for enabled locales and empty drafts in `server/src/projects/routes/publish-snapshot.ts`
+- [x] T038 [US2] Register publish-snapshot route in `server/src/projects/router.ts` with authentication middleware
+- [x] T039 [US2] Add OpenAPI documentation decorators to publish-snapshot endpoint
 
 #### Frontend (Web)
 
-- [ ] T040 [P] [US2] Create i18n messages file for publish button in `web/src/projects/components/publish-button/messages.ts`
-- [ ] T041 [P] [US2] Create usePublish hook in `web/src/projects/hooks/use-publish.ts` for publish logic and state management
-- [ ] T042 [US2] Create PublishButton component with confirmation dialog in `web/src/projects/components/publish-button/publish-button.tsx`
-- [ ] T043 [US2] Add change preview modal showing what will be published in `web/src/projects/components/publish-button/publish-button.tsx`
-- [ ] T044 [US2] Add Tailwind CSS styling in `web/src/projects/components/publish-button/publish-button.css`
-- [ ] T045 [US2] Integrate PublishButton into project page header in `web/src/pages/project/project.tsx`
-- [ ] T046 [US2] Add success/error toast notifications for publish operations
-- [ ] T047 [US2] Ensure all aria-labels are translated using useIntl hook
+- [x] T040 [P] [US2] Create i18n messages file for publish button in `web/src/projects/components/publish-button/messages.ts`
+- [x] T041 [P] [US2] Create usePublish hook in `web/src/projects/hooks/use-publish.ts` for publish logic and state management
+- [x] T042 [US2] Create PublishButton component with confirmation dialog in `web/src/projects/components/publish-button/publish-button.tsx`
+- [x] T043 [US2] Add change preview modal showing what will be published in `web/src/projects/components/publish-button/publish-button.tsx`
+- [x] T044 [US2] Add Tailwind CSS styling in `web/src/projects/components/publish-button/publish-button.css`
+- [x] T045 [US2] Integrate PublishButton into project page header in `web/src/pages/project/project.tsx`
+- [x] T046 [US2] Add success/error toast notifications for publish operations
+- [x] T047 [US2] Ensure all aria-labels are translated using useIntl hook
 
 ### Verification for User Story 2
 
-- [ ] T048 [US2] Run server tests with `just test` and verify all pass
-- [ ] T049 [US2] Run web tests with `just test` and verify all pass
-- [ ] T050 [US2] Update OpenAPI spec with `just download-spec`
-- [ ] T051 [US2] Regenerate web API client with `just prepare-web`
-- [ ] T052 [US2] Run `just ready` to verify format, lint, typecheck, tests, and build all pass
+- [x] T048 [US2] Run server tests with `just test` and verify all pass
+- [x] T049 [US2] Run web tests with `just test` and verify all pass
+- [x] T050 [US2] Update OpenAPI spec with `just download-spec`
+- [x] T051 [US2] Regenerate web API client with `just prepare-web`
+- [x] T052 [US2] Run `just ready` to verify format, lint, typecheck, tests, and build all pass
 
 **Checkpoint**: At this point, User Stories 1 AND 2 should both work independently. Users can view version history AND publish drafts to create new snapshots. This completes the core version history creation mechanism.
 

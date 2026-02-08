@@ -5,6 +5,7 @@ import { EyeOpenIcon, EyeClosedIcon, CopyIcon } from '@radix-ui/react-icons';
 import toast from 'react-hot-toast';
 
 import type { ProjectResponse } from '@/generated/api-client/src';
+import PublishButton from '@/projects/components/publish-button/publish-button';
 import messages from './messages';
 
 import './project-details.css';
@@ -31,9 +32,12 @@ function ProjectDetails({ project }: ProjectDetailsProps) {
   return (
     <Box className="project-container" px="6" py="5">
       <Flex direction="column" gap="4">
-        <Heading as="h1" size="8">
-          {project.name}
-        </Heading>
+        <Flex justify="between" align="center">
+          <Heading as="h1" size="8">
+            {project.name}
+          </Heading>
+          <PublishButton projectId={project.id} />
+        </Flex>
 
         <Card>
           <Flex direction="column" gap="3">

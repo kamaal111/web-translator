@@ -60,4 +60,22 @@ export interface SnapshotsRepository {
     page: number,
     pageSize: number,
   ): Promise<Map<string, PaginatedSnapshotVersions>>;
+
+  /**
+   * Get the current draft translations data for multiple locales at once.
+   * Returns a map of locale -> Record<string, string>.
+   */
+  getDraftDataForLocales(project: Project, locales: string[]): Promise<Map<string, Record<string, string>>>;
+
+  /**
+   * Get the latest snapshots for multiple locales at once.
+   * Returns a map of locale -> TranslationSnapshot (only includes locales with snapshots).
+   */
+  getLatestSnapshots(project: Project, locales: string[]): Promise<Map<string, TranslationSnapshot>>;
+
+  /**
+   * Create snapshots for multiple locales at once.
+   * Returns a map of locale -> TranslationSnapshot.
+   */
+  createSnapshots(project: Project, locales: string[]): Promise<Map<string, TranslationSnapshot>>;
 }

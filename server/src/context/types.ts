@@ -1,4 +1,4 @@
-export type LogPayload = Record<string, string | null | undefined> | undefined | null;
+export type LogPayload = Record<string, string | string[] | null | undefined> | undefined | null;
 
 type LogFn = (message: string, payload?: LogPayload) => void;
 

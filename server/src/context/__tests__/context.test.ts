@@ -1,4 +1,5 @@
 import { test, expect, mock, describe, beforeEach, spyOn, afterEach, type Mock } from 'bun:test';
+import assert from 'node:assert';
 
 import type { Hono } from 'hono';
 
@@ -60,6 +61,7 @@ describe('Context tests', () => {
     const responseLog = logCalls[1];
     expect(responseLog).toBeDefined();
     expect(responseLog?.payload?.elapsed_time_ms).toBeDefined();
+    assert(!Array.isArray(responseLog?.payload?.elapsed_time_ms));
     const elapsedTime = parseInt(responseLog?.payload?.elapsed_time_ms ?? 'NaN', 10);
     expect(elapsedTime).toEqual(57);
   });

@@ -12,7 +12,7 @@ type PublishSnapshotInput = {
   out: { param: z.infer<typeof PublishSnapshotParamsSchema>; header: PartialAuthenticationHeaders };
 };
 
-export type PublishSnapshotResponse = z.infer<typeof PublishSnapshotResponseSchema>;
+export type PublishLocaleSnapshotResponse = z.infer<typeof PublishLocaleSnapshotResponseSchema>;
 
 const PublishSnapshotParamsSchema = z.object({
   projectId: z.uuid().meta({
@@ -25,7 +25,7 @@ const PublishSnapshotParamsSchema = z.object({
   }),
 });
 
-export const PublishSnapshotResponseSchema = z
+export const PublishLocaleSnapshotResponseSchema = z
   .object({
     version: z.number().int().positive().meta({
       description: 'The version number of the newly created snapshot',
@@ -36,11 +36,11 @@ export const PublishSnapshotResponseSchema = z
       example: 42,
     }),
   })
-  .describe('Publish snapshot response')
+  .describe('Publish locale snapshot response')
   .meta({
-    ref: 'PublishSnapshotResponse',
-    title: 'Publish Snapshot Response',
-    description: 'Response after creating a new translation snapshot',
+    ref: 'PublishLocaleSnapshotResponse',
+    title: 'Publish Locale Snapshot Response',
+    description: 'Response after creating a new translation snapshot for a locale',
   });
 
 function publishSnapshotRoute() {
@@ -54,7 +54,7 @@ function publishSnapshotRoute() {
         201: {
           description: 'Snapshot created successfully',
           content: {
-            'application/json': { schema: resolver(PublishSnapshotResponseSchema) },
+            'application/json': { schema: resolver(PublishLocaleSnapshotResponseSchema) },
           },
         },
         400: {

@@ -1,6 +1,10 @@
 import z from 'zod';
 import { ApiCommonDatetimeShape, BaseCreateProjectSchema, LocaleShape } from '@wt/schemas';
 
+export type PublishSnapshotBody = z.infer<typeof PublishSnapshotBodySchema>;
+
+export type PublishSnapshotResponse = z.infer<typeof PublishSnapshotResponseSchema>;
+
 export type ProjectResponse = z.infer<typeof ProjectResponseSchema>;
 
 export type CreateProjectPayload = z.infer<typeof CreateProjectPayloadSchema>;
@@ -279,5 +283,80 @@ export const UpdateDraftTranslationsResponseSchema = z
           },
         },
       ],
+    },
+  });
+
+// Publish Snapshot Schemas
+
+export const PublishSnapshotBodySchema = z
+  .object({
+    locales: z
+      .array(LocaleShape)
+      .optional()
+      .describe('Specific locales to publish. If omitted, publishes all enabled locales'),
+    force: z.boolean().optional().default(false).describe('If true, publish even if no changes detected'),
+  })
+  .describe('Publish snapshot request body')
+  .meta({
+    ref: 'PublishSnapshotBody',
+    title: 'Publish Snapshot Body',
+    description: 'Request body for publishing draft translations to create immutable snapshots',
+    example: {
+      locales: ['en', 'es'],
+      force: false,
+    },
+  });
+
+const PublishedLocaleSchema = z
+  .object({
+    locale: LocaleShape.describe('Locale code'),
+    version: z.number().int().positive().describe('Version number of the new snapshot'),
+    snapshotId: z.string().describe('ID of the created snapshot'),
+    stringCount: z.number().int().nonnegative().describe('Number of strings in the snapshot'),
+    createdAt: ApiCommonDatetimeShape.describe('ISO 8601 timestamp of snapshot creation'),
+  })
+  .describe('Published locale details')
+  .meta({
+    ref: 'PublishedLocale',
+    title: 'Published Locale',
+    description: 'Details of a published locale snapshot',
+  });
+
+const PublishUserInfoSchema = z
+  .object({
+    id: z.string().describe('User ID'),
+    name: z.string().describe('User display name'),
+  })
+  .describe('User who performed the publish')
+  .meta({
+    ref: 'PublishUserInfo',
+    title: 'Publish User Info',
+    description: 'User who triggered the publish operation',
+  });
+
+export const PublishSnapshotResponseSchema = z
+  .object({
+    published: z.array(PublishedLocaleSchema).describe('Published locale snapshots'),
+    createdBy: PublishUserInfoSchema.describe('User who performed the publish'),
+  })
+  .describe('Publish snapshot response')
+  .meta({
+    ref: 'PublishSnapshotResponse',
+    title: 'Publish Snapshot Response',
+    description: 'Response containing details of published snapshots',
+    example: {
+      published: [
+        {
+          locale: 'en',
+          version: 4,
+          snapshotId: 'snap-789',
+          stringCount: 42,
+          createdAt: '2026-02-07T15:30:00Z',
+        },
+      ],
+      createdBy: {
+        id: 'user-123',
+        name: 'Alice Developer',
+      },
     },
   });

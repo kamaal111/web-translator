@@ -1,6 +1,6 @@
 import assert from 'node:assert';
 
-import { and, desc, eq, inArray, sql } from 'drizzle-orm';
+import { and, desc, eq, inArray, or, sql } from 'drizzle-orm';
 import { arrays } from '@kamaalio/kamaal';
 
 import { strings, translations, translationSnapshots } from '../../../db/schema';
@@ -167,6 +167,109 @@ class SnapshotsRepositoryImpl implements SnapshotsRepository {
         hasMore: offset + versions.length < totalVersions,
       });
     }, new Map<string, PaginatedSnapshotVersions>());
+  };
+
+  getDraftDataForLocales = async (
+    project: Project,
+    locales: string[],
+  ): Promise<Map<string, Record<string, string>>> => {
+    const session = await verifySessionIsSet(this.context);
+    assert(session.user.id === project.userId, 'Should have been called with the user that owns the project');
+
+    if (locales.length === 0) {
+      return new Map();
+    }
+
+    const allTranslations = await getDrizzle(this.context)
+      .select({ key: strings.key, value: translations.value, locale: translations.locale })
+      .from(strings)
+      .innerJoin(translations, and(eq(translations.stringId, strings.id), inArray(translations.locale, locales)))
+      .where(eq(strings.projectId, project.id));
+
+    return allTranslations.reduce(
+      (result, row) => result.set(row.locale, { ...result.get(row.locale), [row.key]: row.value }),
+      new Map<string, Record<string, string>>(),
+    );
+  };
+
+  getLatestSnapshots = async (project: Project, locales: string[]): Promise<Map<string, TranslationSnapshot>> => {
+    const session = await verifySessionIsSet(this.context);
+    assert(session.user.id === project.userId, 'Should have been called with the user that owns the project');
+
+    if (locales.length === 0) {
+      return new Map();
+    }
+
+    const db = getDrizzle(this.context);
+    const latestVersions = await db
+      .select({ locale: translationSnapshots.locale, maxVersion: sql<number>`MAX(${translationSnapshots.version})` })
+      .from(translationSnapshots)
+      .where(and(eq(translationSnapshots.projectId, project.id), inArray(translationSnapshots.locale, locales)))
+      .groupBy(translationSnapshots.locale);
+    if (latestVersions.length === 0) {
+      return new Map();
+    }
+
+    const snapshots = await db
+      .select()
+      .from(translationSnapshots)
+      .where(
+        and(
+          eq(translationSnapshots.projectId, project.id),
+          or(
+            ...latestVersions.map(v =>
+              and(eq(translationSnapshots.locale, v.locale), eq(translationSnapshots.version, v.maxVersion)),
+            ),
+          ),
+        ),
+      );
+
+    return snapshots.reduce(
+      (map, snapshot) => map.set(snapshot.locale, dbTranslationSnapshotToModel(snapshot)),
+      new Map<string, TranslationSnapshot>(),
+    );
+  };
+
+  createSnapshots = async (project: Project, locales: string[]): Promise<Map<string, TranslationSnapshot>> => {
+    const session = await verifySessionIsSet(this.context);
+    assert(session.user.id === project.userId, 'Should have been called with the user that owns the project');
+
+    if (locales.length === 0) {
+      return new Map();
+    }
+
+    const db = getDrizzle(this.context);
+    const translationsByLocale = await this.getDraftDataForLocales(project, locales);
+    const versionRows = await db
+      .select({
+        locale: translationSnapshots.locale,
+        maxVersion: sql<number>`COALESCE(MAX(${translationSnapshots.version}), 0)`,
+      })
+      .from(translationSnapshots)
+      .where(and(eq(translationSnapshots.projectId, project.id), inArray(translationSnapshots.locale, locales)))
+      .groupBy(translationSnapshots.locale);
+    const versionMap = new Map(versionRows.map(row => [row.locale, row.maxVersion]));
+    const result = locales.reduce<Map<string, TranslationSnapshot>>((result, locale) => {
+      const nextVersion = (versionMap.get(locale) ?? 0) + 1;
+      const data = translationsByLocale.get(locale);
+      assert(data, 'Data should exist for locale');
+
+      return result.set(
+        locale,
+        newTranslationSnapshot({
+          projectId: project.id,
+          locale,
+          version: nextVersion,
+          data,
+          id: null,
+        }),
+      );
+    }, new Map());
+    if (result.size > 0) {
+      await db.insert(translationSnapshots).values(Array.from(result.values()));
+    }
+
+    return result;
   };
 }
 

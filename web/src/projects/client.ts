@@ -4,6 +4,8 @@ import type {
   CreateProjectPayload,
   GetAppApiV1PProjectIdStringsStringKeyVersionsRequest,
   PatchAppApiV1PProjectIdStringsStringKeyTranslationsRequest,
+  PostAppApiV1PProjectIdPublishRequest,
+  PublishSnapshotResponse,
   UpdateDraftTranslationsResponse,
 } from '@/generated/api-client/src';
 
@@ -34,6 +36,10 @@ class ProjectsClient {
     request: PatchAppApiV1PProjectIdStringsStringKeyTranslationsRequest,
   ): Promise<UpdateDraftTranslationsResponse> => {
     return this.projectsApi.patchAppApiV1PProjectIdStringsStringKeyTranslations(request);
+  };
+
+  publishSnapshot = (request: PostAppApiV1PProjectIdPublishRequest): Promise<PublishSnapshotResponse> => {
+    return this.projectsApi.postAppApiV1PProjectIdPublish(request);
   };
 }
 
