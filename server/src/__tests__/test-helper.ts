@@ -7,7 +7,10 @@ import type { DrizzleDatabase } from '../db';
 import { createApp } from '..';
 import env from '../env';
 import { AUTH_BASE_PATH } from '../auth';
-import { PublishSnapshotResponseSchema, type PublishSnapshotResponse } from '../strings/routes/publish-snapshot';
+import {
+  PublishLocaleSnapshotResponseSchema,
+  type PublishLocaleSnapshotResponse,
+} from '../strings/routes/publish-snapshot';
 import type { CreateProjectPayload } from '../projects/schemas';
 
 const { DATABASE_URL } = env;
@@ -127,14 +130,14 @@ class TestHelper {
   publishSnapshot = async (
     projectId: string,
     locale: string,
-  ): Promise<{ body: PublishSnapshotResponse; status: number }> => {
+  ): Promise<{ body: PublishLocaleSnapshotResponse; status: number }> => {
     const headers = await this.getDefaultUserHeaders();
     const response = await this.app.request(`/app-api/v1/s/${projectId}/translations/${locale}/publish`, {
       method: 'POST',
       headers,
     });
 
-    return { body: PublishSnapshotResponseSchema.parse(await response.json()), status: response.status };
+    return { body: PublishLocaleSnapshotResponseSchema.parse(await response.json()), status: response.status };
   };
 
   private createDbContext = async (): Promise<{ db: DrizzleDatabase; cleanUpPool: Pool; name: string }> => {

@@ -9,6 +9,7 @@ import { getLogger } from './logging';
 import type { Logger, LogPayload } from './types';
 import packageJson from '../../package.json';
 import { getSession } from './session';
+import { arrays } from '@kamaalio/kamaal';
 
 export interface InjectedContext {
   drizzle: DrizzleDatabase;
@@ -54,8 +55,8 @@ const defaultPinoLogger = pino({
 const defaultDrizzleDatabase = createDrizzleDatabase();
 
 function makeDefaultLogger(c: HonoContext): Logger {
-  const basePayload = (c: HonoContext) => {
-    const payload: Record<string, string> = {
+  function refinePayload(c: HonoContext, payload?: LogPayload) {
+    const basePayload: Record<string, string> = {
       request_id: c.get('requestId'),
       method: c.req.method,
       path: c.req.path,
@@ -65,33 +66,51 @@ function makeDefaultLogger(c: HonoContext): Logger {
     };
 
     if (c.finalized) {
-      payload.status = c.res.status.toString();
+      basePayload.status = c.res.status.toString();
     }
 
     const session = getSession(c);
     if (session != null) {
-      payload.user_id = session.user.id;
-      payload.user_email_verified = String(session.user.email_verified);
+      basePayload.user_id = session.user.id;
+      basePayload.user_email_verified = String(session.user.email_verified);
     }
 
-    return payload;
-  };
+    if (payload == null) {
+      return basePayload;
+    }
+
+    const additionalPayload: Record<string, string> = Object.fromEntries(
+      arrays.compactMap(Object.entries(payload), ([key, value]) => {
+        if (!value) {
+          return null;
+        }
+
+        if (typeof value === 'string') {
+          return [key, value];
+        }
+
+        return [key, value.join(', ')];
+      }),
+    );
+
+    return { ...basePayload, ...additionalPayload };
+  }
 
   return {
     info: (message: string, payload?: LogPayload) => {
-      defaultPinoLogger.info({ ...basePayload(c), ...payload }, message);
+      defaultPinoLogger.info(refinePayload(c, payload), message);
     },
     error: (message: string, payload?: LogPayload) => {
-      defaultPinoLogger.error({ ...basePayload(c), ...payload }, message);
+      defaultPinoLogger.error(refinePayload(c, payload), message);
     },
     warn: (message: string, payload?: LogPayload) => {
-      defaultPinoLogger.warn({ ...basePayload(c), ...payload }, message);
+      defaultPinoLogger.warn(refinePayload(c, payload), message);
     },
     debug: (message: string, payload?: LogPayload) => {
-      defaultPinoLogger.debug({ ...basePayload(c), ...payload }, message);
+      defaultPinoLogger.debug(refinePayload(c, payload), message);
     },
     silent: (message: string, payload?: LogPayload) => {
-      defaultPinoLogger.silent({ ...basePayload(c), ...payload }, message);
+      defaultPinoLogger.silent(refinePayload(c, payload), message);
     },
   };
 }

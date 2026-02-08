@@ -228,6 +228,13 @@ The TestHelper automatically creates a **default user** during `beforeAll()` set
   - Scalar UI: `/docs/scalar`
 - **Spec Workflow:** `just download-spec` generates `web/src/openapi.yaml`; the web app generates a typed client during prepare/build.
 
+## OpenAPI Debugging Notes
+
+- **Unique `ref` names are required** across all Hono OpenAPI schemas. If two schemas share the same `ref`, the generated spec/client can silently pick the wrong shape.
+  - Example: The string publish endpoint schema previously used `ref: 'PublishSnapshotResponse'`, which collided with the projects publish response. Fix by renaming the string publish schema to a unique ref like `PublishLocaleSnapshotResponse`.
+- **After any schema change**, always run `just download-spec` and `just prepare-web` to regenerate the OpenAPI spec and web client.
+- **Prefer generated client types** for API calls and return types (e.g., use `PublishSnapshotResponse` from the generated client rather than ad-hoc types) so tests and UI stay aligned with the spec.
+
 ## SPA Routing Configuration
 
 - **Web Router:** `server/src/web/router.ts` contains the `WEB_ROUTES` array that defines which paths serve the HTML template
