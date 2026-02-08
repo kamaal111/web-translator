@@ -9,7 +9,9 @@ export type TranslationEntry = {
 };
 
 export interface StringsRepository {
-  list: (project: Project) => Promise<StringModel[]>;
+  listWithTranslations: (
+    project: Project,
+  ) => Promise<Array<{ string: StringModel; translations: Map<string, string> }>>;
 
   upsertTranslations: (project: Project, entries: TranslationEntry[]) => Promise<{ updatedCount: number }>;
 

@@ -1,11 +1,13 @@
 import { useState } from 'react';
-import { Box, Flex, Heading, Text, Card, Badge, IconButton } from '@radix-ui/themes';
+import { Box, Button, Flex, Heading, Text, Card, Badge, IconButton } from '@radix-ui/themes';
 import { FormattedMessage, useIntl } from 'react-intl';
-import { EyeOpenIcon, EyeClosedIcon, CopyIcon } from '@radix-ui/react-icons';
+import { EyeOpenIcon, EyeClosedIcon, CopyIcon, PlusIcon } from '@radix-ui/react-icons';
 import toast from 'react-hot-toast';
 
 import type { ProjectResponse } from '@/generated/api-client/src';
 import PublishButton from '@/projects/components/publish-button/publish-button';
+import StringsList from '@/projects/components/strings-list/strings-list';
+import CreateStringDialog from '@/projects/components/create-string-dialog/create-string-dialog';
 import messages from './messages';
 
 import './project-details.css';
@@ -17,6 +19,7 @@ interface ProjectDetailsProps {
 function ProjectDetails({ project }: ProjectDetailsProps) {
   const intl = useIntl();
   const [isKeyVisible, setIsKeyVisible] = useState(false);
+  const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
 
   const handleCopyKey = async () => {
     await navigator.clipboard.writeText(project.publicReadKey);
@@ -36,7 +39,13 @@ function ProjectDetails({ project }: ProjectDetailsProps) {
           <Heading as="h1" size="8">
             {project.name}
           </Heading>
-          <PublishButton projectId={project.id} />
+          <Flex gap="2" align="center">
+            <Button onClick={() => setIsCreateDialogOpen(true)} aria-label={intl.formatMessage(messages.createString)}>
+              <PlusIcon />
+              <FormattedMessage {...messages.createString} />
+            </Button>
+            <PublishButton projectId={project.id} />
+          </Flex>
         </Flex>
 
         <Card>
@@ -90,7 +99,16 @@ function ProjectDetails({ project }: ProjectDetailsProps) {
             </Box>
           </Flex>
         </Card>
+
+        <StringsList projectId={project.id} />
       </Flex>
+
+      <CreateStringDialog
+        projectId={project.id}
+        defaultLocale={project.defaultLocale}
+        open={isCreateDialogOpen}
+        onOpenChange={setIsCreateDialogOpen}
+      />
     </Box>
   );
 }

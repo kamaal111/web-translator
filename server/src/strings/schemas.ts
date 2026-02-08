@@ -26,17 +26,22 @@ export const StringResponseSchema = z
       description: 'ID of the project this string belongs to',
       example: 'proj_1234567890abcdef',
     }),
+    translations: z.record(z.string(), z.string()).meta({
+      description: 'Current draft translations for all locales (locale -> value)',
+      example: { en: 'Home', es: 'Inicio', fr: 'Accueil' },
+    }),
   })
   .describe('String response')
   .meta({
     ref: 'StringResponse',
     title: 'String Response',
-    description: 'Response for a translation string',
+    description: 'Response for a translation string with current draft translations',
     example: {
       id: 'str_1234567890abcdef',
       key: 'HOME.TITLE',
       context: 'Page title shown in browser tab',
       project_id: 'proj_1234567890abcdef',
+      translations: { en: 'Home', es: 'Inicio' },
     },
   });
 
@@ -155,7 +160,7 @@ const TranslationEntrySchema = z.object({
     description: 'Translation key (e.g., HOME.TITLE)',
     example: 'HOME.TITLE',
   }),
-  context: z.string().trim().nullable().optional().meta({
+  context: z.string().trim().nullish().meta({
     description: 'Optional context explaining where/how the string is used',
     example: 'Page title shown in browser tab and header',
   }),

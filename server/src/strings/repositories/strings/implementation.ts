@@ -29,15 +29,31 @@ class StringsRepositoryImpl implements StringsRepository {
     this.context = params.context;
   }
 
-  list = async (project: Project): Promise<StringModel[]> => {
+  listWithTranslations = async (
+    project: Project,
+  ): Promise<Array<{ string: StringModel; translations: Map<string, string> }>> => {
     const session = await verifySessionIsSet(this.context);
     assert(project.userId === session.user.id, 'Project we are listing should be the users project');
 
-    const projectStrings = await getDrizzle(this.context).query.strings.findMany({
+    const drizzle = getDrizzle(this.context);
+    const projectStrings = await drizzle.query.strings.findMany({
       where: () => eq(strings.projectId, project.id),
+      with: { translations: true },
     });
 
-    return projectStrings.map(newString);
+    return projectStrings.map(str => {
+      const translationsMap = new Map<string, string>();
+      if ('translations' in str && Array.isArray(str.translations)) {
+        for (const t of str.translations) {
+          translationsMap.set(t.locale, t.value);
+        }
+      }
+
+      return {
+        string: newString(str),
+        translations: translationsMap,
+      };
+    });
   };
 
   upsertTranslations = async (project: Project, entries: TranslationEntry[]): Promise<{ updatedCount: number }> => {
