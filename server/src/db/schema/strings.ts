@@ -1,4 +1,5 @@
 import { check, index, pgTable, text, unique } from 'drizzle-orm/pg-core';
+import { relations } from 'drizzle-orm';
 import { sql } from 'drizzle-orm';
 
 import auditFields from './helpers/audit-fields';
@@ -44,3 +45,14 @@ export const translations = pgTable(
     index('translations_string_id_locale_idx').on(table.stringId, table.locale),
   ],
 );
+
+export const stringsRelations = relations(strings, ({ many }) => ({
+  translations: many(translations),
+}));
+
+export const translationsRelations = relations(translations, ({ one }) => ({
+  string: one(strings, {
+    fields: [translations.stringId],
+    references: [strings.id],
+  }),
+}));

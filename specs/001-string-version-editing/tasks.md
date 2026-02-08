@@ -49,6 +49,52 @@ This is a monorepo with `server/` and `web/` directories at the repository root.
 
 ---
 
+## Phase 2.5: Strings List & Creation UI (MVP Prerequisite) 🚨 CRITICAL
+
+**Purpose**: Enable users to view and create strings in the UI. Without this, users cannot access any of the version history features.
+
+**⚠️ BLOCKING**: This must be completed before User Stories 1-3 are usable in the UI. The backend APIs already exist (GET /strings/:projectId and POST /strings/:projectId/translations), but there's no UI to access them.
+
+**Goal**: Users can see a list of all strings in their project and create new strings. Each string can be expanded to show version history (once User Story 1 is integrated).
+
+### Tests for Strings List & Creation ⚠️
+
+> **NOTE: Write these tests FIRST, ensure they FAIL before implementation**
+
+- [x] T006a [P] [Strings] Write component test for StringsList component in `web/src/projects/components/strings-list/strings-list.test.tsx` using screen from @testing-library/react
+- [x] T006b [P] [Strings] Write component test for CreateStringDialog component in `web/src/projects/components/create-string-dialog/create-string-dialog.test.tsx` using screen from @testing-library/react
+
+### Implementation for Strings List & Creation
+
+#### Backend (Already Exists ✓)
+
+- ✓ GET /strings/:projectId exists in `server/src/strings/routes/list-strings.ts`
+- ✓ POST /strings/:projectId/translations exists in `server/src/strings/routes/upsert-translations.ts`
+
+#### Frontend (Web)
+
+- [x] T006c [P] [Strings] Create i18n messages file for strings list in `web/src/projects/components/strings-list/messages.ts`
+- [x] T006d [P] [Strings] Create i18n messages file for create string dialog in `web/src/projects/components/create-string-dialog/messages.ts`
+- [x] T006e [P] [Strings] Create useStrings hook in `web/src/projects/hooks/use-strings.ts` for fetching strings list
+- [x] T006f [P] [Strings] Create useCreateString hook in `web/src/projects/hooks/use-create-string.ts` for creating new strings
+- [x] T006g [Strings] Create StringsList component with expandable items (using Radix Accordion) in `web/src/projects/components/strings-list/strings-list.tsx`
+- [x] T006h [Strings] Create CreateStringDialog component with form validation in `web/src/projects/components/create-string-dialog/create-string-dialog.tsx`
+- [x] T006i [Strings] Add Tailwind CSS styling in `web/src/projects/components/strings-list/strings-list.css`
+- [x] T006j [Strings] Add Tailwind CSS styling in `web/src/projects/components/create-string-dialog/create-string-dialog.css`
+- [x] T006k [Strings] Integrate StringsList into ProjectDetails component in `web/src/projects/components/project-details/project-details.tsx`
+- [x] T006l [Strings] Wire StringVersionHistory into StringsList expandable items in `web/src/projects/components/strings-list/strings-list.tsx` (depends on User Story 1 completion)
+- [x] T006m [Strings] Add "Create String" button to project page header in `web/src/projects/components/project-details/project-details.tsx`
+- [x] T006n [Strings] Ensure all aria-labels are translated using useIntl hook
+
+### Verification for Strings List & Creation
+
+- [x] T006o [Strings] Run web tests with `just test` and verify all pass
+- [x] T006p [Strings] Run `just ready` to verify format, lint, typecheck, tests, and build all pass
+
+**Checkpoint**: At this point, users can view the strings list, create new strings, and expand strings to see version history. This completes the MVP prerequisite - the feature is now fully usable end-to-end.
+
+---
+
 ## Phase 3: User Story 1 - View Version History (Priority: P1) 🎯 MVP
 
 **Goal**: Users can see complete history of changes to their project strings, including who made changes and when. This provides transparency and allows users to understand how strings evolved over time.
@@ -80,7 +126,7 @@ This is a monorepo with `server/` and `web/` directories at the repository root.
 - [x] T017 [P] [US1] Create useStringVersions hook in `web/src/projects/hooks/use-string-versions.ts` for fetching version history
 - [x] T018 [US1] Create StringVersionHistory component using Radix Accordion in `web/src/projects/components/string-version-history/string-version-history.tsx`
 - [x] T019 [US1] Add Tailwind CSS styling in `web/src/projects/components/string-version-history/string-version-history.css`
-- [x] T020 [US1] Integrate StringVersionHistory component into project page in `web/src/pages/project/project.tsx` _(Component exported and ready for integration when strings list UI is implemented)_
+- [x] T020 [US1] Integrate StringVersionHistory component into project page in `web/src/pages/project/project.tsx` _(Component exported and ready - actual integration into strings list happens in Phase 2.5 Task T006l)_
 - [x] T021 [US1] Update project page i18n messages in `web/src/pages/project/messages.ts` for version history UI _(Deferred - messages already in component-level messages.ts)_
 
 ### Verification for User Story 1
@@ -157,42 +203,42 @@ This is a monorepo with `server/` and `web/` directories at the repository root.
 
 > **NOTE: Write these tests FIRST, ensure they FAIL before implementation**
 
-- [ ] T053 [P] [US3] Write server test for PATCH /projects/:projectId/strings/:stringKey/translations endpoint in `server/src/projects/__tests__/update-draft-string.test.ts` using TestHelper
-- [ ] T054 [P] [US3] Write server test for concurrent edit conflict detection (409 response) in `server/src/projects/__tests__/update-draft-string.test.ts`
-- [ ] T055 [P] [US3] Write server test for validation errors (400 response) in `server/src/projects/__tests__/update-draft-string.test.ts`
-- [ ] T056 [P] [US3] Write component test for DraftEditor save/cancel behavior in `web/src/projects/components/draft-editor/draft-editor.test.tsx` using screen from @testing-library/react
-- [ ] T057 [P] [US3] Write component test for conflict warning display in `web/src/projects/components/draft-editor/draft-editor.test.tsx`
+- [x] T053 [P] [US3] Write server test for PATCH /projects/:projectId/strings/:stringKey/translations endpoint in `server/src/projects/__tests__/update-draft-string.test.ts` using TestHelper
+- [x] T054 [P] [US3] Write server test for concurrent edit conflict detection (409 response) in `server/src/projects/__tests__/update-draft-string.test.ts`
+- [x] T055 [P] [US3] Write server test for validation errors (400 response) in `server/src/projects/__tests__/update-draft-string.test.ts`
+- [x] T056 [P] [US3] Write component test for DraftEditor save/cancel behavior in `web/src/projects/components/draft-editor/draft-editor.test.tsx` using screen from @testing-library/react
+- [x] T057 [P] [US3] Write component test for conflict warning display in `web/src/projects/components/draft-editor/draft-editor.test.tsx`
 
 ### Implementation for User Story 3
 
 #### Backend (Server)
 
-- [ ] T058 [P] [US3] Add Zod schemas for update endpoint in `server/src/projects/schemas.ts` (UpdateDraftTranslationsBodySchema, UpdateDraftTranslationsResponseSchema)
-- [ ] T059 [P] [US3] Extend TranslationsRepository with updateDraft() method including conflict detection in `server/src/projects/repositories/translations-repository.ts`
-- [ ] T060 [US3] Create route handler for PATCH /projects/:projectId/strings/:stringKey/translations in `server/src/projects/routes/update-draft-string.ts` (depends on T059)
-- [ ] T061 [US3] Implement conflict detection logic using updatedAt timestamp comparison in `server/src/projects/routes/update-draft-string.ts`
-- [ ] T062 [US3] Add validation for empty values and enabled locales in `server/src/projects/routes/update-draft-string.ts`
-- [ ] T063 [US3] Register update-draft-string route in `server/src/projects/router.ts` with authentication middleware
-- [ ] T064 [US3] Add OpenAPI documentation decorators to update-draft-string endpoint
+- [x] T058 [P] [US3] Add Zod schemas for update endpoint in `server/src/projects/schemas.ts` (UpdateDraftTranslationsBodySchema, UpdateDraftTranslationsResponseSchema)
+- [x] T059 [P] [US3] Extend TranslationsRepository with updateDraft() method including conflict detection in `server/src/projects/repositories/translations-repository.ts`
+- [x] T060 [US3] Create route handler for PATCH /projects/:projectId/strings/:stringKey/translations in `server/src/projects/routes/update-draft-string.ts` (depends on T059)
+- [x] T061 [US3] Implement conflict detection logic using updatedAt timestamp comparison in `server/src/projects/routes/update-draft-string.ts`
+- [x] T062 [US3] Add validation for empty values and enabled locales in `server/src/projects/routes/update-draft-string.ts`
+- [x] T063 [US3] Register update-draft-string route in `server/src/projects/router.ts` with authentication middleware
+- [x] T064 [US3] Add OpenAPI documentation decorators to update-draft-string endpoint
 
 #### Frontend (Web)
 
-- [ ] T065 [P] [US3] Create i18n messages file for draft editor in `web/src/projects/components/draft-editor/messages.ts`
-- [ ] T066 [P] [US3] Create useDraftEditor hook in `web/src/projects/hooks/use-draft-editor.ts` for edit state and save logic
-- [ ] T067 [US3] Create DraftEditor component with textarea and save/cancel buttons in `web/src/projects/components/draft-editor/draft-editor.tsx`
-- [ ] T068 [US3] Add conflict warning modal/toast to DraftEditor component in `web/src/projects/components/draft-editor/draft-editor.tsx`
-- [ ] T069 [US3] Add Tailwind CSS styling in `web/src/projects/components/draft-editor/draft-editor.css`
-- [ ] T070 [US3] Integrate DraftEditor into StringVersionHistory component in `web/src/projects/components/string-version-history/string-version-history.tsx`
-- [ ] T071 [US3] Add loading states and error handling to DraftEditor component
-- [ ] T072 [US3] Ensure all aria-labels are translated using useIntl hook
+- [x] T065 [P] [US3] Create i18n messages file for draft editor in `web/src/projects/components/draft-editor/messages.ts`
+- [x] T066 [P] [US3] Create useDraftEditor hook in `web/src/projects/hooks/use-draft-editor.ts` for edit state and save logic
+- [x] T067 [US3] Create DraftEditor component with textarea and save/cancel buttons in `web/src/projects/components/draft-editor/draft-editor.tsx`
+- [x] T068 [US3] Add conflict warning modal/toast to DraftEditor component in `web/src/projects/components/draft-editor/draft-editor.tsx`
+- [x] T069 [US3] Add Tailwind CSS styling in `web/src/projects/components/draft-editor/draft-editor.css`
+- [x] T070 [US3] Integrate DraftEditor into StringVersionHistory component in `web/src/projects/components/string-version-history/string-version-history.tsx`
+- [x] T071 [US3] Add loading states and error handling to DraftEditor component
+- [x] T072 [US3] Ensure all aria-labels are translated using useIntl hook
 
 ### Verification for User Story 3
 
-- [ ] T073 [US3] Run server tests with `just test` and verify all pass
-- [ ] T074 [US3] Run web tests with `just test` and verify all pass
-- [ ] T075 [US3] Update OpenAPI spec with `just download-spec`
-- [ ] T076 [US3] Regenerate web API client with `just prepare-web`
-- [ ] T077 [US3] Run `just ready` to verify format, lint, typecheck, tests, and build all pass
+- [x] T073 [US3] Run server tests with `just test` and verify all pass
+- [x] T074 [US3] Run web tests with `just test` and verify all pass
+- [x] T075 [US3] Update OpenAPI spec with `just download-spec`
+- [x] T076 [US3] Regenerate web API client with `just prepare-web`
+- [x] T077 [US3] Run `just ready` to verify format, lint, typecheck, tests, and build all pass
 
 **Checkpoint**: At this point, User Stories 1, 2, AND 3 should all work independently. Users can view version history, publish drafts to create snapshots, AND edit draft strings.
 
@@ -300,22 +346,68 @@ This is a monorepo with `server/` and `web/` directories at the repository root.
 
 ---
 
+## Phase 6.5: Bulk Translation Editor (Priority: P2) 🚀 UX Enhancement
+
+**Goal**: Users can edit translations for all locales at once instead of editing one locale at a time. This significantly improves efficiency when adding or updating translations across multiple languages.
+
+**Why this priority**: The current draft editor only allows editing one locale at a time, requiring users to open the editor multiple times for multi-locale projects. The backend API already supports multiple locales via `Record<string, string>`, so this is purely a UI enhancement that leverages existing backend capabilities.
+
+**Independent Test**: Open bulk editor, add/edit translations for all enabled locales, save, and verify all locales are updated correctly in a single operation.
+
+### Tests for Bulk Translation Editor ⚠️
+
+> **NOTE: Write these tests FIRST, ensure they FAIL before implementation**
+
+- [ ] T101 [P] [Bulk] Write component test for BulkTranslationEditor component in `web/src/projects/components/bulk-translation-editor/bulk-translation-editor.test.tsx` using screen from @testing-library/react
+- [ ] T102 [P] [Bulk] Write component test for multi-locale save behavior in `web/src/projects/components/bulk-translation-editor/bulk-translation-editor.test.tsx`
+- [ ] T103 [P] [Bulk] Write component test for validation (empty values, missing required locales) in `web/src/projects/components/bulk-translation-editor/bulk-translation-editor.test.tsx`
+
+### Implementation for Bulk Translation Editor
+
+#### Backend (Already Exists ✓)
+
+- ✓ PATCH /projects/:projectId/strings/:stringKey/translations already supports `translations: Record<string, string>` in `server/src/projects/routes/update-draft-string.ts`
+- ✓ Backend already validates and saves multiple locales in a single request
+
+#### Frontend (Web)
+
+- [ ] T104 [P] [Bulk] Create i18n messages file for bulk editor in `web/src/projects/components/bulk-translation-editor/messages.ts`
+- [ ] T105 [P] [Bulk] Create useBulkTranslationEditor hook in `web/src/projects/hooks/use-bulk-translation-editor.ts` for managing multi-locale state
+- [ ] T106 [Bulk] Create BulkTranslationEditor component with textarea for each enabled locale in `web/src/projects/components/bulk-translation-editor/bulk-translation-editor.tsx`
+- [ ] T107 [Bulk] Add view mode toggle (single/bulk) to draft editor section in `web/src/projects/components/string-version-history/string-version-history.tsx`
+- [ ] T108 [Bulk] Display locale labels with each textarea (e.g., "English (en)", "Spanish (es)") in `web/src/projects/components/bulk-translation-editor/bulk-translation-editor.tsx`
+- [ ] T109 [Bulk] Add validation for empty values and show per-locale error messages in `web/src/projects/components/bulk-translation-editor/bulk-translation-editor.tsx`
+- [ ] T110 [Bulk] Add Tailwind CSS styling for multi-locale layout in `web/src/projects/components/bulk-translation-editor/bulk-translation-editor.css`
+- [ ] T111 [Bulk] Wire bulk editor save to call update-draft-string with all locales in `web/src/projects/hooks/use-bulk-translation-editor.ts`
+- [ ] T112 [Bulk] Add conflict detection support (same as single-locale editor) in `web/src/projects/hooks/use-bulk-translation-editor.ts`
+- [ ] T113 [Bulk] Ensure all aria-labels are translated using useIntl hook
+
+### Verification for Bulk Translation Editor
+
+- [ ] T114 [Bulk] Run web tests with `just test` and verify all pass
+- [ ] T115 [Bulk] Run `just ready` to verify format, lint, typecheck, tests, and build all pass
+- [ ] T116 [Bulk] Manually test editing 5+ locales at once and verify all save correctly
+
+**Checkpoint**: Users can now efficiently edit all locale translations in a single view, significantly improving the workflow for multi-locale projects.
+
+---
+
 ## Phase 7: Polish & Cross-Cutting Concerns
 
 **Purpose**: Improvements that affect multiple user stories
 
-- [ ] T101 [P] Add performance logging for version history queries in `server/src/projects/routes/list-string-versions.ts` using getLogger(c)
-- [ ] T102 [P] Add performance logging for publish operations in `server/src/projects/routes/publish-snapshot.ts` using getLogger(c)
-- [ ] T103 [P] Add performance logging for draft update operations in `server/src/projects/routes/update-draft-string.ts` using getLogger(c)
-- [ ] T104 [P] Add error logging for all error paths with structured context in server route handlers
-- [ ] T105 Verify pagination handles projects with 10,000+ snapshots (performance target SC-006)
-- [ ] T106 Verify publish operations complete within 3 seconds (performance target SC-008)
-- [ ] T107 [P] Add loading skeletons for version history in web components
-- [ ] T108 [P] Add optimistic UI updates for draft saving (optional enhancement)
-- [ ] T109 Review and improve error messages for user-facing errors
-- [ ] T110 Add analytics events for version history views, publish operations, and draft edits
-- [ ] T111 Update feature documentation in `specs/001-string-version-editing/README.md`
-- [ ] T112 Run quickstart.md validation scenarios manually
+- [ ] T117 [P] Add performance logging for version history queries in `server/src/projects/routes/list-string-versions.ts` using getLogger(c)
+- [ ] T118 [P] Add performance logging for publish operations in `server/src/projects/routes/publish-snapshot.ts` using getLogger(c)
+- [ ] T119 [P] Add performance logging for draft update operations in `server/src/projects/routes/update-draft-string.ts` using getLogger(c)
+- [ ] T120 [P] Add error logging for all error paths with structured context in server route handlers
+- [ ] T121 Verify pagination handles projects with 10,000+ snapshots (performance target SC-006)
+- [ ] T122 Verify publish operations complete within 3 seconds (performance target SC-008)
+- [ ] T123 [P] Add loading skeletons for version history in web components
+- [ ] T124 [P] Add optimistic UI updates for draft saving (optional enhancement)
+- [ ] T125 Review and improve error messages for user-facing errors
+- [ ] T126 Add analytics events for version history views, publish operations, and draft edits
+- [ ] T127 Update feature documentation in `specs/001-string-version-editing/README.md`
+- [ ] T128 Run quickstart.md validation scenarios manually
 
 ---
 
@@ -325,17 +417,21 @@ This is a monorepo with `server/` and `web/` directories at the repository root.
 
 - **Setup (Phase 1)**: No dependencies - can start immediately
 - **Foundational (Phase 2)**: Depends on Setup completion - BLOCKS all user stories
-- **User Stories (Phase 3-6)**: All depend on Foundational phase completion
+- **Strings List UI (Phase 2.5)**: Depends on Foundational completion - BLOCKS UI usability of all user stories. Backend work for user stories can proceed in parallel, but the features cannot be tested or used without this phase.
+- **User Stories (Phase 3-6)**: All depend on Foundational phase completion for implementation
+  - Backend work can proceed after Phase 2 completion
+  - Full UI integration requires Phase 2.5 completion
   - User stories can then proceed in parallel (if staffed)
   - Or sequentially in priority order (P1 View → P1 Publish → P2 Edit → P3 Compare)
 - **Polish (Phase 7)**: Depends on all desired user stories being complete
 
 ### User Story Dependencies
 
-- **User Story 1 (P1 - View)**: Can start after Foundational (Phase 2) - No dependencies on other stories
+- **User Story 1 (P1 - View)**: Can start after Foundational (Phase 2) - No dependencies on other stories. Full UI integration requires Phase 2.5 (T006l).
 - **User Story 2 (P1 - Publish)**: Can start after Foundational (Phase 2) - No dependencies on other stories (but needs US1 for full UI integration)
 - **User Story 3 (P2 - Edit)**: Depends on User Story 1 for StringVersionHistory component integration, but edit logic is independent
 - **User Story 4 (P3 - Compare)**: Can start after Foundational (Phase 2) - Independent of US1/US2/US3 (integrates with version history UI)
+- **Bulk Editor (Phase 6.5 - P2)**: Depends on User Story 3 (Edit Draft) completion - Enhances existing draft editor with multi-locale capability
 
 ### Within Each User Story
 
@@ -357,6 +453,14 @@ This is a monorepo with `server/` and `web/` directories at the repository root.
 #### Phase 2 (Foundational)
 
 - T005 and T006 can run in parallel (different files)
+
+#### Phase 2.5 (Strings List UI) Tests (T006a-T006b)
+
+- Both test files can be written in parallel (different files)
+
+#### Phase 2.5 (Strings List UI) Frontend (T006c-T006f)
+
+- All messages files and hooks can be created in parallel (different files)
 
 #### User Story 1 Tests (T007-T010)
 
@@ -406,7 +510,15 @@ This is a monorepo with `server/` and `web/` directories at the repository root.
 
 - Messages file and hook can be created in parallel (different files)
 
-#### Phase 7 (Polish) - T101-T110
+#### Phase 6.5 (Bulk Editor) Tests (T101-T103)
+
+- All test files can be written in parallel (different test cases in same file)
+
+#### Phase 6.5 (Bulk Editor) Frontend (T104-T105)
+
+- Messages file and hook can be created in parallel (different files)
+
+#### Phase 7 (Polish) - T117-T126
 
 - All logging, performance, and enhancement tasks can run in parallel (different files)
 
@@ -434,26 +546,30 @@ This is a monorepo with `server/` and `web/` directories at the repository root.
 
 ## Implementation Strategy
 
-### MVP First (User Story 1 Only)
+### MVP First (Usable Feature)
 
 1. Complete Phase 1: Setup (T001-T003)
 2. Complete Phase 2: Foundational (T004-T006) - **CRITICAL GATE**
-3. Complete Phase 3: User Story 1 (T007-T026)
-4. **STOP and VALIDATE**: Test User Story 1 independently
-5. Deploy/demo if ready - users can now view complete version history
+3. Complete Phase 2.5: Strings List UI (T006a-T006p) - **CRITICAL for UI usability** 🚨
+4. Complete Phase 3: User Story 1 (T007-T026)
+5. Complete Phase 4: User Story 2 (T027-T052)
+6. **STOP and VALIDATE**: Test end-to-end flow (create string → view history → publish → view new snapshot)
+7. Deploy/demo if ready - users can now create strings, view version history, and publish snapshots
 
-**MVP Delivery**: After completing User Story 1, you have a minimal viable feature that delivers immediate value (version transparency).
+**MVP Delivery**: After completing Phase 2.5 + User Story 1 + User Story 2, you have a fully functional feature that users can access and use end-to-end.
 
 ### Incremental Delivery
 
 1. **Setup + Foundational** (T001-T006) → Foundation ready
-2. **Add User Story 1** (T007-T026) → Test independently → Deploy/Demo ✓ View history
-3. **Add User Story 2** (T027-T052) → Test independently → Deploy/Demo ✓ **MVP!** (View + Publish)
-4. **Add User Story 3** (T053-T077) → Test independently → Deploy/Demo ✓ Full editing capability
-5. **Add User Story 4** (T078-T100) → Test independently → Deploy/Demo ✓ Enhanced comparison
-6. **Polish** (T101-T112) → Final production-ready feature
+2. **Add Strings List UI** (T006a-T006p) → Test independently → Deploy/Demo ✓ Users can see and create strings
+3. **Add User Story 1** (T007-T026) → Test independently → Deploy/Demo ✓ View history in strings list
+4. **Add User Story 2** (T027-T052) → Test independently → Deploy/Demo ✓ **MVP!** (Full workflow: create → edit → publish → view)
+5. **Add User Story 3** (T053-T077) → Test independently → Deploy/Demo ✓ Enhanced inline editing
+6. **Add Bulk Editor** (T101-T116) → Test independently → Deploy/Demo ✓ Multi-locale editing efficiency
+7. **Add User Story 4** (T078-T100) → Test independently → Deploy/Demo ✓ Enhanced comparison (P3 - optional)
+8. **Polish** (T117-T128) → Final production-ready feature
 
-Each story adds value without breaking previous stories.
+Each phase adds value without breaking previous features.
 
 ### Parallel Team Strategy
 
@@ -461,67 +577,81 @@ With multiple developers:
 
 1. **Team completes Setup + Foundational together** (T001-T006)
 2. Once Foundational is done:
-   - **Developer A**: User Story 1 (T007-T026) - View version history
-   - **Developer B**: User Story 2 (T027-T052) - Publish drafts (independent)
-   - **Developer C**: User Story 3 (T053-T077) - Edit drafts (can start after US1 component exists)
-   - **Developer D**: User Story 4 (T078-T100) - Compare versions (independent)
-3. Stories complete and integrate independently
+   - **Developer A**: Strings List UI (T006a-T006p) - **Must complete first for UI testing** 🚨
+   - **Developer B**: User Story 1 (T007-T026) - View version history (can start backend work)
+   - **Developer C**: User Story 2 (T027-T052) - Publish drafts (can start backend work)
+   - **Developer D**: User Story 3 (T053-T077) - Edit drafts (can start backend work)
+3. Once Developer A completes Strings List UI:
+   - Developer B integrates version history (T006l)
+   - Full end-to-end testing becomes possible
+4. Stories complete and integrate independently
 
-**Recommended Order for Single Developer**: P1 View (US1) → P1 Publish (US2) → P2 Edit (US3) → P3 Compare (US4) → Polish
+**Recommended Order for Single Developer**: Strings List (Phase 2.5) → P1 View (US1) + integration → P1 Publish (US2) → P2 Edit (US3) → P2 Bulk Editor (Phase 6.5) → P3 Compare (US4) → Polish
 
 ---
 
 ## Summary
 
-- **Total Tasks**: 112
+- **Total Tasks**: 144 (updated with Phase 6.5)
+- **Setup**: 3 tasks (T001-T003)
+- **Foundational**: 3 tasks (T004-T006)
+- **Strings List UI (Phase 2.5)**: 16 tasks (T006a-T006p) - 🚨 CRITICAL for UI usability
 - **User Story 1 (P1 - View)**: 20 tasks (T007-T026) - View version history
 - **User Story 2 (P1 - Publish)**: 26 tasks (T027-T052) - Publish draft to create snapshots
 - **User Story 3 (P2 - Edit)**: 25 tasks (T053-T077) - Edit draft strings
 - **User Story 4 (P3 - Compare)**: 23 tasks (T078-T100) - Compare versions
-- **Setup**: 3 tasks (T001-T003)
-- **Foundational**: 3 tasks (T004-T006)
-- **Polish**: 12 tasks (T101-T112)
+- **Bulk Editor (Phase 6.5 - P2)**: 16 tasks (T101-T116) - Multi-locale translation editor
+- **Polish**: 12 tasks (T117-T128)
 
 ### Parallel Opportunities Identified
 
 - **Setup Phase**: 2 parallel tasks
 - **Foundational Phase**: 2 parallel tasks
+- **Strings List UI Phase**: 6 parallel opportunities
 - **User Story 1**: 8 parallel opportunities
 - **User Story 2**: 10 parallel opportunities
 - **User Story 3**: 9 parallel opportunities
 - **User Story 4**: 8 parallel opportunities
+- **Bulk Editor Phase**: 2 parallel opportunities
 - **Polish Phase**: 10 parallel opportunities
 
 ### Independent Test Criteria
 
+- **Strings List UI**: Create project, add strings via API, verify strings list displays in UI. Click create button, fill form, verify new string appears.
 - **User Story 1**: Create snapshots, expand string, verify all versions display with metadata
 - **User Story 2**: Publish draft, verify new snapshot created with correct version, author, and timestamp. Verify draft remains editable.
 - **User Story 3**: Edit draft, save, verify persistence. Test conflict detection with concurrent edit.
 - **User Story 4**: Select two versions, verify side-by-side display with highlighted differences
+- **Bulk Editor**: Open bulk editor, add/edit translations for all enabled locales, save, verify all locales updated correctly
 
 ### Suggested MVP Scope
 
-**MVP = User Story 1 (View Version History) + User Story 2 (Publish Draft)**
+**Critical Prerequisite = Phase 2.5 (Strings List UI)**
+
+Without this phase, users cannot see or create strings in the UI, making all other features inaccessible. This must be completed first for end-to-end testability.
+
+**MVP = Phase 2.5 + User Story 1 (View Version History) + User Story 2 (Publish Draft)**
 
 This delivers immediate value by:
 
-1. Providing transparency into string evolution (view history)
-2. Enabling users to create version checkpoints (publish)
+1. Enabling users to view and create strings in their projects (Phase 2.5)
+2. Providing transparency into string evolution (view history)
+3. Enabling users to create version checkpoints (publish)
 
-Together, these two stories create a complete version history workflow. Users can publish drafts to create snapshots, then view the history of all published versions. This is the foundation for the complete feature.
+Together, these components create a complete version history workflow. Users can create strings, edit drafts, publish to create snapshots, then view the history of all published versions. This is the foundation for the complete feature.
 
-**Extended MVP** = Add User Story 3 (Edit Draft) to enable the full edit-publish-view cycle.
+**Extended MVP** = Add User Story 3 (Edit Draft) + Phase 6.5 (Bulk Editor) to enhance the edit-publish-view cycle with efficient multi-locale editing.
 
 ---
 
 ## Format Validation ✅
 
-All 112 tasks follow the required checklist format:
+All 144 tasks follow the required checklist format:
 
 - ✓ Checkbox `- [ ]` at start
-- ✓ Task ID (T001-T112) in sequence
+- ✓ Task ID (T001-T128) in sequence
 - ✓ [P] marker for parallelizable tasks
-- ✓ [Story] label (US1, US2, US3, US4) for user story phases
+- ✓ [Story] label (US1, US2, US3, US4, Bulk) for user story phases
 - ✅ Clear descriptions with exact file paths
 - ✅ No story labels for Setup, Foundational, and Polish phases
 

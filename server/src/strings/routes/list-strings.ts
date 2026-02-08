@@ -5,7 +5,7 @@ import { ErrorResponseSchema } from '@wt/schemas';
 import type { HonoContext } from '../../context';
 import { getDatabase } from '../../context/database';
 import { OPENAPI_TAG } from '../constants';
-import { ListStringsResponseSchema } from '../schemas';
+import { ListStringsResponseSchema, type ListStringsResponse } from '../schemas';
 import { ProjectIdShape } from '../../projects/schemas';
 import { getValidatedProject } from '../../projects';
 import { dbStringToResponse } from '../mappers/strings';
@@ -45,9 +45,14 @@ function listStringsRoute() {
     async (c: HonoContext<ListStringsInput>) => {
       const { projectId } = c.req.valid('param');
       const project = await getValidatedProject(c, projectId);
-      const strings = await getDatabase(c).strings.list(project);
+      const stringsWithTranslations = await getDatabase(c).strings.listWithTranslations(project);
+      const response: ListStringsResponse = stringsWithTranslations.map(
+        ({ string: str, translations: translationsMap }) => {
+          return dbStringToResponse(str, Object.fromEntries(translationsMap));
+        },
+      );
 
-      return c.json(strings.map(dbStringToResponse), 200);
+      return c.json(response, 200);
     },
   ] as const;
 }

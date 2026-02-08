@@ -1620,18 +1620,33 @@ components:
           minLength: 1
           description: ID of the project this string belongs to
           example: proj_1234567890abcdef
+        translations:
+          type: object
+          propertyNames:
+            type: string
+          additionalProperties:
+            type: string
+          description: Current draft translations for all locales (locale -> value)
+          example:
+            en: Home
+            es: Inicio
+            fr: Accueil
       required:
         - id
         - key
         - context
         - project_id
-      description: Response for a translation string
+        - translations
+      description: Response for a translation string with current draft translations
       title: String Response
       example:
         id: str_1234567890abcdef
         key: HOME.TITLE
         context: Page title shown in browser tab
         project_id: proj_1234567890abcdef
+        translations:
+          en: Home
+          es: Inicio
     ListStringsResponse:
       type: array
       items:
