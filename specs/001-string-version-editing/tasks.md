@@ -346,68 +346,22 @@ This is a monorepo with `server/` and `web/` directories at the repository root.
 
 ---
 
-## Phase 6.5: Bulk Translation Editor (Priority: P2) 🚀 UX Enhancement
-
-**Goal**: Users can edit translations for all locales at once instead of editing one locale at a time. This significantly improves efficiency when adding or updating translations across multiple languages.
-
-**Why this priority**: The current draft editor only allows editing one locale at a time, requiring users to open the editor multiple times for multi-locale projects. The backend API already supports multiple locales via `Record<string, string>`, so this is purely a UI enhancement that leverages existing backend capabilities.
-
-**Independent Test**: Open bulk editor, add/edit translations for all enabled locales, save, and verify all locales are updated correctly in a single operation.
-
-### Tests for Bulk Translation Editor ⚠️
-
-> **NOTE: Write these tests FIRST, ensure they FAIL before implementation**
-
-- [ ] T101 [P] [Bulk] Write component test for BulkTranslationEditor component in `web/src/projects/components/bulk-translation-editor/bulk-translation-editor.test.tsx` using screen from @testing-library/react
-- [ ] T102 [P] [Bulk] Write component test for multi-locale save behavior in `web/src/projects/components/bulk-translation-editor/bulk-translation-editor.test.tsx`
-- [ ] T103 [P] [Bulk] Write component test for validation (empty values, missing required locales) in `web/src/projects/components/bulk-translation-editor/bulk-translation-editor.test.tsx`
-
-### Implementation for Bulk Translation Editor
-
-#### Backend (Already Exists ✓)
-
-- ✓ PATCH /projects/:projectId/strings/:stringKey/translations already supports `translations: Record<string, string>` in `server/src/projects/routes/update-draft-string.ts`
-- ✓ Backend already validates and saves multiple locales in a single request
-
-#### Frontend (Web)
-
-- [ ] T104 [P] [Bulk] Create i18n messages file for bulk editor in `web/src/projects/components/bulk-translation-editor/messages.ts`
-- [ ] T105 [P] [Bulk] Create useBulkTranslationEditor hook in `web/src/projects/hooks/use-bulk-translation-editor.ts` for managing multi-locale state
-- [ ] T106 [Bulk] Create BulkTranslationEditor component with textarea for each enabled locale in `web/src/projects/components/bulk-translation-editor/bulk-translation-editor.tsx`
-- [ ] T107 [Bulk] Add view mode toggle (single/bulk) to draft editor section in `web/src/projects/components/string-version-history/string-version-history.tsx`
-- [ ] T108 [Bulk] Display locale labels with each textarea (e.g., "English (en)", "Spanish (es)") in `web/src/projects/components/bulk-translation-editor/bulk-translation-editor.tsx`
-- [ ] T109 [Bulk] Add validation for empty values and show per-locale error messages in `web/src/projects/components/bulk-translation-editor/bulk-translation-editor.tsx`
-- [ ] T110 [Bulk] Add Tailwind CSS styling for multi-locale layout in `web/src/projects/components/bulk-translation-editor/bulk-translation-editor.css`
-- [ ] T111 [Bulk] Wire bulk editor save to call update-draft-string with all locales in `web/src/projects/hooks/use-bulk-translation-editor.ts`
-- [ ] T112 [Bulk] Add conflict detection support (same as single-locale editor) in `web/src/projects/hooks/use-bulk-translation-editor.ts`
-- [ ] T113 [Bulk] Ensure all aria-labels are translated using useIntl hook
-
-### Verification for Bulk Translation Editor
-
-- [ ] T114 [Bulk] Run web tests with `just test` and verify all pass
-- [ ] T115 [Bulk] Run `just ready` to verify format, lint, typecheck, tests, and build all pass
-- [ ] T116 [Bulk] Manually test editing 5+ locales at once and verify all save correctly
-
-**Checkpoint**: Users can now efficiently edit all locale translations in a single view, significantly improving the workflow for multi-locale projects.
-
----
-
 ## Phase 7: Polish & Cross-Cutting Concerns
 
 **Purpose**: Improvements that affect multiple user stories
 
-- [ ] T117 [P] Add performance logging for version history queries in `server/src/projects/routes/list-string-versions.ts` using getLogger(c)
-- [ ] T118 [P] Add performance logging for publish operations in `server/src/projects/routes/publish-snapshot.ts` using getLogger(c)
-- [ ] T119 [P] Add performance logging for draft update operations in `server/src/projects/routes/update-draft-string.ts` using getLogger(c)
-- [ ] T120 [P] Add error logging for all error paths with structured context in server route handlers
-- [ ] T121 Verify pagination handles projects with 10,000+ snapshots (performance target SC-006)
-- [ ] T122 Verify publish operations complete within 3 seconds (performance target SC-008)
-- [ ] T123 [P] Add loading skeletons for version history in web components
-- [ ] T124 [P] Add optimistic UI updates for draft saving (optional enhancement)
-- [ ] T125 Review and improve error messages for user-facing errors
-- [ ] T126 Add analytics events for version history views, publish operations, and draft edits
-- [ ] T127 Update feature documentation in `specs/001-string-version-editing/README.md`
-- [ ] T128 Run quickstart.md validation scenarios manually
+- [ ] T101 [P] Add performance logging for version history queries in `server/src/projects/routes/list-string-versions.ts` using getLogger(c)
+- [ ] T102 [P] Add performance logging for publish operations in `server/src/projects/routes/publish-snapshot.ts` using getLogger(c)
+- [ ] T103 [P] Add performance logging for draft update operations in `server/src/projects/routes/update-draft-string.ts` using getLogger(c)
+- [ ] T104 [P] Add error logging for all error paths with structured context in server route handlers
+- [ ] T105 Verify pagination handles projects with 10,000+ snapshots (performance target SC-006)
+- [ ] T106 Verify publish operations complete within 3 seconds (performance target SC-008)
+- [ ] T107 [P] Add loading skeletons for version history in web components
+- [ ] T108 [P] Add optimistic UI updates for draft saving (optional enhancement)
+- [ ] T109 Review and improve error messages for user-facing errors
+- [ ] T110 Add analytics events for version history views, publish operations, and draft edits
+- [ ] T111 Update feature documentation in `specs/001-string-version-editing/README.md`
+- [ ] T112 Run quickstart.md validation scenarios manually
 
 ---
 
@@ -431,7 +385,6 @@ This is a monorepo with `server/` and `web/` directories at the repository root.
 - **User Story 2 (P1 - Publish)**: Can start after Foundational (Phase 2) - No dependencies on other stories (but needs US1 for full UI integration)
 - **User Story 3 (P2 - Edit)**: Depends on User Story 1 for StringVersionHistory component integration, but edit logic is independent
 - **User Story 4 (P3 - Compare)**: Can start after Foundational (Phase 2) - Independent of US1/US2/US3 (integrates with version history UI)
-- **Bulk Editor (Phase 6.5 - P2)**: Depends on User Story 3 (Edit Draft) completion - Enhances existing draft editor with multi-locale capability
 
 ### Within Each User Story
 
@@ -510,15 +463,7 @@ This is a monorepo with `server/` and `web/` directories at the repository root.
 
 - Messages file and hook can be created in parallel (different files)
 
-#### Phase 6.5 (Bulk Editor) Tests (T101-T103)
-
-- All test files can be written in parallel (different test cases in same file)
-
-#### Phase 6.5 (Bulk Editor) Frontend (T104-T105)
-
-- Messages file and hook can be created in parallel (different files)
-
-#### Phase 7 (Polish) - T117-T126
+#### Phase 7 (Polish) - T101-T110
 
 - All logging, performance, and enhancement tasks can run in parallel (different files)
 
@@ -565,9 +510,8 @@ This is a monorepo with `server/` and `web/` directories at the repository root.
 3. **Add User Story 1** (T007-T026) → Test independently → Deploy/Demo ✓ View history in strings list
 4. **Add User Story 2** (T027-T052) → Test independently → Deploy/Demo ✓ **MVP!** (Full workflow: create → edit → publish → view)
 5. **Add User Story 3** (T053-T077) → Test independently → Deploy/Demo ✓ Enhanced inline editing
-6. **Add Bulk Editor** (T101-T116) → Test independently → Deploy/Demo ✓ Multi-locale editing efficiency
-7. **Add User Story 4** (T078-T100) → Test independently → Deploy/Demo ✓ Enhanced comparison (P3 - optional)
-8. **Polish** (T117-T128) → Final production-ready feature
+6. **Add User Story 4** (T078-T100) → Test independently → Deploy/Demo ✓ Enhanced comparison (P3 - optional)
+7. **Polish** (T101-T112) → Final production-ready feature
 
 Each phase adds value without breaking previous features.
 
@@ -586,13 +530,13 @@ With multiple developers:
    - Full end-to-end testing becomes possible
 4. Stories complete and integrate independently
 
-**Recommended Order for Single Developer**: Strings List (Phase 2.5) → P1 View (US1) + integration → P1 Publish (US2) → P2 Edit (US3) → P2 Bulk Editor (Phase 6.5) → P3 Compare (US4) → Polish
+**Recommended Order for Single Developer**: Strings List (Phase 2.5) → P1 View (US1) + integration → P1 Publish (US2) → P2 Edit (US3) → P3 Compare (US4) → Polish
 
 ---
 
 ## Summary
 
-- **Total Tasks**: 144 (updated with Phase 6.5)
+- **Total Tasks**: 128
 - **Setup**: 3 tasks (T001-T003)
 - **Foundational**: 3 tasks (T004-T006)
 - **Strings List UI (Phase 2.5)**: 16 tasks (T006a-T006p) - 🚨 CRITICAL for UI usability
@@ -600,8 +544,7 @@ With multiple developers:
 - **User Story 2 (P1 - Publish)**: 26 tasks (T027-T052) - Publish draft to create snapshots
 - **User Story 3 (P2 - Edit)**: 25 tasks (T053-T077) - Edit draft strings
 - **User Story 4 (P3 - Compare)**: 23 tasks (T078-T100) - Compare versions
-- **Bulk Editor (Phase 6.5 - P2)**: 16 tasks (T101-T116) - Multi-locale translation editor
-- **Polish**: 12 tasks (T117-T128)
+- **Polish**: 12 tasks (T101-T112)
 
 ### Parallel Opportunities Identified
 
@@ -612,7 +555,6 @@ With multiple developers:
 - **User Story 2**: 10 parallel opportunities
 - **User Story 3**: 9 parallel opportunities
 - **User Story 4**: 8 parallel opportunities
-- **Bulk Editor Phase**: 2 parallel opportunities
 - **Polish Phase**: 10 parallel opportunities
 
 ### Independent Test Criteria
@@ -622,7 +564,6 @@ With multiple developers:
 - **User Story 2**: Publish draft, verify new snapshot created with correct version, author, and timestamp. Verify draft remains editable.
 - **User Story 3**: Edit draft, save, verify persistence. Test conflict detection with concurrent edit.
 - **User Story 4**: Select two versions, verify side-by-side display with highlighted differences
-- **Bulk Editor**: Open bulk editor, add/edit translations for all enabled locales, save, verify all locales updated correctly
 
 ### Suggested MVP Scope
 
@@ -640,18 +581,18 @@ This delivers immediate value by:
 
 Together, these components create a complete version history workflow. Users can create strings, edit drafts, publish to create snapshots, then view the history of all published versions. This is the foundation for the complete feature.
 
-**Extended MVP** = Add User Story 3 (Edit Draft) + Phase 6.5 (Bulk Editor) to enhance the edit-publish-view cycle with efficient multi-locale editing.
+**Extended MVP** = Add User Story 3 (Edit Draft) to enhance the edit-publish-view cycle with inline editing.
 
 ---
 
 ## Format Validation ✅
 
-All 144 tasks follow the required checklist format:
+All 128 tasks follow the required checklist format:
 
 - ✓ Checkbox `- [ ]` at start
-- ✓ Task ID (T001-T128) in sequence
+- ✓ Task ID (T001-T112) in sequence
 - ✓ [P] marker for parallelizable tasks
-- ✓ [Story] label (US1, US2, US3, US4, Bulk) for user story phases
+- ✓ [Story] label (US1, US2, US3, US4) for user story phases
 - ✅ Clear descriptions with exact file paths
 - ✅ No story labels for Setup, Foundational, and Polish phases
 
