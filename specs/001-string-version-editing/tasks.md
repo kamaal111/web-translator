@@ -307,40 +307,40 @@ This is a monorepo with `server/` and `web/` directories at the repository root.
 
 > **NOTE: Write these tests FIRST, ensure they FAIL before implementation**
 
-- [ ] T078 [P] [US4] Write server test for GET /projects/:projectId/strings/:stringKey/compare endpoint in `server/src/projects/__tests__/compare-versions.test.ts` using TestHelper
-- [ ] T079 [P] [US4] Write server test for comparing draft vs snapshot in `server/src/projects/__tests__/compare-versions.test.ts`
-- [ ] T080 [P] [US4] Write server test for comparing two snapshots in `server/src/projects/__tests__/compare-versions.test.ts`
-- [ ] T081 [P] [US4] Write server test for 404/400 error cases in `server/src/projects/__tests__/compare-versions.test.ts`
-- [ ] T082 [P] [US4] Write component test for VersionComparison component in `web/src/projects/components/version-comparison/version-comparison.test.tsx` using screen from @testing-library/react
+- [x] T078 [P] [US4] Write server test for GET /projects/:projectId/strings/:stringKey/compare endpoint in `server/src/projects/__tests__/compare-versions.test.ts` using TestHelper
+- [x] T079 [P] [US4] Write server test for comparing draft vs snapshot in `server/src/projects/__tests__/compare-versions.test.ts`
+- [x] T080 [P] [US4] Write server test for comparing two snapshots in `server/src/projects/__tests__/compare-versions.test.ts`
+- [x] T081 [P] [US4] Write server test for 404/400 error cases in `server/src/projects/__tests__/compare-versions.test.ts`
+- [x] T082 [P] [US4] Write component test for VersionComparison component in `web/src/projects/components/version-comparison/version-comparison.test.tsx` using screen from @testing-library/react
 
 ### Implementation for User Story 4
 
 #### Backend (Server)
 
-- [ ] T083 [P] [US4] Add Zod schemas for compare endpoint in `server/src/projects/schemas.ts` (CompareVersionsQuerySchema, CompareVersionsResponseSchema)
-- [ ] T084 [P] [US4] Install diff library for word-level comparison in `server/package.json`
-- [ ] T085 [US4] Create route handler for GET /projects/:projectId/strings/:stringKey/compare in `server/src/projects/routes/compare-versions.ts`
-- [ ] T086 [US4] Implement diff logic using diff library in `server/src/projects/routes/compare-versions.ts`
-- [ ] T087 [US4] Register compare-versions route in `server/src/projects/router.ts` with authentication middleware
-- [ ] T088 [US4] Add OpenAPI documentation decorators to compare-versions endpoint
+- [x] T083 [P] [US4] Add Zod schemas for compare endpoint in `server/src/projects/schemas.ts` (CompareVersionsQuerySchema, CompareVersionsResponseSchema)
+- [x] T084 [P] [US4] Install diff library for word-level comparison in `server/package.json`
+- [x] T085 [US4] Create route handler for GET /projects/:projectId/strings/:stringKey/compare in `server/src/projects/routes/compare-versions.ts`
+- [x] T086 [US4] Implement diff logic using diff library in `server/src/projects/routes/compare-versions.ts`
+- [x] T087 [US4] Register compare-versions route in `server/src/projects/router.ts` with authentication middleware
+- [x] T088 [US4] Add OpenAPI documentation decorators to compare-versions endpoint
 
 #### Frontend (Web)
 
-- [ ] T089 [P] [US4] Create i18n messages file for version comparison in `web/src/projects/components/version-comparison/messages.ts`
-- [ ] T090 [P] [US4] Create useVersionComparison hook in `web/src/projects/hooks/use-version-comparison.ts`
-- [ ] T091 [US4] Create VersionComparison component with side-by-side display in `web/src/projects/components/version-comparison/version-comparison.tsx`
-- [ ] T092 [US4] Add diff highlighting (additions green, deletions red) in `web/src/projects/components/version-comparison/version-comparison.tsx`
-- [ ] T093 [US4] Add Tailwind CSS styling in `web/src/projects/components/version-comparison/version-comparison.css`
-- [ ] T094 [US4] Add comparison button/link to StringVersionHistory component in `web/src/projects/components/string-version-history/string-version-history.tsx`
-- [ ] T095 [US4] Ensure all aria-labels are translated using useIntl hook
+- [x] T089 [P] [US4] Create i18n messages file for version comparison in `web/src/projects/components/version-comparison/messages.ts`
+- [x] T090 [P] [US4] Create useVersionComparison hook in `web/src/projects/hooks/use-version-comparison.ts`
+- [x] T091 [US4] Create VersionComparison component with side-by-side display in `web/src/projects/components/version-comparison/version-comparison.tsx`
+- [x] T092 [US4] Add diff highlighting (additions green, deletions red) in `web/src/projects/components/version-comparison/version-comparison.tsx`
+- [x] T093 [US4] Add Tailwind CSS styling in `web/src/projects/components/version-comparison/version-comparison.css`
+- [x] T094 [US4] Add comparison button/link to StringVersionHistory component in `web/src/projects/components/string-version-history/string-version-history.tsx`
+- [x] T095 [US4] Ensure all aria-labels are translated using useIntl hook
 
 ### Verification for User Story 4
 
-- [ ] T096 [US4] Run server tests with `just test` and verify all pass
-- [ ] T097 [US4] Run web tests with `just test` and verify all pass
-- [ ] T098 [US4] Update OpenAPI spec with `just download-spec`
-- [ ] T099 [US4] Regenerate web API client with `just prepare-web`
-- [ ] T100 [US4] Run `just ready` to verify format, lint, typecheck, tests, and build all pass
+- [x] T096 [US4] Run server tests with `just test` and verify all pass
+- [x] T097 [US4] Run web tests with `just test` and verify all pass
+- [x] T098 [US4] Update OpenAPI spec with `just download-spec`
+- [x] T099 [US4] Regenerate web API client with `just prepare-web`
+- [x] T100 [US4] Run `just ready` to verify format, lint, typecheck, tests, and build all pass
 
 **Checkpoint**: All user stories should now be independently functional. Users can view, publish, edit, and compare string versions.
 

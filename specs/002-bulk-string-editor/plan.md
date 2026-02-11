@@ -1549,8 +1549,8 @@ Upon approval of this plan:
 - [ ] UX Designer
 - [ ] QA Lead
 
-**Approved by**: ******\_\_\_\_******  
-**Date**: ******\_\_\_\_******
+**Approved by**: **\*\***\_\_\_\_**\*\***  
+**Date**: **\*\***\_\_\_\_**\*\***
 
 ---
 

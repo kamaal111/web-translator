@@ -91,3 +91,31 @@
   word-break: break-word;
   white-space: pre-wrap;
 }
+
+.version-comparison-diff {
+  padding: var(--space-3);
+  border-radius: var(--radius-2);
+  background: var(--gray-a2);
+  word-break: break-word;
+  white-space: pre-wrap;
+  line-height: 1.6;
+}
+
+.version-comparison-segment.addition {
+  background-color: var(--green-a4);
+  color: var(--green-11);
+  border-radius: var(--radius-1);
+  padding: 0.05em 0;
+}
+
+.version-comparison-segment.deletion {
+  background-color: var(--red-a4);
+  color: var(--red-11);
+  text-decoration: line-through;
+  border-radius: var(--radius-1);
+  padding: 0.05em 0;
+}
+
+.version-comparison-segment.unchanged {
+  color: var(--gray-12);
+}

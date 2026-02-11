@@ -31,6 +31,7 @@ function useStringVersions({ projectId, stringKey, locale }: UseStringVersionsPa
       });
     },
     enabled: Boolean(id) && Boolean(key),
+    staleTime: 5 * 60 * 1000, // 5 minutes - version history doesn't change frequently
   });
 
   return {

@@ -47,6 +47,8 @@ function useDraftEditor({
       setConflictError(null);
       // Invalidate version history query to refresh the data
       queryClient.invalidateQueries({ queryKey: ['stringVersions', projectId, stringKey] });
+      // Invalidate any comparison queries for this string since draft value changed
+      queryClient.invalidateQueries({ queryKey: ['versionComparison', projectId, stringKey] });
       onSave?.();
     },
     onError: async (error: unknown) => {
