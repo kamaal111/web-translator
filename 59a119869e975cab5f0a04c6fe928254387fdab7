@@ -1,0 +1,37 @@
+web/src/projects/hooks/use-string-versions.ts
+  d693e3fa3918c0c4 34
+specs/002-bulk-string-editor/plan.md
+  d693e3fa3918c0c4 1552-1553
+web/src/projects/components/string-version-history/messages.ts
+  d693e3fa3918c0c4 84-108
+web/src/projects/components/string-version-history/string-version-history.test.tsx
+  d693e3fa3918c0c4 145-367
+web/src/projects/components/string-version-history/string-version-history.css
+  d693e3fa3918c0c4 94-121
+web/src/projects/components/string-version-history/string-version-history.tsx
+  6a89cb3f4abd9672 137,139-140,159-164,166,168-170,176-178
+specs/001-string-version-editing/tasks.md
+  d693e3fa3918c0c4 310-314,320-325,329-335,339-343
+web/src/projects/hooks/use-draft-editor.ts
+  d693e3fa3918c0c4 50-51
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.1.2",
+  "base_commit_sha": "59a119869e975cab5f0a04c6fe928254387fdab7",
+  "prompts": {
+    "d693e3fa3918c0c4": {
+      "agent_id": {
+        "tool": "github-copilot",
+        "id": "9ea911e9-0967-4e03-8761-e3ff05fe51be",
+        "model": "copilot/claude-sonnet-4.5"
+      },
+      "human_author": "Kamaal Farah <kamaal.f1@gmail.com>",
+      "messages": [],
+      "total_additions": 842,
+      "total_deletions": 54,
+      "accepted_lines": 304,
+      "overriden_lines": 0
+    }
+  }
+}
