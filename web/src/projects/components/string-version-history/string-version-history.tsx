@@ -2,7 +2,8 @@ import { Box, Text, Heading, Card, Badge, Flex, Button } from '@radix-ui/themes'
 import * as Accordion from '@radix-ui/react-accordion';
 import { ChevronDownIcon } from '@radix-ui/react-icons';
 import { FormattedMessage, useIntl, FormattedDate } from 'react-intl';
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
+import { diffWords } from 'diff';
 
 import type { LocaleVersionHistory, DraftInfo, VersionHistoryItem } from '@/generated/api-client/src';
 import useStringVersions from '@/projects/hooks/use-string-versions';
@@ -133,6 +134,10 @@ function LocaleSection({
 }) {
   const intl = useIntl();
   const { locale, draft, versions } = localeHistory;
+  const [isComparing, setIsComparing] = useState(false);
+
+  const latestVersion = versions.length > 0 ? versions[0] : null;
+  const canCompare = Boolean(draft) && Boolean(latestVersion);
 
   return (
     <Accordion.Item value={locale} className="string-version-history-accordion-item">
@@ -151,6 +156,26 @@ function LocaleSection({
       </Accordion.Header>
       <Accordion.Content className="string-version-history-accordion-content">
         <Flex direction="column" gap="3" pt="3">
+          {canCompare && !isComparing && (
+            <Flex justify="end">
+              <Button
+                size="1"
+                variant="soft"
+                onClick={() => setIsComparing(true)}
+                aria-label={intl.formatMessage(messages.compareVersions)}
+              >
+                <FormattedMessage {...messages.compare} />
+              </Button>
+            </Flex>
+          )}
+          {isComparing && draft && latestVersion && (
+            <InlineDiffComparison
+              draftValue={draft.value}
+              publishedValue={latestVersion.value}
+              publishedVersion={latestVersion.version}
+              onClose={() => setIsComparing(false)}
+            />
+          )}
           <DraftSection draft={draft} projectId={projectId} stringKey={stringKey} locale={locale} />
           {versions.length > 0 ? (
             versions.map(item => <VersionItem key={item.version} item={item} />)
@@ -162,6 +187,60 @@ function LocaleSection({
         </Flex>
       </Accordion.Content>
     </Accordion.Item>
+  );
+}
+
+interface DiffSegment {
+  type: 'unchanged' | 'addition' | 'deletion';
+  value: string;
+}
+
+function computeDiff(oldValue: string, newValue: string): DiffSegment[] {
+  return diffWords(oldValue, newValue).map(part => {
+    if (part.added) return { type: 'addition' as const, value: part.value };
+    if (part.removed) return { type: 'deletion' as const, value: part.value };
+    return { type: 'unchanged' as const, value: part.value };
+  });
+}
+
+function InlineDiffComparison({
+  draftValue,
+  publishedValue,
+  publishedVersion,
+  onClose,
+}: {
+  draftValue: string;
+  publishedValue: string;
+  publishedVersion: number;
+  onClose: () => void;
+}) {
+  const intl = useIntl();
+  const diff = useMemo(() => computeDiff(publishedValue, draftValue), [publishedValue, draftValue]);
+
+  return (
+    <Card>
+      <Flex justify="between" align="center" mb="3">
+        <Heading as="h4" size="3">
+          <FormattedMessage {...messages.diffLabel} />
+        </Heading>
+        <Button size="1" variant="ghost" onClick={onClose} aria-label={intl.formatMessage(messages.closeComparison)}>
+          <FormattedMessage {...messages.close} />
+        </Button>
+      </Flex>
+
+      <Text size="1" color="gray" as="p" mb="2">
+        <FormattedMessage {...messages.versionLabel} values={{ version: publishedVersion }} /> →{' '}
+        <FormattedMessage {...messages.draftLabel} />
+      </Text>
+
+      <Box className="version-comparison-diff">
+        {diff.map((segment, index) => (
+          <span key={`${segment.type}-${index}`} className={`version-comparison-segment ${segment.type}`}>
+            {segment.value}
+          </span>
+        ))}
+      </Box>
+    </Card>
   );
 }
 

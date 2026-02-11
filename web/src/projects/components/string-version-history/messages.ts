@@ -81,6 +81,31 @@ const messages = defineMessages({
     defaultMessage: 'Edit draft translation',
     description: 'Aria label for button to enter edit mode for draft translation',
   },
+  compare: {
+    id: 'STRING_VERSION_HISTORY.COMPARE',
+    defaultMessage: 'Compare',
+    description: 'Button text to open the version comparison view',
+  },
+  compareVersions: {
+    id: 'STRING_VERSION_HISTORY.COMPARE_VERSIONS',
+    defaultMessage: 'Compare versions',
+    description: 'Aria label for the button that opens the version comparison view',
+  },
+  closeComparison: {
+    id: 'STRING_VERSION_HISTORY.CLOSE_COMPARISON',
+    defaultMessage: 'Close comparison',
+    description: 'Aria label for the button to close the version comparison view',
+  },
+  close: {
+    id: 'STRING_VERSION_HISTORY.CLOSE',
+    defaultMessage: 'Close',
+    description: 'Button text to close the version comparison view',
+  },
+  diffLabel: {
+    id: 'STRING_VERSION_HISTORY.DIFF_LABEL',
+    defaultMessage: 'Changes',
+    description: 'Heading label for the diff section showing changes between versions',
+  },
 });
 
 export default messages;
