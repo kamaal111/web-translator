@@ -8,6 +8,7 @@ import { diffWords } from 'diff';
 import type { LocaleVersionHistory, DraftInfo, VersionHistoryItem } from '@/generated/api-client/src';
 import useStringVersions from '@/projects/hooks/use-string-versions';
 import DraftEditor from '@/projects/components/draft-editor/draft-editor';
+import VersionHistorySkeleton from './version-history-skeleton';
 import messages from './messages';
 
 import './string-version-history.css';
@@ -24,13 +25,7 @@ function StringVersionHistory({ projectId, stringKey }: StringVersionHistoryProp
   });
 
   if (isLoading) {
-    return (
-      <Box className="string-version-history">
-        <Text>
-          <FormattedMessage {...messages.loading} />
-        </Text>
-      </Box>
-    );
+    return <VersionHistorySkeleton />;
   }
 
   if (isError || !versionHistory) {

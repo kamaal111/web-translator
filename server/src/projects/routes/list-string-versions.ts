@@ -109,6 +109,15 @@ function listStringVersionsRoute() {
       });
       const response: ListStringVersionsResponse = { locales: localeHistories };
 
+      getLogger(c).info('Version history fetched', {
+        project_id: projectId,
+        string_key: stringKey,
+        locale: locale ?? 'all',
+        page: page.toString(),
+        page_size: pageSize.toString(),
+        locales_count: localeHistories.length.toString(),
+      });
+
       return c.json(response, 200);
     },
   ] as const;
@@ -121,7 +130,11 @@ async function getValidatedStringByKey(
 ): Promise<StringModel> {
   const stringRecord = await getDatabase(c).strings.findByKey(project, stringKey);
   if (!stringRecord) {
-    getLogger(c).error('String not found', { project_id: project.id, string_key: stringKey });
+    getLogger(c).error('String not found for version history', {
+      project_id: project.id,
+      string_key: stringKey,
+      operation: 'list_string_versions',
+    });
     throw new StringNotFound(c);
   }
 

@@ -47,6 +47,18 @@
   - Example: `assert(canonical, 'Already validated, so we know this exists'); return canonical;`
   - Do NOT write: `return value ?? fallback` or `return value || fallback` when validation ensures the value exists
   - Coalescing should only be used when there's genuine optionality, not to paper over type system limitations
+- **NEVER add comments to code** - write self-documenting code with descriptive names and clear logic instead
+  - The ONLY exception is JSDoc comments for interfaces, types, and public APIs
+  - ❌ WRONG: `// Check if user is authenticated`
+  - ✅ CORRECT: `const isUserAuthenticated = ...` or a function named `checkUserAuthentication()`
+  - ❌ WRONG: `// Loop through items and process each one`
+  - ✅ CORRECT: `items.forEach(processItem)` or `for (const item of items) { processItem(item); }`
+  - ❌ WRONG: `const x = 5; // Maximum retry count`
+  - ✅ CORRECT: `const maxRetryCount = 5;`
+  - Code should tell the complete story through naming, structure, and assertions - comments are redundant and drift from reality
+  - If you feel a comment is needed, it means your code is unclear - refactor it instead
+  - In tests: use descriptive test names and assertions instead of comments (see Testing Guidelines)
+  - This is NON-NEGOTIABLE - no exceptions
 
 ## Project Structure & Module Organization
 
@@ -112,6 +124,13 @@ The project is a monorepo with the following structure:
 - **Scope:** Cover route behavior, database interactions, and edge cases.
 - **Dependency Injection:** Use `createApp({ db, auth, logger })` pattern in server tests to override dependencies.
 - **Run Tests:** `just test`.
+- **NEVER add comments to tests** - use descriptive test names and assertions instead (see general "NEVER add comments to code" rule in Critical Development Rules):
+  - ❌ WRONG: `// Should return 404 when user not found`
+  - ✅ CORRECT: `expect(response.status).toBe(404);` within a test named `'should return 404 when user not found'`
+  - ❌ WRONG: `// Create 30 snapshots to test pagination`
+  - ✅ CORRECT: `const snapshotCount = 30; ... expect(data.pagination.totalVersions).toBe(snapshotCount);`
+  - Test names and assertions should tell the complete story - comments are redundant and drift from reality
+  - If you feel a comment is needed, it means your test name or assertions are unclear - fix those instead
 - **CRITICAL: ALWAYS write tests BEFORE claiming a fix works**
   - **NEVER say "this should work" or "the fix is done" without running tests**
   - When fixing bugs or adding features that affect runtime behavior:

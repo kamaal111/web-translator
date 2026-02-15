@@ -83,7 +83,12 @@ function publishSnapshotRoute() {
         Array.from(draftDataByLocale.entries()).filter(([, data]) => Object.keys(data).length > 0),
       );
       if (localesWithData.size === 0) {
-        getLogger(c).error('No draft translations found for publishing', { project_id: project.id });
+        getLogger(c).error('No draft translations found for publishing', {
+          project_id: project.id,
+          requested_locales: requestedLocales,
+          enabled_locales: project.enabledLocales,
+          operation: 'publish_snapshot',
+        });
 
         throw new BadRequestException(c, {
           message: 'No draft translations found to publish',
@@ -105,6 +110,13 @@ function publishSnapshotRoute() {
         published,
         createdBy: { id: session.user.id, name: session.user.name },
       };
+
+      getLogger(c).info('Snapshots published successfully', {
+        project_id: projectId,
+        locales_published: published.length.toString(),
+        total_strings: published.reduce((sum, p) => sum + p.stringCount, 0).toString(),
+        user_id: session.user.id,
+      });
 
       return c.json(response, 200);
     },
@@ -137,7 +149,9 @@ async function collectLocalesToPublish(
   if (noChangeLocales.length === localesWithData.size) {
     getLogger(c).error('No changes detected for publish', {
       project_id: project.id,
-      locales: noChangeLocales,
+      locales: noChangeLocales.join(','),
+      operation: 'publish_snapshot',
+      force_flag: force.toString(),
     });
 
     throw new Conflict(c, {
@@ -160,7 +174,11 @@ function resolveLocales(
   const enabledSet = new Set(enabledLocales);
   const invalidLocales = requestedLocales.filter(locale => !enabledSet.has(locale));
   if (invalidLocales.length > 0) {
-    getLogger(c).error('Publish requested for non-enabled locales', { invalid_locales: invalidLocales });
+    getLogger(c).error('Publish requested for non-enabled locales', {
+      invalid_locales: invalidLocales.join(','),
+      enabled_locales: enabledLocales.join(','),
+      operation: 'publish_snapshot',
+    });
 
     throw new BadRequestException(c, {
       message: `Locale(s) not enabled for this project: ${invalidLocales.join(', ')}`,

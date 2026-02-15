@@ -409,4 +409,51 @@ describe('POST /projects/:projectId/publish', () => {
       expect(updatedItem.value).toBe('Updated Welcome');
     });
   });
+
+  describe('Performance Tests', () => {
+    test.only('should complete publish within 1 second for reasonable data volume', async () => {
+      const projectResponse = await helper.createProject({
+        name: 'Publish Performance Test',
+        default_locale: 'en',
+        enabled_locales: ['en', 'es', 'fr'],
+        public_read_key: 'pk_publish_perf_001',
+      });
+      expect(projectResponse.status).toBe(201);
+      const { id: projectId } = (await projectResponse.json()) as { id: string };
+
+      const translationAmount = 1000;
+      const strings = Array.from({ length: translationAmount }, (_, i) => ({
+        key: `PERF.STRING_${i + 1}`,
+        translations: {
+          en: `English text ${i + 1}`,
+          es: `Texto español ${i + 1}`,
+          fr: `Texte français ${i + 1}`,
+        },
+      }));
+
+      const upsertResponse = await helper.upsertTranslations(projectId, strings);
+      expect(upsertResponse.status).toBe(200);
+
+      const headers = await helper.getDefaultUserHeaders();
+      const startTime = performance.now();
+
+      const publishResponse = await helper.app.request(`${BASE_PATH}/${projectId}/publish`, {
+        method: 'POST',
+        headers,
+        body: JSON.stringify({}),
+      });
+
+      const duration = performance.now() - startTime;
+
+      expect(publishResponse.status).toBe(200);
+      const result = (await publishResponse.json()) as {
+        published: Array<{ locale: string; stringCount: number; version: number }>;
+      };
+
+      expect(result.published).toHaveLength(3);
+      expect(result.published.every(p => p.stringCount === translationAmount)).toBe(true);
+      expect(result.published.every(p => p.version === 1)).toBe(true);
+      expect(duration).toBeLessThan(400);
+    });
+  });
 });
