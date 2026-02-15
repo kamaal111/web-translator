@@ -1,434 +1,158 @@
 # Feature Specification: Bulk String Editor
 
-**Status**: Draft | **Priority**: P1 | **Created**: February 8, 2026
-
----
+**Feature Branch**: `002-bulk-string-editor`  
+**Created**: February 15, 2026  
+**Status**: Draft  
+**Input**: User description: "bulk string editor"
 
 ## Problem Statement
 
-### Current Limitations
+The current translation workflow requires users to edit strings one at a time. When managing multiple translations across multiple locales, this becomes inefficient and time-consuming. Translators need to:
 
-1. **Single-locale creation**: Users can only add translations for the default locale when creating a new string. Other locales must be added separately later.
-2. **One-string-at-a-time editing**: The current draft editor (including the bulk locale editor from Phase 6.5) only allows editing one string at a time, requiring users to:
-   - Expand a string in the accordion
-   - Edit its translations
-   - Save
-   - Repeat for the next string
-3. **Inefficient workflow for bulk updates**: When working on multiple strings across multiple locales (e.g., translating 20 new strings into 5 languages), users must make 100+ individual save operations.
+- Navigate to each string individually
+- Open an edit form or expand accordion
+- Make changes
+- Save
+- Repeat for next string
 
-### User Pain Points
+This process becomes especially tedious when:
 
-- **Translators** spend excessive time navigating between individual strings when working on a batch of translations
-- **Content managers** updating many strings (e.g., seasonal messaging, rebranding) face repetitive UI interactions
-- **New locales** requiring translation of all existing strings become a tedious multi-hour task
-- **Context loss** when jumping between strings - translators lose the "flow" of translation work
+- Adding translations for a new locale across all existing strings
+- Updating terminology consistently across multiple strings
+- Reviewing and editing a batch of related translations
+- Making bulk corrections or improvements
 
----
+## User Scenarios & Testing _(mandatory)_
 
-## Proposed Solution
+### User Story 1 - Batch Translation Entry (Priority: P1)
 
-A **dedicated bulk editor view** that presents all project strings in a long-form table/spreadsheet-like interface, allowing users to:
+A translator opens the bulk editor view and sees all project strings displayed in a table format showing string keys and all enabled locales as columns. They can edit any translation field directly in the table and save all changes with a single action.
 
-1. View and edit **all strings** and **all locales** simultaneously in one view
-2. Make changes to any number of strings/locales
-3. **Save all changes in a single operation** when ready
-4. Optionally filter/search to work on a subset of strings
+**Why this priority**: This is the core value proposition - enabling multi-string editing in one view. Without this, the feature provides no benefit over the existing editor.
 
----
+**Independent Test**: Can be fully tested by opening the bulk editor, editing multiple translation fields across different strings and locales, clicking save once, and verifying all changes persist.
 
-## User Stories
+**Acceptance Scenarios**:
 
-### US1: Bulk Translation Entry (Priority: P1)
-
-**As a translator**, I want to see all strings for a specific locale in one view so I can translate many strings efficiently without losing context.
-
-**Acceptance Criteria:**
-
-- AC1: I can view all project strings in a table with columns for each enabled locale
-- AC2: I can edit any translation field directly in the table
-- AC3: I can see which translations are missing (empty/draft)
-- AC4: I can save all my changes at once with a single "Save" action
-- AC5: Unsaved changes are clearly indicated (dirty state)
-
-### US2: Filtered Bulk Editing (Priority: P2)
-
-**As a content manager**, I want to filter strings by criteria (missing translations, context, key pattern) so I can work on specific subsets efficiently.
-
-**Acceptance Criteria:**
-
-- AC1: I can filter strings by "missing translations for locale X"
-- AC2: I can filter strings by key pattern (e.g., "HOME.\*")
-- AC3: I can filter strings by context value
-- AC4: Filters persist during editing session
-- AC5: Filter status shows count of matching strings
-
-### US3: Validation and Error Handling (Priority: P1)
-
-**As a translator**, I want clear validation feedback so I know which fields have errors before saving.
-
-**Acceptance Criteria:**
-
-- AC1: Empty required translations are highlighted before save
-- AC2: Invalid locale codes are rejected
-- AC3: Conflict detection warns me if strings were modified by others
-- AC4: I can see which specific cells have errors
-- AC5: I can fix errors and retry save without losing other changes
-
-### US4: Progress Tracking (Priority: P2)
-
-**As a project manager**, I want to see translation completion status so I can track progress across locales.
-
-**Acceptance Criteria:**
-
-- AC1: I can see percentage complete per locale
-- AC2: I can see count of missing translations per locale
-- AC3: Progress updates in real-time as I fill in translations
-- AC4: I can export completion report
+1. **Given** a project with 50 strings and 3 enabled locales, **When** the user opens the bulk editor, **Then** all strings are displayed in a table with columns for string key and each locale
+2. **Given** the bulk editor is open, **When** the user clicks on any translation cell, **Then** the cell becomes editable with a text input
+3. **Given** the user has edited 10 different translation fields, **When** they click the save button, **Then** all 10 changes are persisted to draft and the user sees a success confirmation
+4. **Given** the user has saved changes to draft, **When** they click the publish button, **Then** a new version is created and the user sees a publish confirmation
+5. **Given** the user is editing a cell, **When** they press Tab, **Then** focus moves to the next cell; Shift+Tab moves to previous cell; Enter starts/finishes editing
+6. **Given** the user has unsaved changes, **When** they attempt to navigate away, **Then** the system prompts them to save or discard changes
 
 ---
 
-## Success Criteria
+### User Story 2 - Empty Translation Identification (Priority: P2)
+
+A translator needs to complete missing translations for a specific locale. The bulk editor visually distinguishes empty/missing translations from completed ones, allowing quick identification of work that needs to be done.
+
+**Why this priority**: Improves translator efficiency by making it obvious which translations need attention, but the basic editing functionality (P1) works without this.
+
+**Independent Test**: Can be fully tested by creating a project with some strings having empty translations, opening the bulk editor, and verifying that empty cells are visually distinct (different background color, border, or indicator).
+
+**Acceptance Scenarios**:
+
+1. **Given** a project with some strings missing translations in certain locales, **When** the user opens the bulk editor, **Then** empty translation cells are visually distinguished with a distinct background color or border
+2. **Given** the bulk editor is showing strings with mixed completion status, **When** the user scans the table, **Then** they can immediately identify which translations need to be added
+
+---
+
+### User Story 3 - Search and Filter Strings (Priority: P3)
+
+A translator working on a specific subset of strings (such as error messages or navigation labels) can filter the bulk editor to show only matching strings by key or content.
+
+**Why this priority**: Enhances usability for large projects but not essential for basic bulk editing. Users can still scroll through all strings.
+
+**Independent Test**: Can be fully tested by opening a project with 100+ strings, entering a search term in the filter field, and verifying only matching strings remain visible in the table.
+
+**Acceptance Scenarios**:
+
+1. **Given** a project with 200 strings, **When** the user enters a search term in the filter field, **Then** only strings whose key or any translation content matches the term remain visible
+2. **Given** the user has applied a filter, **When** they clear the filter, **Then** all strings become visible again
+3. **Given** the user has edited strings, applied a filter, and edited additional strings, **When** they save, **Then** all modified strings (both filtered and unfiltered) are persisted to draft
+
+---
+
+### User Story 4 - Column Visibility Control (Priority: P3)
+
+A translator working primarily with one or two locales can hide columns for locales they're not currently working with to reduce visual clutter and make the table easier to navigate.
+
+**Why this priority**: Nice-to-have feature for large multi-locale projects, but users can work with all columns visible.
+
+**Independent Test**: Can be fully tested by opening a project with 5+ locales, toggling column visibility controls to hide 3 locales, and verifying those columns are hidden while others remain visible.
+
+**Acceptance Scenarios**:
+
+1. **Given** a project with 5 enabled locales, **When** the user opens column visibility settings, **Then** they see checkboxes for each locale column
+2. **Given** the user unchecks 2 locale checkboxes, **When** they apply the settings, **Then** those 2 locale columns are hidden from the table
+3. **Given** the user has hidden certain columns, **When** they edit and save strings, **Then** hidden locales are not affected and retain their existing values
+
+---
+
+### Edge Cases
+
+- What happens when a user edits a translation that another user has modified since the page loaded? System uses last-write-wins per translation field, so each locale value is overwritten independently by the most recent save.
+- What happens when the project has 1000+ strings? System should use virtual scrolling to render only visible rows, maintaining smooth performance regardless of total string count.
+- What happens when a very long translation is entered? Cell should expand vertically or provide a larger editing textarea for lengthy content.
+- What happens when network fails during save? System should retain unsaved changes in browser and allow retry when connection is restored.
+- What happens when a user has edit permissions revoked while editing? System should detect permission change and prevent save with appropriate error message.
+
+## Requirements _(mandatory)_
 
 ### Functional Requirements
 
-| ID     | Requirement                                                                            | Priority |
-| ------ | -------------------------------------------------------------------------------------- | -------- |
-| FR-001 | Users MUST be able to view all strings and all locales in a single editable grid/table | P1       |
-| FR-002 | Users MUST be able to edit any translation field directly in-place                     | P1       |
-| FR-003 | Users MUST be able to save all changes in a single atomic operation                    | P1       |
-| FR-004 | System MUST validate all changes before saving (no empty required fields)              | P1       |
-| FR-005 | System MUST detect conflicts if strings were modified by others since load             | P1       |
-| FR-006 | Users SHOULD be able to filter strings by missing translations                         | P2       |
-| FR-007 | Users SHOULD be able to filter strings by key pattern or context                       | P2       |
-| FR-008 | Users SHOULD see visual indication of unsaved changes                                  | P2       |
-| FR-009 | Users SHOULD see translation completion progress per locale                            | P2       |
-| FR-010 | Users COULD export/import translations as CSV for offline editing                      | P3       |
-
-### Performance Targets
-
-| ID     | Target                                               | Rationale                    |
-| ------ | ---------------------------------------------------- | ---------------------------- |
-| SC-001 | Load bulk editor with 1000 strings in <3 seconds     | Typical medium-sized project |
-| SC-002 | Render table with 50 strings × 5 locales without lag | Smooth scrolling UX          |
-| SC-003 | Save 100 translation changes in <5 seconds           | Batch save operation         |
-| SC-004 | Search/filter results appear in <500ms               | Instant feedback             |
-| SC-005 | Support projects with up to 5000 strings             | Enterprise scale             |
-
-### User Experience Targets
-
-| ID     | Target                                    | Rationale                              |
-| ------ | ----------------------------------------- | -------------------------------------- |
-| UX-001 | Zero data loss on accidental navigation   | Auto-save draft or confirmation dialog |
-| UX-002 | Keyboard navigation between cells         | Spreadsheet-like efficiency            |
-| UX-003 | Copy-paste between cells works seamlessly | Translator workflow                    |
-| UX-004 | Undo/redo support for edits               | Error recovery                         |
-
----
-
-## Technical Approach
-
-### UI Design Options
-
-#### Option A: Spreadsheet-like Grid (Recommended)
-
-- **Layout**: Horizontal scrolling table with fixed string key column
-- **Columns**: `String Key`, `Context`, `en`, `es`, `fr`, ... (one column per locale)
-- **Advantages**:
-  - Familiar spreadsheet paradigm
-  - Easy to scan horizontally across locales
-  - Can leverage existing grid libraries (e.g., AG Grid, TanStack Table)
-- **Disadvantages**:
-  - Horizontal scrolling for many locales
-  - May not scale well beyond 10 locales
-
-#### Option B: Card-based Long Form
-
-- **Layout**: Vertical list of cards, one per string
-- **Each card**: Shows all locale translations as labeled textareas
-- **Advantages**:
-  - Scales to many locales without horizontal scroll
-  - More space per translation field
-  - Mobile-friendly
-- **Disadvantages**:
-  - More vertical scrolling
-  - Harder to compare translations across strings
-
-#### Option C: Locale-first View
-
-- **Layout**: Single locale view with all strings
-- **Toggle**: Dropdown to switch between locales
-- **Advantages**:
-  - Focused translation workflow
-  - Simpler UI
-- **Disadvantages**:
-  - Can't see multiple locales simultaneously
-  - More clicks to translate across locales
-
-**Recommendation**: Start with **Option A (Grid)** for power users, potentially add **Option C** as an alternative "focused mode" in later iteration.
-
-### Backend Implementation
-
-#### New Endpoints
-
-1. **Bulk Update Endpoint**
-
-   ```
-   PATCH /app-api/v1/p/:projectId/strings/bulk
-   Body: {
-     updates: Array<{
-       stringKey: string;
-       translations: Record<locale, value>;
-       ifUnmodifiedSince?: Date;
-     }>
-   }
-   Response: {
-     updated: Array<UpdatedTranslation>;
-     conflicts: Array<ConflictInfo>;
-     errors: Array<ValidationError>;
-   }
-   ```
-
-2. **Existing endpoint can be reused for loading:**
-   - `GET /app-api/v1/s/:projectId` already returns all strings with translations
-
-#### Data Loading Strategy
-
-- **Initial load**: Fetch all strings for project (existing endpoint)
-- **Pagination**: Consider virtual scrolling for 1000+ strings
-- **Optimistic updates**: Update UI immediately, sync to server on save
-- **Conflict resolution**: Compare `updatedAt` timestamps server-side
-
-#### Validation Rules
-
-- All enabled locales should have non-empty values (warn if missing)
-- Translations must not exceed max length (if applicable)
-- String keys are immutable (display only)
-- Detect concurrent modifications using `ifUnmodifiedSince`
-
-### Frontend Implementation
-
-#### State Management
-
-```typescript
-interface BulkEditorState {
-  // Original data from server
-  strings: StringResponse[];
-
-  // User edits (locale -> value for each string)
-  dirtyFields: Map<stringKey, Map<locale, string>>;
-
-  // Validation errors
-  errors: Map<stringKey, Map<locale, string>>;
-
-  // Filters
-  filters: {
-    keyPattern?: string;
-    missingLocale?: string;
-    hasContext?: boolean;
-  };
-
-  // UI state
-  isSaving: boolean;
-  lastSaved?: Date;
-}
-```
-
-#### Key Components
-
-1. **BulkEditorTable** - Main grid component
-2. **BulkEditorCell** - Editable cell with textarea
-3. **BulkEditorFilters** - Filter controls sidebar
-4. **BulkEditorProgressBar** - Translation completion indicator
-5. **BulkEditorSaveButton** - Save all changes with conflict handling
-
-#### Libraries to Consider
-
-- **TanStack Table** (formerly React Table) - Headless table with virtualization
-- **@radix-ui/react-scroll-area** - Custom scrolling
-- **react-hook-form** - Form state management
-- Or **AG Grid** if more advanced features needed (sorting, Excel export, etc.)
-
----
-
-## User Interface Mockup (Text)
-
-```
-┌─────────────────────────────────────────────────────────────────────┐
-│ Project: My App                                    [← Back to Project]│
-│ Bulk Translation Editor                                   [Save All] │
-├─────────────────────────────────────────────────────────────────────┤
-│                                                                       │
-│ Filters: [All Strings ▼] [All Locales ▼] [🔍 Search...]            │
-│                                                                       │
-│ Progress: en 100% | es 80% | fr 45% | de 20%                        │
-│                                                                       │
-├───────────────┬─────────────┬──────────────┬──────────────┬─────────┤
-│ String Key    │ Context     │ en (100%)    │ es (80%)     │ fr (45%)│
-├───────────────┼─────────────┼──────────────┼──────────────┼─────────┤
-│ HOME.TITLE    │ Homepage    │ Welcome      │ Bienvenido   │ Bienvenu│
-│               │ header      │              │              │         │
-├───────────────┼─────────────┼──────────────┼──────────────┼─────────┤
-│ HOME.SUBTITLE │ null        │ Get started  │ Empezar      │ [empty] │
-│               │             │              │              │  ⚠️      │
-├───────────────┼─────────────┼──────────────┼──────────────┼─────────┤
-│ AUTH.LOGIN    │ Login page  │ Sign In      │ Iniciar      │ [empty] │
-│               │             │              │  sesión      │  ⚠️      │
-└───────────────┴─────────────┴──────────────┴──────────────┴─────────┘
-
-Unsaved changes: 5 strings modified • Last saved: 2 minutes ago
-```
-
----
-
-## Implementation Phases
-
-### Phase 1: Core Bulk Editor (MVP)
-
-**Goal**: Basic grid view with edit and save functionality
-
-**Tasks:**
-
-- [ ] Create bulk editor route and page
-- [ ] Implement grid UI with fixed columns (string key, context, locale columns)
-- [ ] Hook up to existing `GET /strings/:projectId` endpoint
-- [ ] Implement in-place editing for translation cells
-- [ ] Track dirty state for edited cells
-- [ ] Create new bulk update endpoint: `PATCH /strings/:projectId/bulk`
-- [ ] Implement save all with validation
-- [ ] Add loading/saving states
-- [ ] Add basic error handling
-
-**Success Metric**: Users can edit and save multiple strings across multiple locales in one operation
-
-### Phase 2: Filtering and Search
-
-**Goal**: Help users find and work on specific subsets of strings
-
-**Tasks:**
-
-- [ ] Add filter by missing translations
-- [ ] Add search by string key
-- [ ] Add filter by context
-- [ ] Show filtered results count
-- [ ] Persist filters in URL params
-
-**Success Metric**: Users can filter to work on incomplete translations efficiently
-
-### Phase 3: Enhanced UX
-
-**Goal**: Improve usability with keyboard shortcuts, progress tracking, and safety features
-
-**Tasks:**
-
-- [ ] Add keyboard navigation (Tab, Enter, Arrow keys)
-- [ ] Add copy-paste support
-- [ ] Add translation progress indicators
-- [ ] Add unsaved changes warning on navigation
-- [ ] Add undo/redo support
-- [ ] Add auto-save draft (optional)
-
-**Success Metric**: Power users can navigate and edit efficiently with keyboard
-
-### Phase 4: Performance and Scale
-
-**Goal**: Handle large projects smoothly
-
-**Tasks:**
-
-- [ ] Implement virtual scrolling for 1000+ strings
-- [ ] Optimize render performance
-- [ ] Add pagination or infinite scroll
-- [ ] Add backend query optimization
-- [ ] Load testing with 5000 strings
-
-**Success Metric**: Editor loads and performs smoothly with 1000+ strings
-
----
-
-## Open Questions
-
-1. **Conflict Resolution Strategy**: If multiple users edit different strings in bulk editor simultaneously, should we:
-   - Allow per-string conflict detection (only fail conflicting strings)? ✓ Recommended
-   - Fail entire save if any string conflicts?
-   - Show conflicts and let user resolve before retrying?
-
-2. **Empty Translations**: Should empty translations be:
-   - Allowed (user can save partial work)? ✓ Recommended - show warnings
-   - Blocked (must fill all fields)?
-   - Configurable per project?
-
-3. **Locale Column Order**: Should locale columns be:
-   - Fixed order (alphabetical)?
-   - User-defined order (drag to reorder)? ✓ Nice to have
-   - Most-used locales first?
-
-4. **Navigation**: Should bulk editor be:
-   - Separate page/route? ✓ Recommended
-   - Modal/overlay on project page?
-   - Tab within project page?
-
-5. **Mobile Support**: Should bulk editor be:
-   - Desktop-only (redirect mobile to regular editor)? ✓ Initial approach
-   - Responsive with mobile-optimized view?
-   - PWA with offline support?
-
----
-
-## Out of Scope (Future Enhancements)
-
-- CSV/Excel import/export for offline translation
-- Machine translation integration
-- Translation memory suggestions
-- Collaborative real-time editing (multiple users)
-- Translation comments/notes
-- String approval workflow
-- Version history in bulk view
-- Diff view between draft and published
-
----
-
-## Security Considerations
-
-- Bulk update must respect project access controls (same as single update)
-- Rate limiting on bulk endpoint to prevent abuse
-- Validate max number of strings per bulk update (e.g., 500 limit)
-- Audit log bulk operations with user ID and timestamp
-
----
-
-## Migration/Rollout Plan
-
-1. **Week 1**: Implement Phase 1 (MVP) behind feature flag
-2. **Week 2**: Internal testing and refinement
-3. **Week 3**: Beta release to select users
-4. **Week 4**: Polish based on feedback, implement Phase 2
-5. **Week 5**: General release
-6. **Week 6+**: Phase 3 and 4 based on usage metrics
-
----
-
-## Success Metrics
-
-### Quantitative
-
-- 80% of multi-string edits use bulk editor (vs old method)
-- Average time to translate 10 strings reduced by 60%
-- Bulk save success rate >95%
-- Editor load time <3s for 1000 strings
-
-### Qualitative
-
-- Positive user feedback on translator efficiency
-- Reduced support tickets about translation workflow
-- User survey rating >4/5 for bulk editor
-
----
-
-## Approval
-
-- [ ] Product Owner review and sign-off
-- [ ] Technical Lead architecture review
-- [ ] UX Designer mockup review
-- [ ] Security team risk assessment
-
-**Next Steps**: Upon approval, proceed with Phase 1 implementation planning and task breakdown.
+- **FR-001**: System MUST display all project strings in a tabular format with string key as the first column
+- **FR-002**: System MUST display a column for each enabled locale in the project showing current translation values
+- **FR-003**: System MUST allow inline editing of any translation cell by clicking on it
+- **FR-004**: System MUST track which translations have been modified since the view was opened
+- **FR-005**: System MUST provide a save action that persists all modified translations to draft state in a single operation
+- **FR-006**: System MUST provide a publish action that creates a new version from the current draft state
+- **FR-007**: System MUST visually indicate unsaved changes to prevent accidental data loss
+- **FR-008**: System MUST confirm successful save and display any errors that occurred
+- **FR-009**: System MUST visually distinguish empty or missing translations from populated ones
+- **FR-010**: System MUST prevent editing by users who lack appropriate project permissions
+- **FR-011**: System MUST handle navigation away from the editor by prompting to save or discard unsaved changes
+- **FR-012**: System MUST implement virtual scrolling to efficiently render and interact with projects containing hundreds or thousands of strings by only rendering visible rows
+- **FR-013**: System MUST provide search/filter functionality to reduce visible strings based on key or content matching, while save operations persist all modified strings regardless of filter state
+- **FR-014**: System MUST allow users to show or hide specific locale columns
+- **FR-015**: System MUST preserve column visibility preferences within the current session
+- **FR-016**: System MUST use last-write-wins conflict resolution at the translation field level, treating each locale value independently
+- **FR-017**: System MUST support keyboard navigation using Tab/Shift+Tab to move between cells and Enter to start/finish editing a cell
+
+### Key Entities _(include if feature involves data)_
+
+- **Project String**: Represents a translatable string with a unique key within a project
+- **Translation**: A locale-specific translation value for a project string, can be empty or populated
+- **Locale**: A language/region combination enabled for the project, displayed as a column
+- **Edit Session**: Tracks the set of translation modifications made in a single bulk editor session before saving
+
+## Success Criteria _(mandatory)_
+
+### Measurable Outcomes
+
+- **SC-001**: Translators can edit and save 20 translations across 3 locales in under 2 minutes, compared to 5+ minutes with the single-string editor
+- **SC-002**: The bulk editor loads and renders projects with 500 strings across 5 locales within 3 seconds
+- **SC-003**: 90% of bulk editor save operations complete successfully within 2 seconds
+- **SC-004**: Zero data loss events when users have unsaved changes and attempt to navigate away
+- **SC-005**: Translators report reduced time spent on batch translation tasks by at least 60%
+
+## Clarifications
+
+### Session 2026-02-15
+
+- Q: How does the bulk editor integrate with the versioning system? → A: Save creates/updates draft; publish creates new version
+- Q: How should the system handle rendering large numbers of strings for performance? → A: Virtual scrolling (render only visible rows)
+- Q: How should concurrent edits to the same translation be resolved? → A: Last-write-wins per translation field
+- Q: When a filter is active, what strings should be saved? → A: Always saves all modified strings regardless of current filter state
+- Q: What keyboard navigation pattern should be supported? → A: Tab/Shift+Tab between cells, Enter to edit/save
+
+## Assumptions
+
+- Users have projects with at least 10 strings where bulk editing provides noticeable benefit
+- Most projects have between 2-10 enabled locales
+- Translation values are typically short to medium length text (under 500 characters)
+- Standard web table/grid interactions are familiar to users (clicking cells to edit, spreadsheet-style keyboard navigation with Tab/Enter)
+- Users work on desktop or laptop devices with sufficient screen real estate for table display
+- Network latency for save operations is reasonable (under 1 second for typical payloads)
+- The project uses a draft/publish workflow where draft changes are not visible to consuming applications until explicitly published

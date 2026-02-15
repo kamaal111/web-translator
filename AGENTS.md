@@ -79,7 +79,6 @@ The project is a monorepo with the following structure:
 
 **ALWAYS use `just` commands from the root directory.**
 
-- **Start Development:** `just dev` (Runs server and web in parallel)
 - **Run Tests:** `just test` (Runs server and web tests)
 - **Database Migrations:**
   - Apply migrations: `just migrate`
