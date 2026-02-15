@@ -230,6 +230,68 @@ This is a monorepo web application:
 
 ---
 
+## Phase 9: User Story 5 & 6 - String Creation & Deletion (Priority: P2)
+
+**Goal**: Enable users to create new strings and delete existing strings directly from the bulk editor
+
+**Independent Test**: Create a new string with translations → save → verify it persists. Delete an existing string → verify it's removed. Use undo within timeout → verify restoration.
+
+### Backend - Delete String Endpoint (NEW)
+
+- [ ] T048 [P] [US6] Create DELETE endpoint schema in server/src/strings/schemas.ts (DeleteStringParamsSchema, DeleteStringResponseSchema)
+- [ ] T049 [US6] Create DELETE endpoint route handler at server/src/strings/routes/delete-string.ts
+- [ ] T050 [P] [US6] Add deleteByKey method signature to server/src/strings/repositories/strings/types.ts
+- [ ] T051 [P] [US6] Implement deleteByKey in server/src/strings/repositories/strings/implementation.ts (delete from strings table, cascade handles translations)
+- [ ] T052 [US6] Register DELETE route in server/src/strings/router.ts
+- [ ] T053 [P] [US6] Create comprehensive tests in server/src/strings/**tests**/delete-string.test.ts (success, not found, cascade behavior, auth checks)
+- [ ] T054 [US6] Run `just download-spec` to update OpenAPI spec with new DELETE endpoint
+
+### Tests for User Story 5 (String Creation)
+
+- [ ] T055 [P] [US5] Add tests for string creation to web/src/projects/components/bulk-translation-editor/**tests**/bulk-editor-page.test.tsx (add row, enter data, save, validation errors)
+
+### Implementation for User Story 5 (String Creation)
+
+- [ ] T056 [US5] Add "Add String" button to BulkEditorHeader component in web/src/projects/components/bulk-translation-editor/bulk-editor-header.tsx
+- [ ] T057 [P] [US5] Create CreateStringRow component at web/src/projects/components/bulk-translation-editor/create-string-row.tsx (inline editable row with key, context, all locale fields)
+- [ ] T058 [US5] Add creation state management to useBulkEditor hook in web/src/projects/hooks/use-bulk-editor.ts (isCreating flag, newStringData, validation)
+- [ ] T059 [US5] Wire CreateStringRow to existing upsertTranslations mutation (no new API needed)
+- [ ] T060 [US5] Implement key uniqueness validation in CreateStringRow (check against existing table data)
+- [ ] T061 [US5] Add keyboard support to CreateStringRow (Escape to cancel, Tab navigation, Enter to save)
+- [ ] T062 [US5] Integrate CreateStringRow into BulkEditorTable at top when isCreating=true in web/src/projects/components/bulk-translation-editor/bulk-editor-table.tsx
+- [ ] T063 [P] [US5] Add i18n messages for creation UI in web/src/projects/components/bulk-translation-editor/messages.ts (button labels, placeholders, error messages)
+
+### Tests for User Story 6 (String Deletion)
+
+- [ ] T064 [P] [US6] Add tests for string deletion to web/src/projects/components/bulk-translation-editor/**tests**/bulk-editor-page.test.tsx (delete action, undo, API failure restoration)
+
+### Implementation for User Story 6 (String Deletion)
+
+- [ ] T065 [US6] Create deleteString mutation hook using new DELETE endpoint in web/src/projects/hooks/use-bulk-editor.ts
+- [ ] T066 [US6] Add delete action column to BulkEditorTable with icon button in web/src/projects/components/bulk-translation-editor/bulk-editor-table.tsx
+- [ ] T067 [P] [US6] Create UndoToast component at web/src/projects/components/bulk-translation-editor/undo-toast.tsx (shows after delete, timeout ~5s, undo button)
+- [ ] T068 [US6] Implement optimistic delete in useBulkEditor hook (remove from table immediately, track pending deletes)
+- [ ] T069 [US6] Implement undo logic in useBulkEditor hook (restore row within timeout, cancel API call if possible)
+- [ ] T070 [US6] Implement auto-restoration on API failure in deleteString mutation error handler
+- [ ] T071 [US6] Handle deletion of strings with unsaved edits (clear from dirty state when deleting)
+- [ ] T072 [P] [US6] Add i18n messages for deletion UI in web/src/projects/components/bulk-translation-editor/messages.ts (delete button aria-label, undo toast text, error messages)
+
+### Integration & Polish for User Stories 5 & 6
+
+- [ ] T073 [P] Test complete creation workflow: add string → enter translations → save → verify persistence
+- [ ] T074 [P] Test complete deletion workflow: delete string → verify removed → undo → verify restored
+- [ ] T075 [P] Test edge case: create duplicate key → verify validation error
+- [ ] T076 [P] Test edge case: delete string with unsaved edits → verify edits discarded
+- [ ] T077 [P] Test edge case: delete fails due to network → verify auto-restoration
+- [ ] T078 Update navigation link from project details to bulk editor if not already done
+- [ ] T079 Run server tests: `just test-server`
+- [ ] T080 Run web tests: `just test-web`
+- [ ] T081 Run `just ready` as final verification for Phase 9
+
+**Checkpoint**: User Stories 5 and 6 should be fully functional and independently testable
+
+---
+
 ## Dependencies & Execution Order
 
 ### Phase Dependencies
@@ -241,6 +303,10 @@ This is a monorepo web application:
   - Or sequentially in priority order (P1 → P2 → P2 → P2 → P3 → P3)
 - **Performance (Phase 8)**: Depends on User Story 1 (P1) completion - can run before P2/P3 stories if needed
 - **Polish (Phase 9)**: Depends on all desired user stories being complete
+- **String Creation & Deletion (Phase 9)**: Depends on Foundational (Phase 2) completion
+  - Backend delete endpoint (T048-T054) must complete before frontend deletion UI (T064-T072)
+  - Frontend creation UI (T055-T063) can start immediately (reuses existing API)
+  - Can run in parallel with other user stories
 
 ### User Story Dependencies
 
@@ -250,6 +316,8 @@ This is a monorepo web application:
 - **User Story 2 (P2)**: Can start after Foundational (Phase 2) - Enhances US1 but independently testable
 - **User Story 3 (P3)**: Can start after Foundational (Phase 2) - Enhances US1 but independently testable
 - **User Story 4 (P3)**: Can start after Foundational (Phase 2) - Enhances US1 but independently testable
+- **User Story 5 (P2)**: Can start after Foundational (Phase 2) - No dependencies on other stories (reuses existing upsert API)
+- **User Story 6 (P2)**: Backend must complete first, then frontend can start - Independently testable from other stories
 
 ### Within Each User Story
 

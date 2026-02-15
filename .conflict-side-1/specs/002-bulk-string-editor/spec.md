@@ -90,6 +90,43 @@ A translator working primarily with one or two locales can hide columns for loca
 
 ---
 
+### User Story 5 - String Creation (Priority: P2)
+
+A translator needs to add a new string key to the project. They can click an "Add String" button which inserts an editable row at the top of the table where they enter the string key, optional context, and translations for each locale inline.
+
+**Why this priority**: Enables complete string management without leaving the bulk editor, improving workflow efficiency. Less critical than batch editing (P1) but more important than visual enhancements.
+
+**Independent Test**: Can be fully tested by opening the bulk editor, clicking "Add String", entering a new key and translations, saving, and verifying the string appears in the project and persists after refresh.
+
+**Acceptance Scenarios**:
+
+1. **Given** the bulk editor is open, **When** the user clicks the "Add String" button, **Then** a new editable row appears at the top of the table with empty fields for key, context, and all enabled locales
+2. **Given** the user has entered a new string key and at least one translation, **When** they click save, **Then** the new string is created using the existing upsert API
+3. **Given** the user tries to create a string with a key that already exists, **When** they attempt to save, **Then** the system shows a validation error indicating the key must be unique
+4. **Given** the user has started entering a new string, **When** they click cancel or press Escape, **Then** the new row is removed and no data is saved
+5. **Given** the user creates a new string, **When** they save successfully, **Then** the new string appears in the table with all other strings and can be edited like any existing string
+
+---
+
+### User Story 6 - String Deletion (Priority: P2)
+
+A translator needs to remove obsolete or incorrect strings from the project. Each table row has a delete action that, when clicked, immediately removes the string with an undo toast notification in case of accidental deletion.
+
+**Why this priority**: Completes the CRUD lifecycle for strings within the bulk editor. Pairs naturally with creation (US5) to enable full string management.
+
+**Independent Test**: Can be fully tested by opening the bulk editor, clicking the delete icon on a string, verifying it disappears immediately, clicking undo if needed, and confirming the deletion persists after page refresh if undo was not used.
+
+**Acceptance Scenarios**:
+
+1. **Given** the bulk editor is displaying strings, **When** the user clicks the delete icon on any row, **Then** the string is immediately removed from the table and a toast notification appears with an "Undo" option
+2. **Given** a string has been deleted with the undo toast visible, **When** the user clicks "Undo" within the toast timeout period, **Then** the string is restored to the table
+3. **Given** a string has been deleted and the undo period has expired, **When** the user refreshes the page, **Then** the string does not appear (deletion persisted)
+4. **Given** a string has been deleted, **When** the delete operation completes successfully, **Then** the string and all its translations are removed from the database via cascade delete
+5. **Given** a user has unsaved edits to a string, **When** they delete that string, **Then** the unsaved edits are discarded and the string is deleted
+6. **Given** a delete operation fails due to network error, **When** the error occurs, **Then** the string is automatically restored to the table and an error toast is shown
+
+---
+
 ### Edge Cases
 
 - What happens when a user edits a translation that another user has modified since the page loaded? System uses last-write-wins per translation field, so each locale value is overwritten independently by the most recent save.
@@ -97,6 +134,9 @@ A translator working primarily with one or two locales can hide columns for loca
 - What happens when a very long translation is entered? Cell should expand vertically or provide a larger editing textarea for lengthy content.
 - What happens when network fails during save? System should retain unsaved changes in browser and allow retry when connection is restored.
 - What happens when a user has edit permissions revoked while editing? System should detect permission change and prevent save with appropriate error message.
+- What happens when a user creates a string with a duplicate key? System shows validation error and prevents the save operation until the key is made unique.
+- What happens when a user deletes a string that has been published in snapshots? The string is removed from drafts but published snapshots remain immutable and unchanged.
+- What happens when network fails during delete? The string is automatically restored to the table and an error toast is shown with option to retry.
 
 ## Requirements _(mandatory)_
 
@@ -119,6 +159,12 @@ A translator working primarily with one or two locales can hide columns for loca
 - **FR-015**: System MUST preserve column visibility preferences within the current session
 - **FR-016**: System MUST use last-write-wins conflict resolution at the translation field level, treating each locale value independently
 - **FR-017**: System MUST support keyboard navigation using Tab/Shift+Tab to move between cells and Enter to start/finish editing a cell
+- **FR-018**: System MUST allow users to create new strings by adding an editable row with fields for key, optional context, and all locale translations
+- **FR-019**: System MUST validate that new string keys are unique within the project and non-empty before allowing save
+- **FR-020**: System MUST provide a delete action for each string that removes the string and all its translations from the database
+- **FR-021**: System MUST implement optimistic UI updates for delete operations with automatic restoration on API failure
+- **FR-022**: System MUST provide an undo mechanism for string deletion with a time-limited toast notification
+- **FR-023**: System MUST discard any unsaved edits to a string when that string is deleted
 
 ### Key Entities _(include if feature involves data)_
 

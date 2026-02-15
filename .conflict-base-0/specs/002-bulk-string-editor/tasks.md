@@ -39,11 +39,11 @@ This is a monorepo web application:
 
 **⚠️ CRITICAL**: No user story work can begin until this phase is complete
 
-- [ ] T004 Add /projects/:id/bulk-editor SPA route to WEB_ROUTES array in server/src/web/router.ts
-- [ ] T005 [P] Add test for /projects/:id/bulk-editor SPA route in server/src/web/**tests**/router.test.ts
-- [ ] T006 [P] Create lazy-loaded bulk editor page at web/src/pages/bulk-editor/bulk-editor.tsx
-- [ ] T007 Add /projects/:id/bulk-editor route to React Router in web/src/routing/router.tsx
-- [ ] T008 [P] Create react-intl messages file at web/src/projects/components/bulk-translation-editor/messages.ts
+- [x] T004 Add /projects/:id/bulk-editor SPA route to WEB_ROUTES array in server/src/web/router.ts
+- [x] T005 [P] Add test for /projects/:id/bulk-editor SPA route in server/src/web/**tests**/router.test.ts
+- [x] T006 [P] Create lazy-loaded bulk editor page at web/src/pages/bulk-editor/bulk-editor.tsx
+- [x] T007 Add /projects/:id/bulk-editor route to React Router in web/src/routing/router.tsx
+- [x] T008 [P] Create react-intl messages file at web/src/projects/components/bulk-translation-editor/messages.ts
 
 **Checkpoint**: Foundation ready - user story implementation can now begin in parallel
 

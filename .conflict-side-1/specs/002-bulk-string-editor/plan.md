@@ -5,7 +5,7 @@
 
 ## Summary
 
-Implement a spreadsheet-like bulk string editor that displays all project strings and translations in a tabular format, allowing inline editing and single-save batch updates. The feature reuses existing backend APIs (`upsertTranslations`, `publishSnapshot`, `listStrings`) and is primarily a frontend implementation using TanStack Table with virtual scrolling for performance.
+Implement a spreadsheet-like bulk string editor that displays all project strings and translations in a tabular format, allowing inline editing, string creation, string deletion, and single-save batch updates. The feature reuses existing backend APIs (`upsertTranslations`, `publishSnapshot`, `listStrings`) for editing and creation, and adds a new DELETE endpoint for string removal. Primary focus is frontend implementation using TanStack Table with virtual scrolling for performance.
 
 ## Technical Context
 
@@ -51,8 +51,19 @@ specs/002-bulk-string-editor/
 ```text
 server/
 ├── src/
+│   ├── strings/
+│   │   ├── routes/
+│   │   │   └── delete-string.ts         # NEW: DELETE endpoint
+│   │   ├── repositories/
+│   │   │   └── strings/
+│   │   │       ├── types.ts             # Add deleteByKey method
+│   │   │       └── implementation.ts    # Implement deleteByKey
+│   │   ├── router.ts                    # Register DELETE route
+│   │   ├── schemas.ts                   # Add delete schemas
+│   │   └── __tests__/
+│   │       └── delete-string.test.ts    # NEW: tests
 │   └── web/
-│       └── router.ts                # Add /projects/:id/bulk-editor SPA route
+│       └── router.ts                    # Add /projects/:id/bulk-editor SPA route
 
 web/
 ├── src/
@@ -68,6 +79,8 @@ web/
 │   │           ├── bulk-editor-filters.tsx
 │   │           ├── column-visibility-menu.tsx
 │   │           ├── bulk-editor-progress.tsx
+│   │           ├── create-string-row.tsx    # NEW: inline string creation
+│   │           ├── undo-toast.tsx           # NEW: deletion undo
 │   │           ├── messages.ts
 │   │           └── __tests__/
 │   │               └── bulk-editor-page.test.tsx
@@ -80,7 +93,7 @@ web/
 │       └── router.tsx                      # Add /projects/:id/bulk-editor route
 ```
 
-**Structure Decision**: Web application monorepo. Frontend-heavy feature using existing `web/src/projects/` module conventions. Bulk editor components placed in `web/src/projects/components/bulk-translation-editor/` (directory already exists, currently empty). New page in `web/src/pages/bulk-editor/`. Server changes limited to SPA route registration.
+**Structure Decision**: Web application monorepo. Frontend-heavy feature using existing `web/src/projects/` module conventions. Bulk editor components placed in `web/src/projects/components/bulk-translation-editor/` (directory already exists, currently empty). New page in `web/src/pages/bulk-editor/`. Server changes include new DELETE endpoint in `server/src/strings/` and SPA route registration.
 
 ## Complexity Tracking
 

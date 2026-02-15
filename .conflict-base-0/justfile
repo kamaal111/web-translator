@@ -100,7 +100,7 @@ typecheck: typecheck-server typecheck-web typecheck-schemas
 quality: typecheck format-check lint
 
 # Run all verification checks
-ready: prepare quality start-services download-spec ready-web ready-server
+ready: prepare download-spec quality start-services ready-web ready-server
 
 # Start services
 start-services:
@@ -146,7 +146,7 @@ test-server:
 
 [private]
 [working-directory("web")]
-test-web:
+test-web: download-spec
     bun run test
 
 [private]
