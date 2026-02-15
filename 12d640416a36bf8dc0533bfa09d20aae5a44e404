@@ -1,0 +1,43 @@
+specs/001-string-version-editing/tasks.md
+  5deb53b2f797c944 353-356,361-364
+AGENTS.md
+  5deb53b2f797c944 50-61,127-133
+server/src/projects/routes/update-draft-string.ts
+  5deb53b2f797c944 87,100-101,122-124,127
+server/src/projects/__tests__/publish-snapshot.test.ts
+  5deb53b2f797c944 412-413,415-423,426-453,455,457-458
+web/src/projects/components/string-version-history/string-version-history.test.tsx
+  5deb53b2f797c944 32,34-35
+server/src/projects/routes/list-string-versions.ts
+  5deb53b2f797c944 112-114,119-120,133,135-136
+web/src/projects/components/string-version-history/version-history-skeleton.tsx
+  5deb53b2f797c944 1-22
+specs/001-string-version-editing/README.md
+  5deb53b2f797c944 1-33,35-40,42-53,55-63,65-78,80-90,92-103,105-116,118-129,131-169,171-183,185-189,191-201,203-212,214-219,221-225,227-232,234-239,241-245,247-255,257-266,268-276,278-292,294-348,350-360
+web/src/projects/components/string-version-history/string-version-history.tsx
+  5deb53b2f797c944 11,28
+server/src/projects/routes/publish-snapshot.ts
+  5deb53b2f797c944 87-90,114-115,118-119,153,178-181
+server/src/projects/__tests__/list-string-versions.test.ts
+  5deb53b2f797c944 423-464,466-467
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.1.3",
+  "base_commit_sha": "12d640416a36bf8dc0533bfa09d20aae5a44e404",
+  "prompts": {
+    "5deb53b2f797c944": {
+      "agent_id": {
+        "tool": "github-copilot",
+        "id": "b6879f60-4b55-408f-937d-40eeaf2cde26",
+        "model": "copilot/claude-sonnet-4.5"
+      },
+      "human_author": "Kamaal Farah <kamaal.f1@gmail.com>",
+      "messages": [],
+      "total_additions": 642,
+      "total_deletions": 115,
+      "accepted_lines": 510,
+      "overriden_lines": 17
+    }
+  }
+}
