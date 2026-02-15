@@ -13,6 +13,7 @@ const WEB_ROUTES: HtmlRoutes = [
   { pattern: '/', loginIsRequired: true },
   { pattern: LOGIN_ROUTE, loginIsRequired: false },
   { pattern: '/projects/:id', loginIsRequired: true },
+  { pattern: '/projects/:id/bulk-editor', loginIsRequired: true },
 ];
 
 const templateFetcher: TemplateFetcher = new LocalTemplateFetcher(WEB_ASSETS_ROOT);

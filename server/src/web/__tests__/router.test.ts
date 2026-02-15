@@ -66,6 +66,30 @@ describe('Web Router', () => {
       expect(response.headers.get('location')).toBe('/login');
     });
 
+    test('should serve HTML for /projects/:id/bulk-editor path when authenticated', async () => {
+      const headers = await helper.getDefaultUserHeaders();
+      const projectId = '018d8f28-1234-7890-abcd-ef1234567890';
+      const response = await helper.app.request(`/projects/${projectId}/bulk-editor`, {
+        method: 'GET',
+        headers,
+      });
+
+      expect(response.status).toBe(200);
+      expect(response.headers.get('content-type')).toContain('text/html');
+      const html = await response.text();
+      expect(html.toLowerCase()).toContain('<!doctype html>');
+    });
+
+    test('should redirect to /login when accessing /projects/:id/bulk-editor without authentication', async () => {
+      const projectId = '018d8f28-1234-7890-abcd-ef1234567890';
+      const response = await helper.app.request(`/projects/${projectId}/bulk-editor`, {
+        method: 'GET',
+      });
+
+      expect(response.status).toBe(302);
+      expect(response.headers.get('location')).toBe('/login');
+    });
+
     test('should not serve HTML for API routes', async () => {
       const response = await helper.app.request('/app-api/v1/p', {
         method: 'GET',
