@@ -1,0 +1,3 @@
+ancestorEntries = []
+ourEntries = ["web/src/projects/components/bulk-translation-editor/bulk-editor-page.tsx", "web/src/projects/components/bulk-translation-editor/messages.ts"]
+theirEntries = ["web/src/projects/components/bulk-translation-editor/bulk-editor-page.tsx", "web/src/projects/components/bulk-translation-editor/messages.ts"]

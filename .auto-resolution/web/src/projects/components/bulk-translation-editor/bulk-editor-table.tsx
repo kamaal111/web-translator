@@ -1,0 +1,184 @@
+import { Box, Table, Text } from '@radix-ui/themes';
+import { useIntl, FormattedMessage } from 'react-intl';
+import { createColumnHelper, flexRender, getCoreRowModel, useReactTable, type ColumnDef } from '@tanstack/react-table';
+import clsx from 'clsx';
+
+import type { BulkEditorRow, NewStringData } from '@/projects/hooks/use-bulk-editor';
+import BulkEditorCell from './bulk-editor-cell';
+import CreateStringRow from './create-string-row';
+import messages from './messages';
+import styles from './bulk-editor-table.module.css';
+
+interface BulkEditorTableProps {
+  rows: BulkEditorRow[];
+  locales: string[];
+  getCellValue: (row: BulkEditorRow, locale: string) => string;
+  getContextValue: (row: BulkEditorRow) => string;
+  isCellDirty: (stringKey: string, locale: string) => boolean;
+  isContextDirty: (stringKey: string) => boolean;
+  onCellChange: (stringKey: string, locale: string, value: string) => void;
+  onContextChange: (stringKey: string, value: string) => void;
+  isCreating?: boolean;
+  newStringData?: NewStringData;
+  validationError?: string;
+  isCreatingString?: boolean;
+  onNewStringKeyChange?: (key: string) => void;
+  onNewStringContextChange?: (context: string) => void;
+  onNewStringTranslationChange?: (locale: string, value: string) => void;
+  onSaveNewString?: () => void;
+  onCancelCreating?: () => void;
+}
+
+const columnHelper = createColumnHelper<BulkEditorRow>();
+
+function buildColumns(
+  locales: string[],
+  keyHeaderLabel: string,
+  contextHeaderLabel: string,
+  getCellValue: BulkEditorTableProps['getCellValue'],
+  getContextValue: BulkEditorTableProps['getContextValue'],
+  isCellDirty: BulkEditorTableProps['isCellDirty'],
+  isContextDirty: BulkEditorTableProps['isContextDirty'],
+  onCellChange: BulkEditorTableProps['onCellChange'],
+  onContextChange: BulkEditorTableProps['onContextChange'],
+): ColumnDef<BulkEditorRow, string>[] {
+  const keyColumn = columnHelper.accessor('stringKey', {
+    header: () => keyHeaderLabel,
+    cell: info => (
+      <Text size="2" weight="medium" className={styles.keyColumn}>
+        {info.getValue()}
+      </Text>
+    ),
+  });
+
+  const contextColumn = columnHelper.display({
+    id: 'context',
+    header: () => contextHeaderLabel,
+    cell: ({ row }) => (
+      <BulkEditorCell
+        value={getContextValue(row.original)}
+        isDirty={isContextDirty(row.original.stringKey)}
+        onChange={newValue => onContextChange(row.original.stringKey, newValue)}
+      />
+    ),
+  });
+
+  const localeColumns = locales.map(locale =>
+    columnHelper.display({
+      id: locale,
+      header: () => locale,
+      cell: ({ row }) => (
+        <BulkEditorCell
+          value={getCellValue(row.original, locale)}
+          isDirty={isCellDirty(row.original.stringKey, locale)}
+          onChange={newValue => onCellChange(row.original.stringKey, locale, newValue)}
+        />
+      ),
+    }),
+  );
+
+  return [keyColumn, contextColumn, ...localeColumns] as ColumnDef<BulkEditorRow, string>[];
+}
+
+function BulkEditorTable({
+  rows,
+  locales,
+  getCellValue,
+  getContextValue,
+  isCellDirty,
+  isContextDirty,
+  onCellChange,
+  onContextChange,
+  isCreating = false,
+  newStringData,
+  validationError = '',
+  isCreatingString = false,
+  onNewStringKeyChange,
+  onNewStringContextChange,
+  onNewStringTranslationChange,
+  onSaveNewString,
+  onCancelCreating,
+}: BulkEditorTableProps) {
+  const intl = useIntl();
+  const columns = buildColumns(
+    locales,
+    intl.formatMessage(messages.columnKey),
+    intl.formatMessage(messages.columnContext),
+    getCellValue,
+    getContextValue,
+    isCellDirty,
+    isContextDirty,
+    onCellChange,
+    onContextChange,
+  );
+
+  const table = useReactTable({
+    data: rows,
+    columns,
+    getCoreRowModel: getCoreRowModel(),
+    getRowId: row => row.stringKey,
+  });
+
+  if (rows.length === 0 && !isCreating) {
+    return (
+      <Box className={styles.emptyState}>
+        <Text size="3" color="gray">
+          <FormattedMessage {...messages.emptyTableMessage} />
+        </Text>
+      </Box>
+    );
+  }
+
+  return (
+    <Box className={styles.container}>
+      <Table.Root variant="surface" role="grid">
+        <Table.Header>
+          {table.getHeaderGroups().map(headerGroup => (
+            <Table.Row key={headerGroup.id}>
+              {headerGroup.headers.map(header => (
+                <Table.ColumnHeaderCell
+                  key={header.id}
+                  className={clsx(header.id === 'stringKey' ? styles.keyHeader : styles.localeHeader)}
+                >
+                  {header.isPlaceholder ? null : flexRender(header.column.columnDef.header, header.getContext())}
+                </Table.ColumnHeaderCell>
+              ))}
+              {isCreating && <Table.ColumnHeaderCell />}
+            </Table.Row>
+          ))}
+        </Table.Header>
+        <Table.Body>
+          {isCreating &&
+            newStringData &&
+            onNewStringKeyChange &&
+            onNewStringTranslationChange &&
+            onSaveNewString &&
+            onCancelCreating && (
+              <CreateStringRow
+                locales={locales}
+                newStringData={newStringData}
+                validationError={validationError}
+                isCreatingString={isCreatingString}
+                onKeyChange={onNewStringKeyChange}
+                onContextChange={onNewStringContextChange}
+                onTranslationChange={onNewStringTranslationChange}
+                onSave={onSaveNewString}
+                onCancel={onCancelCreating}
+              />
+            )}
+          {table.getRowModel().rows.map(row => (
+            <Table.Row key={row.id}>
+              {row.getVisibleCells().map(cell => (
+                <Table.Cell key={cell.id} className={clsx(cell.column.id !== 'stringKey' && styles.tableCell)}>
+                  {flexRender(cell.column.columnDef.cell, cell.getContext())}
+                </Table.Cell>
+              ))}
+            </Table.Row>
+          ))}
+        </Table.Body>
+      </Table.Root>
+    </Box>
+  );
+}
+
+export default BulkEditorTable;
