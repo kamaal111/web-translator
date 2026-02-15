@@ -97,9 +97,32 @@ type DirtyEdits = Map<string, Record<string, string>>;
 
 **State transitions**:
 
-- Empty → Has entries: User edits a cell
+- Empty → Has entries: User edits a cell or creates a new string
 - Has entries → Empty: User saves successfully OR user discards changes
 - Has entries → Has entries: User edits another cell or modifies existing edit
+
+### PendingDeletes
+
+Tracks strings queued for deletion with undo capability.
+
+```typescript
+interface PendingDelete {
+  stringKey: string;
+  data: BulkEditorRow;
+  timeoutId: number;
+}
+
+type PendingDeletes = Map<string, PendingDelete>;
+```
+
+**Key**: String key (e.g., `"welcome_message"`)
+**Value**: Object containing the original row data and a timeout ID for undo expiration
+
+**State transitions**:
+
+- Empty → Has entry: User deletes a string
+- Has entry → Empty: Undo timeout expires OR user clicks undo
+- Row removed from table immediately on delete, restored if undo clicked within timeout
 
 ### ColumnVisibility
 
@@ -139,15 +162,28 @@ projects (1) ──── (N) strings (1) ──── (N) translations
 
 1. Load: `GET /s/:projectId` → `StringResponse[]` → `BulkEditorRow[]`
 2. Edit: User modifies cells → updates `DirtyEdits` map
-3. Save: Convert `DirtyEdits` → `TranslationEntry[]` → `PUT /s/:projectId/translations`
-4. Publish: `POST /p/:projectId/publish` with selected locales
+3. Create: User adds new string → updates `DirtyEdits` map → `PUT /s/:projectId/translations` (upsert creates string)
+4. Delete: User deletes string → `DELETE /s/:projectId/strings/:stringKey` (CASCADE deletes translations)
+5. Save: Convert `DirtyEdits` → `TranslationEntry[]` → `PUT /s/:projectId/translations`
+6. Publish: `POST /p/:projectId/publish` with selected locales
+
+**Cascade Deletion Behavior**:
+
+When a string is deleted via `DELETE /s/:projectId/strings/:stringKey`:
+
+- The string record is removed from the `strings` table
+- All associated translations are automatically deleted via `ON DELETE CASCADE` foreign key constraint
+- Published snapshots remain **immutable** and are NOT affected
+- The operation is atomic (all-or-nothing)
 
 ## Validation Rules
 
-| Field                  | Rule                                       | Source                         |
-| ---------------------- | ------------------------------------------ | ------------------------------ |
-| `translations[locale]` | Max 10,000 characters                      | Application-level limit        |
-| `translations[locale]` | Locale must be in `project.enabledLocales` | Validated on server via schema |
-| `string.key`           | Non-empty after trim                       | Database CHECK constraint      |
-| `locale`               | Non-empty after trim                       | Database CHECK constraint      |
-| Bulk save payload      | At least 1 entry                           | Zod schema `min(1)`            |
+| Field                  | Rule                                       | Source                                 |
+| ---------------------- | ------------------------------------------ | -------------------------------------- |
+| `translations[locale]` | Max 10,000 characters                      | Application-level limit                |
+| `translations[locale]` | Locale must be in `project.enabledLocales` | Validated on server via schema         |
+| `string.key`           | Non-empty after trim                       | Database CHECK constraint              |
+| `string.key`           | Unique within project                      | Database UNIQUE constraint             |
+| `locale`               | Non-empty after trim                       | Database CHECK constraint              |
+| Bulk save payload      | At least 1 entry                           | Zod schema `min(1)`                    |
+| String deletion        | String must exist in project               | Validated on server (404 if not found) |

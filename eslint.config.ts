@@ -81,4 +81,10 @@ export default defineConfig([
       ],
     },
   },
+  {
+    files: ['**/bulk-editor-table.tsx'],
+    rules: {
+      'react-hooks/incompatible-library': 'off',
+    },
+  },
 ]);

@@ -59,22 +59,22 @@ This is a monorepo web application:
 
 > **NOTE: Write these tests FIRST, ensure they FAIL before implementation**
 
-- [ ] T009 [P] [US1] Create page-level test file at web/src/pages/bulk-editor/**tests**/bulk-editor.test.tsx with tests for loading, rendering strings, error states
-- [ ] T010 [P] [US1] Create component test file at web/src/projects/components/bulk-translation-editor/**tests**/bulk-editor-page.test.tsx with tests for editing cells, tracking dirty state, saving changes
+- [x] T009 [P] [US1] Create page-level test file at web/src/pages/bulk-editor/**tests**/bulk-editor.test.tsx with tests for loading, rendering strings, error states
+- [x] T010 [P] [US1] Create component test file at web/src/projects/components/bulk-translation-editor/**tests**/bulk-editor-page.test.tsx with tests for editing cells, tracking dirty state, saving changes
 
 ### Implementation for User Story 1
 
-- [ ] T011 [P] [US1] Create BulkEditorRow type and data transformation utilities in web/src/projects/hooks/use-bulk-editor.ts
-- [ ] T012 [P] [US1] Create useBulkEditor hook with dirty tracking Map<string, Record<string, string>> in web/src/projects/hooks/use-bulk-editor.ts
-- [ ] T013 [US1] Implement BulkEditorPage component with project loading and error handling in web/src/projects/components/bulk-translation-editor/bulk-editor-page.tsx
-- [ ] T014 [US1] Implement BulkEditorTable component with TanStack Table setup in web/src/projects/components/bulk-translation-editor/bulk-editor-table.tsx
-- [ ] T015 [US1] Implement BulkEditorCell component with inline editing and onChange handlers in web/src/projects/components/bulk-translation-editor/bulk-editor-cell.tsx
-- [ ] T016 [US1] Implement BulkEditorHeader component with save button and dirty indicator in web/src/projects/components/bulk-translation-editor/bulk-editor-header.tsx
-- [ ] T017 [US1] Wire useBulkEditor save function to upsertTranslations API mutation (convert DirtyEdits Map to TranslationEntry array)
-- [ ] T018 [US1] Add keyboard navigation support (Tab/Shift+Tab, Enter to edit) to BulkEditorCell component in web/src/projects/components/bulk-translation-editor/bulk-editor-cell.tsx
-- [ ] T019 [US1] Implement unsaved changes warning using react-router useBlocker and window beforeunload event in web/src/projects/components/bulk-translation-editor/bulk-editor-page.tsx
-- [ ] T020 [US1] Add publish button and dialog integration (calls publishSnapshot API) in web/src/projects/components/bulk-translation-editor/bulk-editor-header.tsx
-- [ ] T021 [US1] Connect lazy-loaded page component to BulkEditorPage with projectId from URL params in web/src/pages/bulk-editor/bulk-editor.tsx
+- [x] T011 [P] [US1] Create BulkEditorRow type and data transformation utilities in web/src/projects/hooks/use-bulk-editor.ts
+- [x] T012 [P] [US1] Create useBulkEditor hook with dirty tracking Map<string, Record<string, string>> in web/src/projects/hooks/use-bulk-editor.ts
+- [x] T013 [US1] Implement BulkEditorPage component with project loading and error handling in web/src/projects/components/bulk-translation-editor/bulk-editor-page.tsx
+- [x] T014 [US1] Implement BulkEditorTable component with TanStack Table setup in web/src/projects/components/bulk-translation-editor/bulk-editor-table.tsx
+- [x] T015 [US1] Implement BulkEditorCell component with inline editing and onChange handlers in web/src/projects/components/bulk-translation-editor/bulk-editor-cell.tsx
+- [x] T016 [US1] Implement BulkEditorHeader component with save button and dirty indicator in web/src/projects/components/bulk-translation-editor/bulk-editor-header.tsx
+- [x] T017 [US1] Wire useBulkEditor save function to upsertTranslations API mutation (convert DirtyEdits Map to TranslationEntry array)
+- [x] T018 [US1] Add keyboard navigation support (Tab/Shift+Tab, Enter to edit) to BulkEditorCell component in web/src/projects/components/bulk-translation-editor/bulk-editor-cell.tsx
+- [x] T019 [US1] Implement unsaved changes warning using window beforeunload event in web/src/projects/components/bulk-translation-editor/bulk-editor-page.tsx
+- [x] T020 [US1] Add publish button and dialog integration (calls publishSnapshot API) in web/src/projects/components/bulk-translation-editor/bulk-editor-header.tsx
+- [x] T021 [US1] Connect lazy-loaded page component to BulkEditorPage with projectId from URL params in web/src/pages/bulk-editor/bulk-editor.tsx
 
 **Checkpoint**: At this point, User Story 1 should be fully functional and testable independently
 
@@ -168,6 +168,68 @@ This is a monorepo web application:
 
 ---
 
+## Phase 9: User Story 5 & 6 - String Creation & Deletion (Priority: P2)
+
+**Goal**: Enable users to create new strings and delete existing strings directly from the bulk editor
+
+**Independent Test**: Create a new string with translations → save → verify it persists. Delete an existing string → verify it's removed. Use undo within timeout → verify restoration.
+
+### Backend - Delete String Endpoint (NEW)
+
+- [ ] T048 [P] [US6] Create DELETE endpoint schema in server/src/strings/schemas.ts (DeleteStringParamsSchema, DeleteStringResponseSchema)
+- [ ] T049 [US6] Create DELETE endpoint route handler at server/src/strings/routes/delete-string.ts
+- [ ] T050 [P] [US6] Add deleteByKey method signature to server/src/strings/repositories/strings/types.ts
+- [ ] T051 [P] [US6] Implement deleteByKey in server/src/strings/repositories/strings/implementation.ts (delete from strings table, cascade handles translations)
+- [ ] T052 [US6] Register DELETE route in server/src/strings/router.ts
+- [ ] T053 [P] [US6] Create comprehensive tests in server/src/strings/**tests**/delete-string.test.ts (success, not found, cascade behavior, auth checks)
+- [ ] T054 [US6] Run `just download-spec` to update OpenAPI spec with new DELETE endpoint
+
+### Tests for User Story 5 (String Creation)
+
+- [ ] T055 [P] [US5] Add tests for string creation to web/src/projects/components/bulk-translation-editor/**tests**/bulk-editor-page.test.tsx (add row, enter data, save, validation errors)
+
+### Implementation for User Story 5 (String Creation)
+
+- [ ] T056 [US5] Add "Add String" button to BulkEditorHeader component in web/src/projects/components/bulk-translation-editor/bulk-editor-header.tsx
+- [ ] T057 [P] [US5] Create CreateStringRow component at web/src/projects/components/bulk-translation-editor/create-string-row.tsx (inline editable row with key, context, all locale fields)
+- [ ] T058 [US5] Add creation state management to useBulkEditor hook in web/src/projects/hooks/use-bulk-editor.ts (isCreating flag, newStringData, validation)
+- [ ] T059 [US5] Wire CreateStringRow to existing upsertTranslations mutation (no new API needed)
+- [ ] T060 [US5] Implement key uniqueness validation in CreateStringRow (check against existing table data)
+- [ ] T061 [US5] Add keyboard support to CreateStringRow (Escape to cancel, Tab navigation, Enter to save)
+- [ ] T062 [US5] Integrate CreateStringRow into BulkEditorTable at top when isCreating=true in web/src/projects/components/bulk-translation-editor/bulk-editor-table.tsx
+- [ ] T063 [P] [US5] Add i18n messages for creation UI in web/src/projects/components/bulk-translation-editor/messages.ts (button labels, placeholders, error messages)
+
+### Tests for User Story 6 (String Deletion)
+
+- [ ] T064 [P] [US6] Add tests for string deletion to web/src/projects/components/bulk-translation-editor/**tests**/bulk-editor-page.test.tsx (delete action, undo, API failure restoration)
+
+### Implementation for User Story 6 (String Deletion)
+
+- [ ] T065 [US6] Create deleteString mutation hook using new DELETE endpoint in web/src/projects/hooks/use-bulk-editor.ts
+- [ ] T066 [US6] Add delete action column to BulkEditorTable with icon button in web/src/projects/components/bulk-translation-editor/bulk-editor-table.tsx
+- [ ] T067 [P] [US6] Create UndoToast component at web/src/projects/components/bulk-translation-editor/undo-toast.tsx (shows after delete, timeout ~5s, undo button)
+- [ ] T068 [US6] Implement optimistic delete in useBulkEditor hook (remove from table immediately, track pending deletes)
+- [ ] T069 [US6] Implement undo logic in useBulkEditor hook (restore row within timeout, cancel API call if possible)
+- [ ] T070 [US6] Implement auto-restoration on API failure in deleteString mutation error handler
+- [ ] T071 [US6] Handle deletion of strings with unsaved edits (clear from dirty state when deleting)
+- [ ] T072 [P] [US6] Add i18n messages for deletion UI in web/src/projects/components/bulk-translation-editor/messages.ts (delete button aria-label, undo toast text, error messages)
+
+### Integration & Polish for User Stories 5 & 6
+
+- [ ] T073 [P] Test complete creation workflow: add string → enter translations → save → verify persistence
+- [ ] T074 [P] Test complete deletion workflow: delete string → verify removed → undo → verify restored
+- [ ] T075 [P] Test edge case: create duplicate key → verify validation error
+- [ ] T076 [P] Test edge case: delete string with unsaved edits → verify edits discarded
+- [ ] T077 [P] Test edge case: delete fails due to network → verify auto-restoration
+- [ ] T078 Update navigation link from project details to bulk editor if not already done
+- [ ] T079 Run server tests: `just test-server`
+- [ ] T080 Run web tests: `just test-web`
+- [ ] T081 Run `just ready` as final verification for Phase 9
+
+**Checkpoint**: User Stories 5 and 6 should be fully functional and independently testable
+
+---
+
 ## Dependencies & Execution Order
 
 ### Phase Dependencies
@@ -176,9 +238,13 @@ This is a monorepo web application:
 - **Foundational (Phase 2)**: Depends on Setup completion - BLOCKS all user stories
 - **User Stories (Phase 3-6)**: All depend on Foundational phase completion
   - User stories can then proceed in parallel (if staffed)
-  - Or sequentially in priority order (P1 → P2 → P3 → P3)
+  - Or sequentially in priority order (P1 → P2 → P2 → P3 → P3)
 - **Performance (Phase 7)**: Depends on User Story 1 (P1) completion - can run before P2/P3 stories if needed
 - **Polish (Phase 8)**: Depends on all desired user stories being complete
+- **String Creation & Deletion (Phase 9)**: Depends on Foundational (Phase 2) completion
+  - Backend delete endpoint (T048-T054) must complete before frontend deletion UI (T064-T072)
+  - Frontend creation UI (T055-T063) can start immediately (reuses existing API)
+  - Can run in parallel with other user stories
 
 ### User Story Dependencies
 
@@ -186,6 +252,8 @@ This is a monorepo web application:
 - **User Story 2 (P2)**: Can start after Foundational (Phase 2) - Enhances US1 but independently testable
 - **User Story 3 (P3)**: Can start after Foundational (Phase 2) - Enhances US1 but independently testable
 - **User Story 4 (P3)**: Can start after Foundational (Phase 2) - Enhances US1 but independently testable
+- **User Story 5 (P2)**: Can start after Foundational (Phase 2) - No dependencies on other stories (reuses existing upsert API)
+- **User Story 6 (P2)**: Backend must complete first, then frontend can start - Independently testable from other stories
 
 ### Within Each User Story
 
@@ -233,10 +301,12 @@ Task T012: "Create useBulkEditor hook with dirty tracking..."
 1. Complete Setup + Foundational → Foundation ready
 2. Add User Story 1 (P1) → Test independently → Deploy/Demo (MVP! - batch editing works)
 3. Add User Story 2 (P2) → Test independently → Deploy/Demo (enhanced: visual feedback for empty)
-4. Add User Story 3 (P3) → Test independently → Deploy/Demo (enhanced: filtering)
-5. Add User Story 4 (P3) → Test independently → Deploy/Demo (enhanced: column hiding)
-6. Add Performance (Phase 7) → Handles 1000+ strings smoothly
-7. Each story adds value without breaking previous stories
+4. Add User Story 5 (P2) → Test independently → Deploy/Demo (enhanced: string creation)
+5. Add User Story 6 (P2) → Test independently → Deploy/Demo (enhanced: string deletion)
+6. Add User Story 3 (P3) → Test independently → Deploy/Demo (enhanced: filtering)
+7. Add User Story 4 (P3) → Test independently → Deploy/Demo (enhanced: column hiding)
+8. Add Performance (Phase 7) → Handles 1000+ strings smoothly
+9. Each story adds value without breaking previous stories
 
 ### Parallel Team Strategy
 
@@ -246,8 +316,10 @@ With multiple developers:
 2. Once Foundational is done:
    - Developer A: User Story 1 (P1) - Critical MVP
    - Developer B: User Story 2 (P2) - Empty translation indicators
-   - Developer C: User Stories 3 & 4 (P3) - Filtering and column visibility
-   - Developer D: Performance optimization (Phase 7)
+   - Developer C: User Story 5 (P2) - String creation
+   - Developer D: User Story 6 backend (P2) - DELETE endpoint, then User Story 6 frontend
+   - Developer E: User Stories 3 & 4 (P3) - Filtering and column visibility
+   - Developer F: Performance optimization (Phase 7)
 3. Stories complete and integrate independently
 
 ---
@@ -264,3 +336,7 @@ With multiple developers:
 - Follow repository coding conventions (no ESLint suppression, no `any` types, no `!` assertions)
 - All UI text must use react-intl messages (no hardcoded strings)
 - Empty cell styling should use Radix UI Themes color tokens for consistency
+- String deletion uses database FK CASCADE to automatically remove translations
+- Published snapshots are immutable and NOT affected by string deletion
+- Undo toast for deletion has ~5 second timeout before permanent deletion
+- String creation reuses existing `upsertTranslations` API (no new endpoint needed)

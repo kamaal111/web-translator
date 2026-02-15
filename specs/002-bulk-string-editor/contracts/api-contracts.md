@@ -211,6 +211,59 @@ interface PublishSnapshotResponse {
 
 ---
 
+### 4. Delete String
+
+**Endpoint**: `DELETE /app-api/v1/s/:projectId/strings/:stringKey`
+**Purpose**: Delete a string and all its translations from the project
+**Auth**: Required (session cookie)
+**Existing**: No — NEW endpoint required
+
+#### Parameters
+
+| Name        | In   | Type            | Required | Description                                        |
+| ----------- | ---- | --------------- | -------- | -------------------------------------------------- |
+| `projectId` | path | `string` (UUID) | Yes      | Project ID                                         |
+| `stringKey` | path | `string`        | Yes      | The string key to delete (e.g., "welcome_message") |
+
+#### Response (200 OK)
+
+```typescript
+interface DeleteStringResponse {
+  deleted: {
+    key: string;
+    deletedAt: string;
+  };
+}
+```
+
+#### Example Response
+
+```json
+{
+  "deleted": {
+    "key": "welcome_message",
+    "deletedAt": "2026-02-15T14:53:00Z"
+  }
+}
+```
+
+#### Error Responses
+
+| Status | Condition                           |
+| ------ | ----------------------------------- |
+| 401    | Not authenticated                   |
+| 404    | Project or string not found         |
+| 403    | User lacks ownership of the project |
+
+#### Behavior
+
+- Deletes the string record from the `strings` table
+- Database FK CASCADE automatically deletes all associated translations from the `translations` table
+- Does NOT affect published snapshots (they remain immutable)
+- Idempotent: returns 404 if string doesn't exist
+
+---
+
 ## Frontend API Integration
 
 ### Data Flow
@@ -221,12 +274,19 @@ interface PublishSnapshotResponse {
 │  Page Load   │                          │  (TanStack Q)  │
 └──────────────┘                          └───────────────┘
        │
-       │ User edits cells
+       │ User edits cells OR creates new string
        ▼
 ┌──────────────┐                          ┌───────────────┐
 │  DirtyEdits  │                          │ upsertTransl.  │
 │  Map<k,v>    │ ──PUT /s/:projectId/──► │  (useMutation) │
 │              │   translations           │                │
+└──────────────┘                          └───────────────┘
+       │
+       │ User deletes string
+       ▼
+┌──────────────┐                          ┌───────────────┐
+│  Delete      │ ─DELETE /s/:projectId/─► │ deleteString   │
+│  Action      │   strings/:stringKey     │  (useMutation) │
 └──────────────┘                          └───────────────┘
        │
        │ User clicks publish

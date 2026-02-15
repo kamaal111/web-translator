@@ -96,6 +96,21 @@ const messages = defineMessages({
     defaultMessage: '{completed} of {total} ({percentage}%) translations complete for {locale}',
     description: 'Detailed progress message showing completed and total translations for a locale',
   },
+  discardButton: {
+    id: 'BULK_EDITOR.DISCARD_BUTTON',
+    defaultMessage: 'Discard',
+    description: 'Label for the button that discards unsaved changes in the navigation warning dialog',
+  },
+  stayButton: {
+    id: 'BULK_EDITOR.STAY_BUTTON',
+    defaultMessage: 'Stay',
+    description: 'Label for the button that keeps the user on the page in the navigation warning dialog',
+  },
+  backToProject: {
+    id: 'BULK_EDITOR.BACK_TO_PROJECT',
+    defaultMessage: 'Back to Project',
+    description: 'Aria label for the back navigation link to the project details page',
+  },
 });
 
 export default messages;

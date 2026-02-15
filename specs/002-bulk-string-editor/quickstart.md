@@ -32,12 +32,18 @@ bun add @tanstack/react-table @tanstack/react-virtual
 
 ## Key Files to Implement
 
-### Server (minimal changes)
+### Server (minimal changes, plus new DELETE endpoint)
 
-| File                                      | Action | Purpose                                         |
-| ----------------------------------------- | ------ | ----------------------------------------------- |
-| `server/src/web/router.ts`                | MODIFY | Add `/projects/:id/bulk-editor` to `WEB_ROUTES` |
-| `server/src/web/__tests__/router.test.ts` | MODIFY | Add test for new SPA route                      |
+| File                                                        | Action | Purpose                                         |
+| ----------------------------------------------------------- | ------ | ----------------------------------------------- |
+| `server/src/web/router.ts`                                  | MODIFY | Add `/projects/:id/bulk-editor` to `WEB_ROUTES` |
+| `server/src/web/__tests__/router.test.ts`                   | MODIFY | Add test for new SPA route                      |
+| `server/src/strings/routes/delete-string.ts`                | CREATE | DELETE endpoint for string removal              |
+| `server/src/strings/repositories/strings/types.ts`          | MODIFY | Add deleteByKey method signature                |
+| `server/src/strings/repositories/strings/implementation.ts` | MODIFY | Implement deleteByKey                           |
+| `server/src/strings/router.ts`                              | MODIFY | Register DELETE route                           |
+| `server/src/strings/schemas.ts`                             | MODIFY | Add delete request/response schemas             |
+| `server/src/strings/__tests__/delete-string.test.ts`        | CREATE | Tests for DELETE endpoint                       |
 
 ### Frontend (bulk of the work)
 
@@ -52,6 +58,8 @@ bun add @tanstack/react-table @tanstack/react-virtual
 | `web/src/projects/components/bulk-translation-editor/bulk-editor-header.tsx`   | CREATE | Header with breadcrumb, save button, dirty indicator |
 | `web/src/projects/components/bulk-translation-editor/bulk-editor-filters.tsx`  | CREATE | Search input + column visibility toggles             |
 | `web/src/projects/components/bulk-translation-editor/bulk-editor-progress.tsx` | CREATE | Translation completion progress per locale           |
+| `web/src/projects/components/bulk-translation-editor/create-string-row.tsx`    | CREATE | Inline editable row for creating new strings         |
+| `web/src/projects/components/bulk-translation-editor/undo-toast.tsx`           | CREATE | Toast notification for deletion undo                 |
 | `web/src/projects/components/bulk-translation-editor/messages.ts`              | CREATE | react-intl messages for all UI text                  |
 
 ### Tests
@@ -93,6 +101,13 @@ bun add @tanstack/react-table @tanstack/react-virtual
 13. Add virtual scrolling via TanStack Virtual
 14. Test with 1000+ strings
 
+### Phase 6: String Lifecycle Management
+
+15. Implement string creation (inline row)
+16. Implement DELETE endpoint (backend)
+17. Implement string deletion UI (frontend)
+18. Add undo toast for deletion
+
 ## Verification
 
 After each phase, run:
@@ -100,6 +115,23 @@ After each phase, run:
 ```bash
 just ready
 ```
+
+### Manual Testing Checklist
+
+After completing all phases, verify:
+
+- [ ] Load bulk editor with 100+ strings → verify table renders correctly
+- [ ] Edit multiple translations → click save → verify changes persist
+- [ ] Click "Add String" → enter new key and translations → save → verify string created
+- [ ] Try to create duplicate key → verify validation error shown
+- [ ] Delete a string → verify removed immediately → verify undo button appears
+- [ ] Click undo within timeout → verify string restored
+- [ ] Delete a string and wait for undo timeout → refresh page → verify string gone permanently
+- [ ] Delete a string with unsaved edits → verify edits discarded
+- [ ] Apply filter → edit strings → save → verify all edits (filtered and unfiltered) persist
+- [ ] Test keyboard navigation: Tab/Shift+Tab between cells, Enter to edit
+- [ ] Attempt to navigate away with unsaved changes → verify warning appears
+- [ ] Publish snapshot → verify success confirmation
 
 ## Existing Patterns to Follow
 
