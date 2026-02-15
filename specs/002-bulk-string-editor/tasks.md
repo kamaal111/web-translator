@@ -27,9 +27,9 @@ This is a monorepo web application:
 
 **Purpose**: Install dependencies and configure project structure
 
-- [ ] T001 Install @tanstack/react-table dependency in web/ package
-- [ ] T002 [P] Install @tanstack/react-virtual dependency in web/ package
-- [ ] T003 [P] Create bulk editor components directory structure at web/src/projects/components/bulk-translation-editor/
+- [x] T001 Install @tanstack/react-table dependency in web/ package
+- [x] T002 [P] Install @tanstack/react-virtual dependency in web/ package
+- [x] T003 [P] Create bulk editor components directory structure at web/src/projects/components/bulk-translation-editor/
 
 ---
 
