@@ -1,10 +1,12 @@
 import { Box, Table, Text } from '@radix-ui/themes';
 import { useIntl, FormattedMessage } from 'react-intl';
 import { createColumnHelper, flexRender, getCoreRowModel, useReactTable, type ColumnDef } from '@tanstack/react-table';
+import clsx from 'clsx';
 
 import type { BulkEditorRow } from '@/projects/hooks/use-bulk-editor';
 import BulkEditorCell from './bulk-editor-cell';
 import messages from './messages';
+import styles from './bulk-editor-table.module.css';
 
 interface BulkEditorTableProps {
   rows: BulkEditorRow[];
@@ -26,7 +28,7 @@ function buildColumns(
   const keyColumn = columnHelper.accessor('stringKey', {
     header: () => keyHeaderLabel,
     cell: info => (
-      <Text size="2" weight="medium" style={{ wordBreak: 'break-all' }}>
+      <Text size="2" weight="medium" className={styles.keyColumn}>
         {info.getValue()}
       </Text>
     ),
@@ -68,7 +70,7 @@ function BulkEditorTable({ rows, locales, getCellValue, isCellDirty, onCellChang
 
   if (rows.length === 0) {
     return (
-      <Box py="6" style={{ textAlign: 'center' }}>
+      <Box className={styles.emptyState}>
         <Text size="3" color="gray">
           <FormattedMessage {...messages.emptyTableMessage} />
         </Text>
@@ -77,7 +79,7 @@ function BulkEditorTable({ rows, locales, getCellValue, isCellDirty, onCellChang
   }
 
   return (
-    <Box style={{ overflowX: 'auto' }}>
+    <Box className={styles.container}>
       <Table.Root variant="surface" role="grid">
         <Table.Header>
           {table.getHeaderGroups().map(headerGroup => (
@@ -85,7 +87,7 @@ function BulkEditorTable({ rows, locales, getCellValue, isCellDirty, onCellChang
               {headerGroup.headers.map(header => (
                 <Table.ColumnHeaderCell
                   key={header.id}
-                  style={{ minWidth: header.id === 'stringKey' ? '200px' : '250px' }}
+                  className={clsx(header.id === 'stringKey' ? styles.keyHeader : styles.localeHeader)}
                 >
                   {header.isPlaceholder ? null : flexRender(header.column.columnDef.header, header.getContext())}
                 </Table.ColumnHeaderCell>
@@ -97,13 +99,7 @@ function BulkEditorTable({ rows, locales, getCellValue, isCellDirty, onCellChang
           {table.getRowModel().rows.map(row => (
             <Table.Row key={row.id}>
               {row.getVisibleCells().map(cell => (
-                <Table.Cell
-                  key={cell.id}
-                  style={{
-                    padding: cell.column.id === 'stringKey' ? undefined : '0',
-                    verticalAlign: 'middle',
-                  }}
-                >
+                <Table.Cell key={cell.id} className={clsx(cell.column.id !== 'stringKey' && styles.tableCell)}>
                   {flexRender(cell.column.columnDef.cell, cell.getContext())}
                 </Table.Cell>
               ))}
