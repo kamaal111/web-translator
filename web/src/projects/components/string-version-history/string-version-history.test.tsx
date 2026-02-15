@@ -29,9 +29,10 @@ describe('StringVersionHistory', () => {
   test('should render loading state initially', () => {
     mockListStringVersions.mockReturnValue(new Promise(() => {}));
 
-    renderComponent();
+    const { container } = render(<StringVersionHistory projectId="proj_test" stringKey="HOME.TITLE" />);
 
-    expect(screen.getByText(/loading version history/i)).toBeDefined();
+    const skeletons = container.querySelectorAll('.rt-Skeleton');
+    expect(skeletons.length).toBeGreaterThan(0);
   });
 
   test('should render version history title with string key', async () => {

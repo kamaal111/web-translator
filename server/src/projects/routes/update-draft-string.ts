@@ -82,6 +82,9 @@ function updateDraftTranslationsRoute() {
         getLogger(c).error('Validation failed: locales not enabled', {
           project_id: project.id,
           string_key: stringKey,
+          invalid_locales: invalidLocales.join(','),
+          enabled_locales: Array.from(enabledLocales).join(','),
+          operation: 'update_draft_translations',
         });
         throw new BadRequestException(c, {
           message: `Validation failed: locale(s) not enabled: ${invalidLocales.join(', ')}`,
@@ -94,6 +97,8 @@ function updateDraftTranslationsRoute() {
         getLogger(c).error('String not found by key while required', {
           project_id: project.id,
           string_key: stringKey,
+          operation: 'update_draft_translations',
+          requested_locales: requestedLocales,
         });
         throw new StringNotFound(c);
       }
@@ -113,6 +118,13 @@ function updateDraftTranslationsRoute() {
           updatedBy: t.updatedBy,
         })),
       };
+
+      getLogger(c).info('Draft translations updated', {
+        project_id: projectId,
+        string_key: stringKey,
+        locales_updated: updatedTranslations.length.toString(),
+        has_conflict_check: (ifUnmodifiedSince != null).toString(),
+      });
 
       return c.json(response, 200);
     },

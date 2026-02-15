@@ -420,4 +420,49 @@ describe('List String Versions Integration Tests', () => {
       expect(response.status).toBe(400);
     });
   });
+
+  describe('Performance Tests', () => {
+    test('should handle pagination efficiently with multiple snapshots', async () => {
+      const projectResponse = await helper.createProject({
+        name: 'Large Pagination Test Project',
+        default_locale: 'en-US',
+        enabled_locales: ['en-US'],
+        public_read_key: 'pk_large_pagination',
+      });
+      const project = ProjectResponseSchema.parse(await projectResponse.json());
+
+      const snapshotCount = 15;
+      for (let i = 1; i <= snapshotCount; i++) {
+        const upsertResponse = await helper.upsertTranslations(project.id, [
+          {
+            key: 'PERF.TEST',
+            translations: { 'en-US': `Version ${i}` },
+          },
+        ]);
+        expect(upsertResponse.status).toBe(200);
+        const publishResult = await helper.publishSnapshot(project.id, 'en-US');
+        expect(publishResult.status).toBe(201);
+      }
+
+      const headers = await helper.getDefaultUserHeaders();
+      const startTime = performance.now();
+
+      const response = await helper.app.request(
+        `${BASE_PATH}/${project.id}/strings/PERF.TEST/versions?pageSize=10&page=1`,
+        { method: 'GET', headers },
+      );
+
+      const duration = performance.now() - startTime;
+
+      expect(response.status).toBe(200);
+      const data = ListStringVersionsResponseSchema.parse(await response.json());
+
+      const locale = data.locales[0];
+      assert(locale, 'Expected locale to exist');
+      expect(locale.versions).toHaveLength(10);
+      expect(locale.pagination.totalVersions).toBe(snapshotCount);
+      expect(locale.pagination.hasMore).toBe(true);
+      expect(duration).toBeLessThan(200);
+    });
+  });
 });
