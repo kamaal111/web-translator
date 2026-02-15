@@ -1,5 +1,8 @@
 import React from 'react';
 import { Box } from '@radix-ui/themes';
+import clsx from 'clsx';
+
+import styles from './bulk-editor-cell.module.css';
 
 interface BulkEditorCellProps {
   value: string;
@@ -58,35 +61,14 @@ function BulkEditorCell({ value, isDirty, onChange }: BulkEditorCellProps) {
 
   if (isEditing) {
     return (
-      <Box
-        style={{
-          width: '100%',
-          height: '100%',
-          minHeight: '40px',
-        }}
-      >
-        <textarea
-          ref={inputRef}
-          value={editValue}
-          onChange={e => setEditValue(e.target.value)}
-          onBlur={handleFinishEditing}
-          onKeyDown={handleKeyDown}
-          rows={2}
-          style={{
-            width: '100%',
-            height: '100%',
-            minHeight: '40px',
-            border: '2px solid var(--accent-9)',
-            borderRadius: 'var(--radius-1)',
-            padding: '4px 8px',
-            fontSize: 'var(--font-size-2)',
-            fontFamily: 'inherit',
-            resize: 'vertical',
-            outline: 'none',
-            backgroundColor: 'var(--color-surface)',
-          }}
-        />
-      </Box>
+      <textarea
+        ref={inputRef}
+        value={editValue}
+        onChange={e => setEditValue(e.target.value)}
+        onBlur={handleFinishEditing}
+        onKeyDown={handleKeyDown}
+        className={clsx(styles.cell, styles.cellEdit)}
+      />
     );
   }
 
@@ -96,18 +78,7 @@ function BulkEditorCell({ value, isDirty, onChange }: BulkEditorCellProps) {
       role="gridcell"
       onClick={handleStartEditing}
       onKeyDown={handleKeyDown}
-      style={{
-        width: '100%',
-        height: '100%',
-        minHeight: '40px',
-        padding: '4px 8px',
-        cursor: 'text',
-        display: 'flex',
-        alignItems: 'center',
-        fontSize: 'var(--font-size-2)',
-        backgroundColor: isDirty ? 'var(--amber-a3)' : undefined,
-        borderRadius: 'var(--radius-1)',
-      }}
+      className={clsx(styles.cell, styles.cellView, isDirty && styles.cellDirty)}
     >
       {value || '\u00A0'}
     </Box>
