@@ -1,0 +1,3 @@
+ancestorEntries = ["specs/002-bulk-string-editor/plan.md", "specs/002-bulk-string-editor/spec.md", "specs/002-bulk-string-editor/tasks.md"]
+ourEntries = ["specs/002-bulk-string-editor/contracts/api-contracts.md", "specs/002-bulk-string-editor/data-model.md", "specs/002-bulk-string-editor/plan.md", "specs/002-bulk-string-editor/quickstart.md", "specs/002-bulk-string-editor/spec.md", "specs/002-bulk-string-editor/tasks.md"]
+theirEntries = ["specs/002-bulk-string-editor/contracts/api-contracts.md", "specs/002-bulk-string-editor/data-model.md", "specs/002-bulk-string-editor/plan.md", "specs/002-bulk-string-editor/quickstart.md", "specs/002-bulk-string-editor/spec.md", "specs/002-bulk-string-editor/tasks.md"]

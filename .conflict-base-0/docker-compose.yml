@@ -1,0 +1,23 @@
+services:
+  wt_db:
+    image: postgres:18-alpine
+    container_name: wt-db
+    restart: always
+    environment:
+      POSTGRES_DB: wt
+      POSTGRES_USER: wt_user
+      POSTGRES_PASSWORD: wt_password
+    ports:
+      - '5432:5432'
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ['CMD-SHELL', 'pg_isready -U wt_user -d wt']
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+
+volumes:
+  postgres_data:
+    driver: local

@@ -1,0 +1,30 @@
+import { Hono } from 'hono';
+import { serveStatic } from 'hono/bun';
+
+import type { HonoEnvironment } from '../context';
+import env from '../env';
+import { serveTemplate } from './middleware/template';
+import { LocalTemplateFetcher, type TemplateFetcher } from './template-fetcher';
+import type { HtmlRoutes } from './types';
+import { LOGIN_ROUTE } from './constants';
+
+const { WEB_ASSETS_ROOT } = env;
+const WEB_ROUTES: HtmlRoutes = [
+  { pattern: '/', loginIsRequired: true },
+  { pattern: LOGIN_ROUTE, loginIsRequired: false },
+  { pattern: '/projects/:id', loginIsRequired: true },
+];
+
+const templateFetcher: TemplateFetcher = new LocalTemplateFetcher(WEB_ASSETS_ROOT);
+
+function webRouter() {
+  const router = new Hono<HonoEnvironment>();
+
+  return router.use(
+    '*',
+    serveTemplate({ routes: WEB_ROUTES, templateFetcher }),
+    serveStatic({ root: WEB_ASSETS_ROOT }),
+  );
+}
+
+export default webRouter;
