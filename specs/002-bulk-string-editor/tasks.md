@@ -80,95 +80,7 @@ This is a monorepo web application:
 
 ---
 
-## Phase 4: User Story 2 - Empty Translation Identification (Priority: P2)
-
-**Goal**: Visually distinguish empty/missing translations from completed ones for quick identification
-
-**Independent Test**: Create project with some empty translations → open bulk editor → verify empty cells have distinct visual styling (background color/border)
-
-### Tests for User Story 2
-
-- [ ] T022 [P] [US2] Add tests for empty cell visual distinction to web/src/projects/components/bulk-translation-editor/**tests**/bulk-editor-page.test.tsx
-
-### Implementation for User Story 2
-
-- [ ] T023 [US2] Add CSS conditional styling for empty cells in BulkEditorCell component in web/src/projects/components/bulk-translation-editor/bulk-editor-cell.tsx (use Radix UI Themes color tokens for distinct background)
-- [ ] T024 [US2] Create BulkEditorProgress component showing translation completion per locale in web/src/projects/components/bulk-translation-editor/bulk-editor-progress.tsx
-- [ ] T025 [US2] Integrate BulkEditorProgress into BulkEditorHeader component in web/src/projects/components/bulk-translation-editor/bulk-editor-header.tsx
-
-**Checkpoint**: At this point, User Stories 1 AND 2 should both work independently
-
----
-
-## Phase 5: User Story 3 - Search and Filter Strings (Priority: P3)
-
-**Goal**: Allow filtering the bulk editor to show only strings matching search criteria by key or content
-
-**Independent Test**: Open project with 100+ strings → enter search term in filter field → verify only matching strings visible → save changes → verify all modified strings (filtered and unfiltered) persist
-
-### Tests for User Story 3
-
-- [ ] T026 [P] [US3] Add tests for search/filter functionality to web/src/projects/components/bulk-translation-editor/**tests**/bulk-editor-page.test.tsx (test filtering, clearing filter, save with active filter)
-
-### Implementation for User Story 3
-
-- [ ] T027 [US3] Create BulkEditorFilters component with search input and URL param sync in web/src/projects/components/bulk-translation-editor/bulk-editor-filters.tsx
-- [ ] T028 [US3] Add global filter support to TanStack Table configuration in BulkEditorTable component in web/src/projects/components/bulk-translation-editor/bulk-editor-table.tsx
-- [ ] T029 [US3] Implement client-side filter function (matches string key OR any translation value, case-insensitive) in BulkEditorTable component in web/src/projects/components/bulk-translation-editor/bulk-editor-table.tsx
-- [ ] T030 [US3] Integrate BulkEditorFilters into BulkEditorPage component in web/src/projects/components/bulk-translation-editor/bulk-editor-page.tsx
-
-**Checkpoint**: All user stories 1, 2, AND 3 should now be independently functional
-
----
-
-## Phase 6: User Story 4 - Column Visibility Control (Priority: P3)
-
-**Goal**: Allow users to show/hide specific locale columns to reduce visual clutter
-
-**Independent Test**: Open project with 5+ locales → toggle column visibility to hide 3 locales → verify columns hidden → edit and save strings → verify hidden locales retain existing values
-
-### Tests for User Story 4
-
-- [ ] T031 [P] [US4] Add tests for column visibility controls to web/src/projects/components/bulk-translation-editor/**tests**/bulk-editor-page.test.tsx
-
-### Implementation for User Story 4
-
-- [ ] T032 [US4] Create ColumnVisibilityMenu component with locale column checkboxes in web/src/projects/components/bulk-translation-editor/column-visibility-menu.tsx
-- [ ] T033 [US4] Add column visibility state management to useBulkEditor hook in web/src/projects/hooks/use-bulk-editor.ts
-- [ ] T034 [US4] Wire column visibility state to TanStack Table columnVisibility config in BulkEditorTable component in web/src/projects/components/bulk-translation-editor/bulk-editor-table.tsx
-- [ ] T035 [US4] Integrate ColumnVisibilityMenu into BulkEditorFilters component in web/src/projects/components/bulk-translation-editor/bulk-editor-filters.tsx
-
-**Checkpoint**: All user stories should now be independently functional
-
----
-
-## Phase 7: Performance Optimization
-
-**Purpose**: Implement virtual scrolling for large projects (1000+ strings)
-
-- [ ] T036 [P] Add tests for virtual scrolling performance with 1000+ strings to web/src/projects/components/bulk-translation-editor/**tests**/bulk-editor-page.test.tsx
-- [ ] T037 Integrate TanStack Virtual useVirtualizer into BulkEditorTable component in web/src/projects/components/bulk-translation-editor/bulk-editor-table.tsx
-- [ ] T038 Configure row virtualization with fixed row height (~60px) and overscan (5-10 rows) in BulkEditorTable component in web/src/projects/components/bulk-translation-editor/bulk-editor-table.tsx
-- [ ] T039 Update table rendering to use virtual row positioning in BulkEditorTable component in web/src/projects/components/bulk-translation-editor/bulk-editor-table.tsx
-
----
-
-## Phase 8: Polish & Cross-Cutting Concerns
-
-**Purpose**: Final improvements, validation, and documentation
-
-- [ ] T040 [P] Add i18n message translations for aria-labels and accessibility attributes in web/src/projects/components/bulk-translation-editor/messages.ts
-- [ ] T041 [P] Add navigation link to bulk editor from project details page (button in header)
-- [ ] T042 [P] Update messages.ts with all remaining UI text (loading states, error messages, tooltips) in web/src/projects/components/bulk-translation-editor/messages.ts
-- [ ] T043 Add error logging for save operations using getLogger(c) pattern (if server-side changes needed)
-- [ ] T044 [P] Test keyboard navigation with 100+ strings and verify Tab order with virtual scrolling
-- [ ] T045 [P] Test save operation with 500+ modified translations to verify performance (<2s per SC-003)
-- [ ] T046 Run quickstart.md validation workflow (setup, dev server, verify all features work)
-- [ ] T047 Run `just ready` as final verification (format, lint, typecheck, tests, build)
-
----
-
-## Phase 9: User Story 5 & 6 - String Creation & Deletion (Priority: P2)
+## Phase 4: User Story 5 & 6 - String Creation & Deletion (Priority: P2)
 
 **Goal**: Enable users to create new strings and delete existing strings directly from the bulk editor
 
@@ -186,18 +98,18 @@ This is a monorepo web application:
 
 ### Tests for User Story 5 (String Creation)
 
-- [ ] T055 [P] [US5] Add tests for string creation to web/src/projects/components/bulk-translation-editor/**tests**/bulk-editor-page.test.tsx (add row, enter data, save, validation errors)
+- [x] T055 [P] [US5] Add tests for string creation to web/src/projects/components/bulk-translation-editor/**tests**/bulk-editor-page.test.tsx (add row, enter data, save, validation errors)
 
 ### Implementation for User Story 5 (String Creation)
 
-- [ ] T056 [US5] Add "Add String" button to BulkEditorHeader component in web/src/projects/components/bulk-translation-editor/bulk-editor-header.tsx
-- [ ] T057 [P] [US5] Create CreateStringRow component at web/src/projects/components/bulk-translation-editor/create-string-row.tsx (inline editable row with key, context, all locale fields)
-- [ ] T058 [US5] Add creation state management to useBulkEditor hook in web/src/projects/hooks/use-bulk-editor.ts (isCreating flag, newStringData, validation)
-- [ ] T059 [US5] Wire CreateStringRow to existing upsertTranslations mutation (no new API needed)
-- [ ] T060 [US5] Implement key uniqueness validation in CreateStringRow (check against existing table data)
-- [ ] T061 [US5] Add keyboard support to CreateStringRow (Escape to cancel, Tab navigation, Enter to save)
-- [ ] T062 [US5] Integrate CreateStringRow into BulkEditorTable at top when isCreating=true in web/src/projects/components/bulk-translation-editor/bulk-editor-table.tsx
-- [ ] T063 [P] [US5] Add i18n messages for creation UI in web/src/projects/components/bulk-translation-editor/messages.ts (button labels, placeholders, error messages)
+- [x] T056 [US5] Add "Add String" button to BulkEditorHeader component in web/src/projects/components/bulk-translation-editor/bulk-editor-header.tsx
+- [x] T057 [P] [US5] Create CreateStringRow component at web/src/projects/components/bulk-translation-editor/create-string-row.tsx (inline editable row with key, context, all locale fields)
+- [x] T058 [US5] Add creation state management to useBulkEditor hook in web/src/projects/hooks/use-bulk-editor.ts (isCreating flag, newStringData, validation)
+- [x] T059 [US5] Wire CreateStringRow to existing upsertTranslations mutation (no new API needed)
+- [x] T060 [US5] Implement key uniqueness validation in CreateStringRow (check against existing table data)
+- [x] T061 [US5] Add keyboard support to CreateStringRow (Escape to cancel, Tab navigation, Enter to save)
+- [x] T062 [US5] Integrate CreateStringRow into BulkEditorTable at top when isCreating=true in web/src/projects/components/bulk-translation-editor/bulk-editor-table.tsx
+- [x] T063 [P] [US5] Add i18n messages for creation UI in web/src/projects/components/bulk-translation-editor/messages.ts (button labels, placeholders, error messages)
 
 ### Tests for User Story 6 (String Deletion)
 
@@ -224,9 +136,97 @@ This is a monorepo web application:
 - [ ] T078 Update navigation link from project details to bulk editor if not already done
 - [ ] T079 Run server tests: `just test-server`
 - [ ] T080 Run web tests: `just test-web`
-- [ ] T081 Run `just ready` as final verification for Phase 9
+- [ ] T081 Run `just ready` as final verification for Phase 4
 
 **Checkpoint**: User Stories 5 and 6 should be fully functional and independently testable
+
+---
+
+## Phase 5: User Story 2 - Empty Translation Identification (Priority: P2)
+
+**Goal**: Visually distinguish empty/missing translations from completed ones for quick identification
+
+**Independent Test**: Create project with some empty translations → open bulk editor → verify empty cells have distinct visual styling (background color/border)
+
+### Tests for User Story 2
+
+- [ ] T022 [P] [US2] Add tests for empty cell visual distinction to web/src/projects/components/bulk-translation-editor/**tests**/bulk-editor-page.test.tsx
+
+### Implementation for User Story 2
+
+- [ ] T023 [US2] Add CSS conditional styling for empty cells in BulkEditorCell component in web/src/projects/components/bulk-translation-editor/bulk-editor-cell.tsx (use Radix UI Themes color tokens for distinct background)
+- [ ] T024 [US2] Create BulkEditorProgress component showing translation completion per locale in web/src/projects/components/bulk-translation-editor/bulk-editor-progress.tsx
+- [ ] T025 [US2] Integrate BulkEditorProgress into BulkEditorHeader component in web/src/projects/components/bulk-translation-editor/bulk-editor-header.tsx
+
+**Checkpoint**: At this point, User Stories 1, 2, 5 AND 6 should all work independently
+
+---
+
+## Phase 6: User Story 3 - Search and Filter Strings (Priority: P3)
+
+**Goal**: Allow filtering the bulk editor to show only strings matching search criteria by key or content
+
+**Independent Test**: Open project with 100+ strings → enter search term in filter field → verify only matching strings visible → save changes → verify all modified strings (filtered and unfiltered) persist
+
+### Tests for User Story 3
+
+- [ ] T026 [P] [US3] Add tests for search/filter functionality to web/src/projects/components/bulk-translation-editor/**tests**/bulk-editor-page.test.tsx (test filtering, clearing filter, save with active filter)
+
+### Implementation for User Story 3
+
+- [ ] T027 [US3] Create BulkEditorFilters component with search input and URL param sync in web/src/projects/components/bulk-translation-editor/bulk-editor-filters.tsx
+- [ ] T028 [US3] Add global filter support to TanStack Table configuration in BulkEditorTable component in web/src/projects/components/bulk-translation-editor/bulk-editor-table.tsx
+- [ ] T029 [US3] Implement client-side filter function (matches string key OR any translation value, case-insensitive) in BulkEditorTable component in web/src/projects/components/bulk-translation-editor/bulk-editor-table.tsx
+- [ ] T030 [US3] Integrate BulkEditorFilters into BulkEditorPage component in web/src/projects/components/bulk-translation-editor/bulk-editor-page.tsx
+
+**Checkpoint**: All user stories 1, 2, 3, 5 AND 6 should now be independently functional
+
+---
+
+## Phase 7: User Story 4 - Column Visibility Control (Priority: P3)
+
+**Goal**: Allow users to show/hide specific locale columns to reduce visual clutter
+
+**Independent Test**: Open project with 5+ locales → toggle column visibility to hide 3 locales → verify columns hidden → edit and save strings → verify hidden locales retain existing values
+
+### Tests for User Story 4
+
+- [ ] T031 [P] [US4] Add tests for column visibility controls to web/src/projects/components/bulk-translation-editor/**tests**/bulk-editor-page.test.tsx
+
+### Implementation for User Story 4
+
+- [ ] T032 [US4] Create ColumnVisibilityMenu component with locale column checkboxes in web/src/projects/components/bulk-translation-editor/column-visibility-menu.tsx
+- [ ] T033 [US4] Add column visibility state management to useBulkEditor hook in web/src/projects/hooks/use-bulk-editor.ts
+- [ ] T034 [US4] Wire column visibility state to TanStack Table columnVisibility config in BulkEditorTable component in web/src/projects/components/bulk-translation-editor/bulk-editor-table.tsx
+- [ ] T035 [US4] Integrate ColumnVisibilityMenu into BulkEditorFilters component in web/src/projects/components/bulk-translation-editor/bulk-editor-filters.tsx
+
+**Checkpoint**: All user stories should now be independently functional
+
+---
+
+## Phase 8: Performance Optimization
+
+**Purpose**: Implement virtual scrolling for large projects (1000+ strings)
+
+- [ ] T036 [P] Add tests for virtual scrolling performance with 1000+ strings to web/src/projects/components/bulk-translation-editor/**tests**/bulk-editor-page.test.tsx
+- [ ] T037 Integrate TanStack Virtual useVirtualizer into BulkEditorTable component in web/src/projects/components/bulk-translation-editor/bulk-editor-table.tsx
+- [ ] T038 Configure row virtualization with fixed row height (~60px) and overscan (5-10 rows) in BulkEditorTable component in web/src/projects/components/bulk-translation-editor/bulk-editor-table.tsx
+- [ ] T039 Update table rendering to use virtual row positioning in BulkEditorTable component in web/src/projects/components/bulk-translation-editor/bulk-editor-table.tsx
+
+---
+
+## Phase 9: Polish & Cross-Cutting Concerns
+
+**Purpose**: Final improvements, validation, and documentation
+
+- [ ] T040 [P] Add i18n message translations for aria-labels and accessibility attributes in web/src/projects/components/bulk-translation-editor/messages.ts
+- [ ] T041 [P] Add navigation link to bulk editor from project details page (button in header)
+- [ ] T042 [P] Update messages.ts with all remaining UI text (loading states, error messages, tooltips) in web/src/projects/components/bulk-translation-editor/messages.ts
+- [ ] T043 Add error logging for save operations using getLogger(c) pattern (if server-side changes needed)
+- [ ] T044 [P] Test keyboard navigation with 100+ strings and verify Tab order with virtual scrolling
+- [ ] T045 [P] Test save operation with 500+ modified translations to verify performance (<2s per SC-003)
+- [ ] T046 Run quickstart.md validation workflow (setup, dev server, verify all features work)
+- [ ] T047 Run `just ready` as final verification (format, lint, typecheck, tests, build)
 
 ---
 
@@ -236,24 +236,20 @@ This is a monorepo web application:
 
 - **Setup (Phase 1)**: No dependencies - can start immediately
 - **Foundational (Phase 2)**: Depends on Setup completion - BLOCKS all user stories
-- **User Stories (Phase 3-6)**: All depend on Foundational phase completion
+- **User Stories (Phase 3-7)**: All depend on Foundational phase completion
   - User stories can then proceed in parallel (if staffed)
-  - Or sequentially in priority order (P1 → P2 → P2 → P3 → P3)
-- **Performance (Phase 7)**: Depends on User Story 1 (P1) completion - can run before P2/P3 stories if needed
-- **Polish (Phase 8)**: Depends on all desired user stories being complete
-- **String Creation & Deletion (Phase 9)**: Depends on Foundational (Phase 2) completion
-  - Backend delete endpoint (T048-T054) must complete before frontend deletion UI (T064-T072)
-  - Frontend creation UI (T055-T063) can start immediately (reuses existing API)
-  - Can run in parallel with other user stories
+  - Or sequentially in priority order (P1 → P2 → P2 → P2 → P3 → P3)
+- **Performance (Phase 8)**: Depends on User Story 1 (P1) completion - can run before P2/P3 stories if needed
+- **Polish (Phase 9)**: Depends on all desired user stories being complete
 
 ### User Story Dependencies
 
 - **User Story 1 (P1)**: Can start after Foundational (Phase 2) - No dependencies on other stories
+- **User Story 5 (P2)**: Can start after Foundational (Phase 2) - No dependencies on other stories (reuses existing upsert API)
+- **User Story 6 (P2)**: Backend must complete first, then frontend can start - Independently testable from other stories
 - **User Story 2 (P2)**: Can start after Foundational (Phase 2) - Enhances US1 but independently testable
 - **User Story 3 (P3)**: Can start after Foundational (Phase 2) - Enhances US1 but independently testable
 - **User Story 4 (P3)**: Can start after Foundational (Phase 2) - Enhances US1 but independently testable
-- **User Story 5 (P2)**: Can start after Foundational (Phase 2) - No dependencies on other stories (reuses existing upsert API)
-- **User Story 6 (P2)**: Backend must complete first, then frontend can start - Independently testable from other stories
 
 ### Within Each User Story
 
@@ -300,12 +296,12 @@ Task T012: "Create useBulkEditor hook with dirty tracking..."
 
 1. Complete Setup + Foundational → Foundation ready
 2. Add User Story 1 (P1) → Test independently → Deploy/Demo (MVP! - batch editing works)
-3. Add User Story 2 (P2) → Test independently → Deploy/Demo (enhanced: visual feedback for empty)
-4. Add User Story 5 (P2) → Test independently → Deploy/Demo (enhanced: string creation)
-5. Add User Story 6 (P2) → Test independently → Deploy/Demo (enhanced: string deletion)
+3. Add User Story 5 (P2) → Test independently → Deploy/Demo (enhanced: string creation)
+4. Add User Story 6 (P2) → Test independently → Deploy/Demo (enhanced: string deletion)
+5. Add User Story 2 (P2) → Test independently → Deploy/Demo (enhanced: visual feedback for empty)
 6. Add User Story 3 (P3) → Test independently → Deploy/Demo (enhanced: filtering)
 7. Add User Story 4 (P3) → Test independently → Deploy/Demo (enhanced: column hiding)
-8. Add Performance (Phase 7) → Handles 1000+ strings smoothly
+8. Add Performance (Phase 8) → Handles 1000+ strings smoothly
 9. Each story adds value without breaking previous stories
 
 ### Parallel Team Strategy
@@ -315,11 +311,11 @@ With multiple developers:
 1. Team completes Setup + Foundational together
 2. Once Foundational is done:
    - Developer A: User Story 1 (P1) - Critical MVP
-   - Developer B: User Story 2 (P2) - Empty translation indicators
-   - Developer C: User Story 5 (P2) - String creation
-   - Developer D: User Story 6 backend (P2) - DELETE endpoint, then User Story 6 frontend
+   - Developer B: User Story 5 (P2) - String creation
+   - Developer C: User Story 6 backend (P2) - DELETE endpoint, then User Story 6 frontend
+   - Developer D: User Story 2 (P2) - Empty translation indicators
    - Developer E: User Stories 3 & 4 (P3) - Filtering and column visibility
-   - Developer F: Performance optimization (Phase 7)
+   - Developer F: Performance optimization (Phase 8)
 3. Stories complete and integrate independently
 
 ---

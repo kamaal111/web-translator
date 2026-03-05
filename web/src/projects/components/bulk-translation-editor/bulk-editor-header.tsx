@@ -13,9 +13,18 @@ interface BulkEditorHeaderProps {
   dirtyCount: number;
   isSaving: boolean;
   onSave: () => void;
+  onAddString: () => void;
 }
 
-function BulkEditorHeader({ projectId, projectName, isDirty, dirtyCount, isSaving, onSave }: BulkEditorHeaderProps) {
+function BulkEditorHeader({
+  projectId,
+  projectName,
+  isDirty,
+  dirtyCount,
+  isSaving,
+  onSave,
+  onAddString,
+}: BulkEditorHeaderProps) {
   const intl = useIntl();
 
   return (
@@ -41,6 +50,10 @@ function BulkEditorHeader({ projectId, projectName, isDirty, dirtyCount, isSavin
                 <FormattedMessage {...messages.unsavedChangesCount} values={{ count: dirtyCount }} />
               </Text>
             )}
+
+            <Button onClick={onAddString} variant="soft" aria-label={intl.formatMessage(messages.addStringButton)}>
+              <FormattedMessage {...messages.addStringButton} />
+            </Button>
 
             <Button
               onClick={onSave}

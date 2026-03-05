@@ -20,13 +20,40 @@ export function BulkEditorPage({ projectId }: BulkEditorPageProps) {
   const { project, isLoading: isProjectLoading, isError: isProjectError, is4xxError } = useProject(projectId);
   const { strings, isLoading: isStringsLoading, isError: isStringsError } = useStrings(projectId);
 
-  const { isDirty, dirtyCount, updateCell, handleSave, isSaving, getCellValue, isCellDirty } = useBulkEditor({
+  const rows = React.useMemo(() => transformStringsToBulkEditorRows(strings), [strings]);
+  const existingKeys = React.useMemo(() => strings.map(s => s.key), [strings]);
+
+  const {
+    isDirty,
+    dirtyCount,
+    updateCell,
+    handleSave,
+    isSaving,
+    getCellValue,
+    isCellDirty,
+    isCreating,
+    newStringData,
+    validationError,
+    startCreating,
+    cancelCreating,
+    updateNewStringKey,
+    updateNewStringTranslation,
+    handleCreateString,
+    isCreatingString,
+  } = useBulkEditor({
     projectId,
+    existingKeys,
     onSaveSuccess: () => {
       toast.success(intl.formatMessage(messages.saveSuccess));
     },
     onSaveError: () => {
       toast.error(intl.formatMessage(messages.saveError));
+    },
+    onCreateSuccess: () => {
+      toast.success(intl.formatMessage(messages.stringCreated));
+    },
+    onCreateError: () => {
+      toast.error(intl.formatMessage(messages.stringCreationFailed));
     },
   });
 
@@ -41,7 +68,6 @@ export function BulkEditorPage({ projectId }: BulkEditorPageProps) {
     return () => window.removeEventListener('beforeunload', handleBeforeUnload);
   }, [isDirty]);
 
-  const rows = React.useMemo(() => transformStringsToBulkEditorRows(strings), [strings]);
   const locales = project?.enabledLocales ?? [];
 
   const isLoading = isProjectLoading || isStringsLoading;
@@ -69,6 +95,7 @@ export function BulkEditorPage({ projectId }: BulkEditorPageProps) {
         dirtyCount={dirtyCount}
         isSaving={isSaving}
         onSave={handleSave}
+        onAddString={startCreating}
       />
 
       <BulkEditorTable
@@ -77,6 +104,14 @@ export function BulkEditorPage({ projectId }: BulkEditorPageProps) {
         getCellValue={getCellValue}
         isCellDirty={isCellDirty}
         onCellChange={updateCell}
+        isCreating={isCreating}
+        newStringData={newStringData}
+        validationError={validationError}
+        isCreatingString={isCreatingString}
+        onNewStringKeyChange={updateNewStringKey}
+        onNewStringTranslationChange={updateNewStringTranslation}
+        onSaveNewString={handleCreateString}
+        onCancelCreating={cancelCreating}
       />
     </Box>
   );
