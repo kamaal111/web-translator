@@ -3,8 +3,9 @@ import { useIntl, FormattedMessage } from 'react-intl';
 import { createColumnHelper, flexRender, getCoreRowModel, useReactTable, type ColumnDef } from '@tanstack/react-table';
 import clsx from 'clsx';
 
-import type { BulkEditorRow } from '@/projects/hooks/use-bulk-editor';
+import type { BulkEditorRow, NewStringData } from '@/projects/hooks/use-bulk-editor';
 import BulkEditorCell from './bulk-editor-cell';
+import CreateStringRow from './create-string-row';
 import messages from './messages';
 import styles from './bulk-editor-table.module.css';
 
@@ -14,6 +15,14 @@ interface BulkEditorTableProps {
   getCellValue: (row: BulkEditorRow, locale: string) => string;
   isCellDirty: (stringKey: string, locale: string) => boolean;
   onCellChange: (stringKey: string, locale: string, value: string) => void;
+  isCreating?: boolean;
+  newStringData?: NewStringData;
+  validationError?: string;
+  isCreatingString?: boolean;
+  onNewStringKeyChange?: (key: string) => void;
+  onNewStringTranslationChange?: (locale: string, value: string) => void;
+  onSaveNewString?: () => void;
+  onCancelCreating?: () => void;
 }
 
 const columnHelper = createColumnHelper<BulkEditorRow>();
@@ -51,7 +60,21 @@ function buildColumns(
   return [keyColumn, ...localeColumns] as ColumnDef<BulkEditorRow, string>[];
 }
 
-function BulkEditorTable({ rows, locales, getCellValue, isCellDirty, onCellChange }: BulkEditorTableProps) {
+function BulkEditorTable({
+  rows,
+  locales,
+  getCellValue,
+  isCellDirty,
+  onCellChange,
+  isCreating = false,
+  newStringData,
+  validationError = '',
+  isCreatingString = false,
+  onNewStringKeyChange,
+  onNewStringTranslationChange,
+  onSaveNewString,
+  onCancelCreating,
+}: BulkEditorTableProps) {
   const intl = useIntl();
   const columns = buildColumns(
     locales,
@@ -68,7 +91,7 @@ function BulkEditorTable({ rows, locales, getCellValue, isCellDirty, onCellChang
     getRowId: row => row.stringKey,
   });
 
-  if (rows.length === 0) {
+  if (rows.length === 0 && !isCreating) {
     return (
       <Box className={styles.emptyState}>
         <Text size="3" color="gray">
@@ -92,10 +115,28 @@ function BulkEditorTable({ rows, locales, getCellValue, isCellDirty, onCellChang
                   {header.isPlaceholder ? null : flexRender(header.column.columnDef.header, header.getContext())}
                 </Table.ColumnHeaderCell>
               ))}
+              {isCreating && <Table.ColumnHeaderCell />}
             </Table.Row>
           ))}
         </Table.Header>
         <Table.Body>
+          {isCreating &&
+            newStringData &&
+            onNewStringKeyChange &&
+            onNewStringTranslationChange &&
+            onSaveNewString &&
+            onCancelCreating && (
+              <CreateStringRow
+                locales={locales}
+                newStringData={newStringData}
+                validationError={validationError}
+                isCreatingString={isCreatingString}
+                onKeyChange={onNewStringKeyChange}
+                onTranslationChange={onNewStringTranslationChange}
+                onSave={onSaveNewString}
+                onCancel={onCancelCreating}
+              />
+            )}
           {table.getRowModel().rows.map(row => (
             <Table.Row key={row.id}>
               {row.getVisibleCells().map(cell => (

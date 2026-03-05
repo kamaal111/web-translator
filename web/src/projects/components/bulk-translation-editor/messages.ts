@@ -111,6 +111,61 @@ const messages = defineMessages({
     defaultMessage: 'Back to Project',
     description: 'Aria label for the back navigation link to the project details page',
   },
+  addStringButton: {
+    id: 'BULK_EDITOR.ADD_STRING_BUTTON',
+    defaultMessage: 'Add String',
+    description: 'Label for button that opens the string creation row',
+  },
+  saveStringButton: {
+    id: 'BULK_EDITOR.SAVE_STRING_BUTTON',
+    defaultMessage: 'Save String',
+    description: 'Label for button that saves the new string being created',
+  },
+  cancelCreationButton: {
+    id: 'BULK_EDITOR.CANCEL_CREATION_BUTTON',
+    defaultMessage: 'Cancel',
+    description: 'Label for button that cancels string creation',
+  },
+  enterStringKeyPlaceholder: {
+    id: 'BULK_EDITOR.ENTER_STRING_KEY_PLACEHOLDER',
+    defaultMessage: 'Enter string key',
+    description: 'Placeholder text for the string key input in creation row',
+  },
+  enterContextPlaceholder: {
+    id: 'BULK_EDITOR.ENTER_CONTEXT_PLACEHOLDER',
+    defaultMessage: 'Optional context',
+    description: 'Placeholder text for the context input in creation row',
+  },
+  translationForLocalePlaceholder: {
+    id: 'BULK_EDITOR.TRANSLATION_FOR_LOCALE_PLACEHOLDER',
+    defaultMessage: 'Translation for {locale}',
+    description: 'Placeholder text for locale translation input in creation row',
+  },
+  keyAlreadyExists: {
+    id: 'BULK_EDITOR.KEY_ALREADY_EXISTS',
+    defaultMessage: 'Key already exists',
+    description: 'Error message shown when user tries to create a string with a duplicate key',
+  },
+  keyIsRequired: {
+    id: 'BULK_EDITOR.KEY_IS_REQUIRED',
+    defaultMessage: 'Key is required',
+    description: 'Error message shown when user tries to save a string without a key',
+  },
+  creatingString: {
+    id: 'BULK_EDITOR.CREATING_STRING',
+    defaultMessage: 'Creating string...',
+    description: 'Status message shown while creating a new string',
+  },
+  stringCreated: {
+    id: 'BULK_EDITOR.STRING_CREATED',
+    defaultMessage: 'String created successfully',
+    description: 'Success notification shown after creating a new string',
+  },
+  stringCreationFailed: {
+    id: 'BULK_EDITOR.STRING_CREATION_FAILED',
+    defaultMessage: 'Failed to create string',
+    description: 'Error notification shown when string creation fails',
+  },
 });
 
 export default messages;

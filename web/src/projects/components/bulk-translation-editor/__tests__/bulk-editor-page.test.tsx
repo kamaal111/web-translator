@@ -228,4 +228,139 @@ describe('BulkEditorPage component', () => {
     const backLink = screen.getByRole('link', { name: /back to project/i });
     expect(backLink).toBeDefined();
   });
+
+  describe('String Creation', () => {
+    test('should show Add String button', async () => {
+      renderComponent();
+
+      await screen.findByText('Welcome');
+      const addButton = screen.getByRole('button', { name: /add string/i });
+      expect(addButton).toBeDefined();
+    });
+
+    test('should show creation row when Add String is clicked', async () => {
+      const { user } = renderComponent();
+
+      await screen.findByText('Welcome');
+      const addButton = screen.getByRole('button', { name: /add string/i });
+      await user.click(addButton);
+
+      const keyInput = await screen.findByPlaceholderText(/enter string key/i);
+      expect(keyInput).toBeDefined();
+    });
+
+    test('should allow entering data in creation row', async () => {
+      const { user } = renderComponent();
+
+      await screen.findByText('Welcome');
+      const addButton = screen.getByRole('button', { name: /add string/i });
+      await user.click(addButton);
+
+      const keyInput = await screen.findByPlaceholderText(/enter string key/i);
+      await user.type(keyInput, 'new_key');
+
+      const enInput = screen.getByPlaceholderText(/translation for en/i);
+      await user.type(enInput, 'New English');
+
+      const frInput = screen.getByPlaceholderText(/translation for fr/i);
+      await user.type(frInput, 'Nouveau Français');
+
+      expect(keyInput).toHaveProperty('value', 'new_key');
+      expect(enInput).toHaveProperty('value', 'New English');
+      expect(frInput).toHaveProperty('value', 'Nouveau Français');
+    });
+
+    test('should save new string via upsertTranslations API', async () => {
+      const { user } = renderComponent();
+
+      await screen.findByText('Welcome');
+      const addButton = screen.getByRole('button', { name: /add string/i });
+      await user.click(addButton);
+
+      const keyInput = await screen.findByPlaceholderText(/enter string key/i);
+      await user.type(keyInput, 'new_key');
+
+      const enInput = screen.getByPlaceholderText(/translation for en/i);
+      await user.type(enInput, 'New English');
+
+      const saveNewButton = screen.getByRole('button', { name: /save string/i });
+      await user.click(saveNewButton);
+
+      expect(mockUpsertTranslations).toHaveBeenCalledWith({
+        projectId: 'proj_test',
+        upsertTranslationsPayload: {
+          translations: [
+            {
+              key: 'new_key',
+              translations: { en: 'New English' },
+            },
+          ],
+        },
+      });
+    });
+
+    test('should show validation error for duplicate key', async () => {
+      const { user } = renderComponent();
+
+      await screen.findByText('Welcome');
+      const addButton = screen.getByRole('button', { name: /add string/i });
+      await user.click(addButton);
+
+      const keyInput = await screen.findByPlaceholderText(/enter string key/i);
+      await user.type(keyInput, 'welcome_message');
+
+      await screen.findByText(/key already exists/i);
+    });
+
+    test('should show validation error for empty key', async () => {
+      const { user } = renderComponent();
+
+      await screen.findByText('Welcome');
+      const addButton = screen.getByRole('button', { name: /add string/i });
+      await user.click(addButton);
+
+      const enInput = screen.getByPlaceholderText(/translation for en/i);
+      await user.type(enInput, 'Some text');
+
+      const saveNewButton = screen.getByRole('button', { name: /save string/i });
+      await user.click(saveNewButton);
+
+      await screen.findByText(/key is required/i);
+    });
+
+    test('should cancel creation when Escape is pressed', async () => {
+      const { user } = renderComponent();
+
+      await screen.findByText('Welcome');
+      const addButton = screen.getByRole('button', { name: /add string/i });
+      await user.click(addButton);
+
+      const keyInput = await screen.findByPlaceholderText(/enter string key/i);
+      await user.type(keyInput, 'new_key');
+      await user.keyboard('{Escape}');
+
+      expect(screen.queryByPlaceholderText(/enter string key/i)).toBeNull();
+    });
+
+    test('should hide creation row after successful save', async () => {
+      const { user } = renderComponent();
+
+      await screen.findByText('Welcome');
+      const addButton = screen.getByRole('button', { name: /add string/i });
+      await user.click(addButton);
+
+      const keyInput = await screen.findByPlaceholderText(/enter string key/i);
+      await user.type(keyInput, 'new_key');
+
+      const enInput = screen.getByPlaceholderText(/translation for en/i);
+      await user.type(enInput, 'New English');
+
+      const saveNewButton = screen.getByRole('button', { name: /save string/i });
+      await user.click(saveNewButton);
+
+      await vi.waitFor(() => {
+        expect(screen.queryByPlaceholderText(/enter string key/i)).toBeNull();
+      });
+    });
+  });
 });
