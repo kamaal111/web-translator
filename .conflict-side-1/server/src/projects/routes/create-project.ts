@@ -1,0 +1,57 @@
+import { describeRoute, resolver, validator } from 'hono-openapi';
+import { ErrorResponseSchema } from '@wt/schemas';
+
+import type { HonoContext } from '../../context';
+import { getDatabase } from '../../context/database';
+import { OPENAPI_TAG } from '../constants';
+import { CreateProjectPayloadSchema, ProjectResponseSchema, type CreateProjectPayload } from '../schemas';
+import { dbProjectToResponse, requestCreateProjectPayloadToDbPayload } from '../mappers';
+import { PartialAuthenticationHeadersSchema, type PartialAuthenticationHeaders } from '../../schemas/headers';
+
+type CreateProjectInput = { out: { json: CreateProjectPayload; header: PartialAuthenticationHeaders } };
+
+function createProjectRoute() {
+  return [
+    '/',
+    describeRoute({
+      description: 'Create project',
+      tags: [OPENAPI_TAG],
+      responses: {
+        201: {
+          description: 'Successful response',
+          content: {
+            'application/json': { schema: resolver(ProjectResponseSchema) },
+          },
+        },
+        400: {
+          description: 'Bad request - Invalid payload schema or validation errors',
+          content: {
+            'application/json': { schema: resolver(ErrorResponseSchema) },
+          },
+        },
+        404: {
+          description: 'Not authenticated',
+          content: {
+            'application/json': { schema: resolver(ErrorResponseSchema) },
+          },
+        },
+        409: {
+          description: 'Conflict - Project with this name already exists for the user',
+          content: {
+            'application/json': { schema: resolver(ErrorResponseSchema) },
+          },
+        },
+      },
+    }),
+    validator('header', PartialAuthenticationHeadersSchema),
+    validator('json', CreateProjectPayloadSchema),
+    async (c: HonoContext<CreateProjectInput>) => {
+      const payload = requestCreateProjectPayloadToDbPayload(c.req.valid('json'));
+      const project = await getDatabase(c).projects.createProject(payload);
+
+      return c.json(dbProjectToResponse(project), 201);
+    },
+  ] as const;
+}
+
+export default createProjectRoute;

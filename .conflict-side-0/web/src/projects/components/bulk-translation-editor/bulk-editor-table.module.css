@@ -1,0 +1,28 @@
+.container {
+  overflow-x: auto;
+}
+
+.keyColumn {
+  word-break: break-all;
+}
+
+.tableCell {
+  padding: 2px;
+  vertical-align: middle;
+  overflow: visible;
+}
+
+.keyHeader,
+.keyCell {
+  min-width: 200px;
+}
+
+.localeHeader {
+  min-width: 250px;
+}
+
+.emptyState {
+  padding-top: var(--space-6);
+  padding-bottom: var(--space-6);
+  text-align: center;
+}
