@@ -14,6 +14,7 @@ export type DirtyEdits = Map<string, Record<string, string>>;
 
 export interface NewStringData {
   key: string;
+  context: string;
   translations: Record<string, string>;
 }
 
@@ -25,11 +26,19 @@ export function transformStringsToBulkEditorRows(strings: StringResponse[]): Bul
   }));
 }
 
-export function convertDirtyEditsToPayload(dirtyEdits: DirtyEdits) {
-  return Array.from(dirtyEdits.entries()).map(([key, translations]) => ({
-    key,
-    translations,
-  }));
+export function convertDirtyEditsToPayload(dirtyEdits: DirtyEdits, dirtyContexts: Map<string, string | null>) {
+  const allKeys = new Set([...dirtyEdits.keys(), ...dirtyContexts.keys()]);
+
+  return Array.from(allKeys).map(key => {
+    const entry: { key: string; context?: string | null; translations: Record<string, string> } = {
+      key,
+      translations: dirtyEdits.get(key) ?? {},
+    };
+    if (dirtyContexts.has(key)) {
+      entry.context = dirtyContexts.get(key);
+    }
+    return entry;
+  });
 }
 
 interface UseBulkEditorParams {
@@ -50,23 +59,26 @@ function useBulkEditor({
   onCreateError,
 }: UseBulkEditorParams) {
   const [dirtyEdits, setDirtyEdits] = React.useState<DirtyEdits>(new Map());
+  const [dirtyContexts, setDirtyContexts] = React.useState<Map<string, string | null>>(new Map());
   const [isCreating, setIsCreating] = React.useState(false);
   const [newStringData, setNewStringData] = React.useState<NewStringData>({
     key: '',
+    context: '',
     translations: {},
   });
   const [validationError, setValidationError] = React.useState<string>('');
   const queryClient = useQueryClient();
 
-  const isDirty = dirtyEdits.size > 0;
+  const isDirty = dirtyEdits.size > 0 || dirtyContexts.size > 0;
 
   const dirtyCount = React.useMemo(() => {
     let count = 0;
     for (const localeEdits of dirtyEdits.values()) {
       count += Object.keys(localeEdits).length;
     }
+    count += dirtyContexts.size;
     return count;
-  }, [dirtyEdits]);
+  }, [dirtyEdits, dirtyContexts]);
 
   const updateCell = React.useCallback((stringKey: string, locale: string, value: string) => {
     setDirtyEdits(prev => {
@@ -77,19 +89,28 @@ function useBulkEditor({
     });
   }, []);
 
+  const updateContext = React.useCallback((stringKey: string, value: string) => {
+    setDirtyContexts(prev => {
+      const next = new Map(prev);
+      next.set(stringKey, value || null);
+      return next;
+    });
+  }, []);
+
   const clearEdits = React.useCallback(() => {
     setDirtyEdits(new Map());
+    setDirtyContexts(new Map());
   }, []);
 
   const startCreating = React.useCallback(() => {
     setIsCreating(true);
-    setNewStringData({ key: '', translations: {} });
+    setNewStringData({ key: '', context: '', translations: {} });
     setValidationError('');
   }, []);
 
   const cancelCreating = React.useCallback(() => {
     setIsCreating(false);
-    setNewStringData({ key: '', translations: {} });
+    setNewStringData({ key: '', context: '', translations: {} });
     setValidationError('');
   }, []);
 
@@ -105,6 +126,10 @@ function useBulkEditor({
     [existingKeys],
   );
 
+  const updateNewStringContext = React.useCallback((context: string) => {
+    setNewStringData(prev => ({ ...prev, context }));
+  }, []);
+
   const updateNewStringTranslation = React.useCallback((locale: string, value: string) => {
     setNewStringData(prev => ({
       ...prev,
@@ -118,7 +143,7 @@ function useBulkEditor({
     isError: isSaveError,
   } = useMutation({
     mutationFn: async () => {
-      const translations = convertDirtyEditsToPayload(dirtyEdits);
+      const translations = convertDirtyEditsToPayload(dirtyEdits, dirtyContexts);
       return client.strings.upsertTranslations({
         projectId,
         upsertTranslationsPayload: { translations },
@@ -148,11 +173,12 @@ function useBulkEditor({
       }
 
       const translations = Object.keys(newStringData.translations).length > 0 ? newStringData.translations : {};
+      const context = newStringData.context.trim() || null;
 
       return client.strings.upsertTranslations({
         projectId,
         upsertTranslationsPayload: {
-          translations: [{ key: newStringData.key, translations }],
+          translations: [{ key: newStringData.key, ...(context != null ? { context } : {}), translations }],
         },
       });
     },
@@ -194,6 +220,16 @@ function useBulkEditor({
     [dirtyEdits],
   );
 
+  const getContextValue = React.useCallback(
+    (row: BulkEditorRow): string => {
+      if (dirtyContexts.has(row.stringKey)) {
+        return dirtyContexts.get(row.stringKey) ?? '';
+      }
+      return row.context ?? '';
+    },
+    [dirtyContexts],
+  );
+
   const isCellDirty = React.useCallback(
     (stringKey: string, locale: string): boolean => {
       return dirtyEdits.get(stringKey)?.[locale] !== undefined;
@@ -201,23 +237,34 @@ function useBulkEditor({
     [dirtyEdits],
   );
 
+  const isContextDirty = React.useCallback(
+    (stringKey: string): boolean => {
+      return dirtyContexts.has(stringKey);
+    },
+    [dirtyContexts],
+  );
+
   return {
     dirtyEdits,
     isDirty,
     dirtyCount,
     updateCell,
+    updateContext,
     clearEdits,
     handleSave,
     isSaving,
     isSaveError,
     getCellValue,
+    getContextValue,
     isCellDirty,
+    isContextDirty,
     isCreating,
     newStringData,
     validationError,
     startCreating,
     cancelCreating,
     updateNewStringKey,
+    updateNewStringContext,
     updateNewStringTranslation,
     handleCreateString,
     isCreatingString,

@@ -27,21 +27,26 @@ export function BulkEditorPage({ projectId }: BulkEditorPageProps) {
     isDirty,
     dirtyCount,
     updateCell,
+    updateContext,
     handleSave,
     isSaving,
     getCellValue,
+    getContextValue,
     isCellDirty,
+    isContextDirty,
     isCreating,
     newStringData,
     validationError,
     startCreating,
     cancelCreating,
     updateNewStringKey,
+    updateNewStringContext,
     updateNewStringTranslation,
     handleCreateString,
     isCreatingString,
   } = useBulkEditor({
     projectId,
+    rows,
     existingKeys,
     onSaveSuccess: () => {
       toast.success(intl.formatMessage(messages.saveSuccess));
@@ -102,13 +107,17 @@ export function BulkEditorPage({ projectId }: BulkEditorPageProps) {
         rows={rows}
         locales={locales}
         getCellValue={getCellValue}
+        getContextValue={getContextValue}
         isCellDirty={isCellDirty}
+        isContextDirty={isContextDirty}
         onCellChange={updateCell}
+        onContextChange={updateContext}
         isCreating={isCreating}
         newStringData={newStringData}
         validationError={validationError}
         isCreatingString={isCreatingString}
         onNewStringKeyChange={updateNewStringKey}
+        onNewStringContextChange={updateNewStringContext}
         onNewStringTranslationChange={updateNewStringTranslation}
         onSaveNewString={handleCreateString}
         onCancelCreating={cancelCreating}

@@ -104,7 +104,7 @@ ready: prepare download-spec quality start-services ready-web ready-server
 
 # Start services
 start-services:
-    docker compose up -d
+    docker compose up -d || exit 1
 
 # Stop services
 stop-services:

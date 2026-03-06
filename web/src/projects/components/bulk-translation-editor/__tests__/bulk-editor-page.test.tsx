@@ -363,4 +363,147 @@ describe('BulkEditorPage component', () => {
       });
     });
   });
+
+  describe('Context column', () => {
+    test('should render context column header', async () => {
+      renderComponent();
+
+      await screen.findByText('Welcome');
+      expect(screen.getByText('Context')).toBeDefined();
+    });
+
+    test('should display existing context value', async () => {
+      renderComponent();
+
+      await screen.findByText('Homepage greeting');
+      expect(screen.getByText('Homepage greeting')).toBeDefined();
+    });
+
+    test('should allow editing context by clicking on context cell', async () => {
+      const { user } = renderComponent();
+
+      await screen.findByText('Homepage greeting');
+      const contextCell = screen.getByText('Homepage greeting');
+      await user.click(contextCell);
+
+      const textarea = await screen.findByRole('textbox');
+      expect(textarea).toBeDefined();
+    });
+
+    test('should include context in save payload when context is edited', async () => {
+      const { user } = renderComponent();
+
+      await screen.findByText('Homepage greeting');
+      const contextCell = screen.getByText('Homepage greeting');
+      await user.click(contextCell);
+
+      const textarea = await screen.findByRole('textbox');
+      await user.clear(textarea);
+      await user.type(textarea, 'Updated context');
+      await user.tab();
+
+      const saveButton = screen.getByRole('button', { name: /save all changes/i });
+      await user.click(saveButton);
+
+      expect(mockUpsertTranslations).toHaveBeenCalledWith({
+        projectId: 'proj_test',
+        upsertTranslationsPayload: {
+          translations: [
+            {
+              key: 'welcome_message',
+              context: 'Updated context',
+              translations: {},
+            },
+          ],
+        },
+      });
+    });
+
+    test('should count context edit in unsaved changes count', async () => {
+      const { user } = renderComponent();
+
+      await screen.findByText('Homepage greeting');
+      const contextCell = screen.getByText('Homepage greeting');
+      await user.click(contextCell);
+
+      const textarea = await screen.findByRole('textbox');
+      await user.clear(textarea);
+      await user.type(textarea, 'New context');
+      await user.tab();
+
+      await screen.findByText(/1 unsaved change/i);
+    });
+  });
+
+  describe('Context in String Creation', () => {
+    test('should show context input in creation row', async () => {
+      const { user } = renderComponent();
+
+      await screen.findByText('Welcome');
+      const addButton = screen.getByRole('button', { name: /add string/i });
+      await user.click(addButton);
+
+      const contextInput = await screen.findByPlaceholderText(/optional context/i);
+      expect(contextInput).toBeDefined();
+    });
+
+    test('should include context in create string API call when provided', async () => {
+      const { user } = renderComponent();
+
+      await screen.findByText('Welcome');
+      const addButton = screen.getByRole('button', { name: /add string/i });
+      await user.click(addButton);
+
+      const keyInput = await screen.findByPlaceholderText(/enter string key/i);
+      await user.type(keyInput, 'new_key');
+
+      const contextInput = screen.getByPlaceholderText(/optional context/i);
+      await user.type(contextInput, 'My context');
+
+      const enInput = screen.getByPlaceholderText(/translation for en/i);
+      await user.type(enInput, 'New English');
+
+      const saveNewButton = screen.getByRole('button', { name: /save string/i });
+      await user.click(saveNewButton);
+
+      expect(mockUpsertTranslations).toHaveBeenCalledWith({
+        projectId: 'proj_test',
+        upsertTranslationsPayload: {
+          translations: [
+            {
+              key: 'new_key',
+              context: 'My context',
+              translations: { en: 'New English' },
+            },
+          ],
+        },
+      });
+    });
+
+    test('should not include context in create string API call when context is empty', async () => {
+      const { user } = renderComponent();
+
+      await screen.findByText('Welcome');
+      const addButton = screen.getByRole('button', { name: /add string/i });
+      await user.click(addButton);
+
+      const keyInput = await screen.findByPlaceholderText(/enter string key/i);
+      await user.type(keyInput, 'new_key');
+
+      const saveNewButton = screen.getByRole('button', { name: /save string/i });
+      await user.click(saveNewButton);
+
+      expect(mockUpsertTranslations).toHaveBeenCalledWith({
+        projectId: 'proj_test',
+        upsertTranslationsPayload: {
+          translations: [
+            {
+              key: 'new_key',
+              translations: {},
+            },
+          ],
+        },
+      });
+    });
+  });
 });
