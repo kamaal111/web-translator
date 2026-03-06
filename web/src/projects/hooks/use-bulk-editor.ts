@@ -129,6 +129,14 @@ function useBulkEditor({
     });
   }, []);
 
+  const updateContext = React.useCallback((stringKey: string, value: string) => {
+    setDirtyContexts(prev => {
+      const next = new Map(prev);
+      next.set(stringKey, value || null);
+      return next;
+    });
+  }, []);
+
   const clearEdits = React.useCallback(() => {
     setDirtyEdits(new Map());
     setDirtyContexts(new Map());
@@ -180,6 +188,10 @@ function useBulkEditor({
     },
     [existingKeys],
   );
+
+  const updateNewStringContext = React.useCallback((context: string) => {
+    setNewStringData(prev => ({ ...prev, context }));
+  }, []);
 
   const updateNewStringTranslation = React.useCallback((locale: string, value: string) => {
     setNewStringData(prev => ({
@@ -274,6 +286,16 @@ function useBulkEditor({
       return row.translations[locale] ?? '';
     },
     [dirtyEdits],
+  );
+
+  const getContextValue = React.useCallback(
+    (row: BulkEditorRow): string => {
+      if (dirtyContexts.has(row.stringKey)) {
+        return dirtyContexts.get(row.stringKey) ?? '';
+      }
+      return row.context ?? '';
+    },
+    [dirtyContexts],
   );
 
   const getContextValue = React.useCallback(
