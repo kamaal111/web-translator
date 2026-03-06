@@ -13,13 +13,17 @@ interface BulkEditorTableProps {
   rows: BulkEditorRow[];
   locales: string[];
   getCellValue: (row: BulkEditorRow, locale: string) => string;
+  getContextValue: (row: BulkEditorRow) => string;
   isCellDirty: (stringKey: string, locale: string) => boolean;
+  isContextDirty: (stringKey: string) => boolean;
   onCellChange: (stringKey: string, locale: string, value: string) => void;
+  onContextChange: (stringKey: string, value: string) => void;
   isCreating?: boolean;
   newStringData?: NewStringData;
   validationError?: string;
   isCreatingString?: boolean;
   onNewStringKeyChange?: (key: string) => void;
+  onNewStringContextChange?: (context: string) => void;
   onNewStringTranslationChange?: (locale: string, value: string) => void;
   onSaveNewString?: () => void;
   onCancelCreating?: () => void;
@@ -30,9 +34,13 @@ const columnHelper = createColumnHelper<BulkEditorRow>();
 function buildColumns(
   locales: string[],
   keyHeaderLabel: string,
+  contextHeaderLabel: string,
   getCellValue: BulkEditorTableProps['getCellValue'],
+  getContextValue: BulkEditorTableProps['getContextValue'],
   isCellDirty: BulkEditorTableProps['isCellDirty'],
+  isContextDirty: BulkEditorTableProps['isContextDirty'],
   onCellChange: BulkEditorTableProps['onCellChange'],
+  onContextChange: BulkEditorTableProps['onContextChange'],
 ): ColumnDef<BulkEditorRow, string>[] {
   const keyColumn = columnHelper.accessor('stringKey', {
     header: () => keyHeaderLabel,
@@ -40,6 +48,18 @@ function buildColumns(
       <Text size="2" weight="medium" className={styles.keyColumn}>
         {info.getValue()}
       </Text>
+    ),
+  });
+
+  const contextColumn = columnHelper.display({
+    id: 'context',
+    header: () => contextHeaderLabel,
+    cell: ({ row }) => (
+      <BulkEditorCell
+        value={getContextValue(row.original)}
+        isDirty={isContextDirty(row.original.stringKey)}
+        onChange={newValue => onContextChange(row.original.stringKey, newValue)}
+      />
     ),
   });
 
@@ -57,20 +77,24 @@ function buildColumns(
     }),
   );
 
-  return [keyColumn, ...localeColumns] as ColumnDef<BulkEditorRow, string>[];
+  return [keyColumn, contextColumn, ...localeColumns] as ColumnDef<BulkEditorRow, string>[];
 }
 
 function BulkEditorTable({
   rows,
   locales,
   getCellValue,
+  getContextValue,
   isCellDirty,
+  isContextDirty,
   onCellChange,
+  onContextChange,
   isCreating = false,
   newStringData,
   validationError = '',
   isCreatingString = false,
   onNewStringKeyChange,
+  onNewStringContextChange,
   onNewStringTranslationChange,
   onSaveNewString,
   onCancelCreating,
@@ -79,9 +103,13 @@ function BulkEditorTable({
   const columns = buildColumns(
     locales,
     intl.formatMessage(messages.columnKey),
+    intl.formatMessage(messages.columnContext),
     getCellValue,
+    getContextValue,
     isCellDirty,
+    isContextDirty,
     onCellChange,
+    onContextChange,
   );
 
   const table = useReactTable({
@@ -132,6 +160,7 @@ function BulkEditorTable({
                 validationError={validationError}
                 isCreatingString={isCreatingString}
                 onKeyChange={onNewStringKeyChange}
+                onContextChange={onNewStringContextChange}
                 onTranslationChange={onNewStringTranslationChange}
                 onSave={onSaveNewString}
                 onCancel={onCancelCreating}

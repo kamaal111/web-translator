@@ -12,6 +12,7 @@ interface CreateStringRowProps {
   validationError: string;
   isCreatingString: boolean;
   onKeyChange: (key: string) => void;
+  onContextChange?: (context: string) => void;
   onTranslationChange: (locale: string, value: string) => void;
   onSave: () => void;
   onCancel: () => void;
@@ -23,6 +24,7 @@ function CreateStringRow({
   validationError,
   isCreatingString,
   onKeyChange,
+  onContextChange,
   onTranslationChange,
   onSave,
   onCancel,
@@ -71,6 +73,17 @@ function CreateStringRow({
             </Text>
           )}
         </Flex>
+      </Table.Cell>
+
+      <Table.Cell>
+        <TextField.Root
+          value={newStringData.context}
+          onChange={e => onContextChange?.(e.target.value)}
+          onKeyDown={handleKeyDown}
+          placeholder={intl.formatMessage(messages.enterContextPlaceholder)}
+          disabled={isCreatingString}
+          aria-label={intl.formatMessage(messages.enterContextPlaceholder)}
+        />
       </Table.Cell>
 
       {locales.map(locale => (
