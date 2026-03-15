@@ -43,6 +43,7 @@ export function convertDirtyEditsToPayload(dirtyEdits: DirtyEdits, dirtyContexts
 
 interface UseBulkEditorParams {
   projectId: string;
+  rows: BulkEditorRow[];
   existingKeys: string[];
   onSaveSuccess?: () => void;
   onSaveError?: () => void;
@@ -52,12 +53,18 @@ interface UseBulkEditorParams {
 
 function useBulkEditor({
   projectId,
+  rows,
   existingKeys,
   onSaveSuccess,
   onSaveError,
   onCreateSuccess,
   onCreateError,
 }: UseBulkEditorParams) {
+  const rowsRef = React.useRef<BulkEditorRow[]>(rows);
+  React.useEffect(() => {
+    rowsRef.current = rows;
+  }, [rows]);
+
   const [dirtyEdits, setDirtyEdits] = React.useState<DirtyEdits>(new Map());
   const [dirtyContexts, setDirtyContexts] = React.useState<Map<string, string | null>>(new Map());
   const [isCreating, setIsCreating] = React.useState(false);
@@ -82,9 +89,42 @@ function useBulkEditor({
 
   const updateCell = React.useCallback((stringKey: string, locale: string, value: string) => {
     setDirtyEdits(prev => {
+      const originalRow = rowsRef.current.find(r => r.stringKey === stringKey);
+      const originalValue = originalRow?.translations[locale] ?? '';
+
       const next = new Map(prev);
-      const existing = next.get(stringKey) ?? {};
-      next.set(stringKey, { ...existing, [locale]: value });
+      const existing = { ...(next.get(stringKey) ?? {}) };
+
+      if (value === originalValue) {
+        delete existing[locale];
+      } else {
+        existing[locale] = value;
+      }
+
+      if (Object.keys(existing).length === 0) {
+        next.delete(stringKey);
+      } else {
+        next.set(stringKey, existing);
+      }
+
+      return next;
+    });
+  }, []);
+
+  const updateContext = React.useCallback((stringKey: string, value: string) => {
+    setDirtyContexts(prev => {
+      const originalRow = rowsRef.current.find(r => r.stringKey === stringKey);
+      const originalContext = originalRow?.context ?? null;
+      const normalizedValue = value || null;
+
+      const next = new Map(prev);
+
+      if (normalizedValue === originalContext) {
+        next.delete(stringKey);
+      } else {
+        next.set(stringKey, normalizedValue);
+      }
+
       return next;
     });
   }, []);
@@ -112,6 +152,29 @@ function useBulkEditor({
     setIsCreating(false);
     setNewStringData({ key: '', context: '', translations: {} });
     setValidationError('');
+  }, []);
+
+  const updateNewStringKey = React.useCallback(
+    (key: string) => {
+      setNewStringData(prev => ({ ...prev, key }));
+      if (key && existingKeys.includes(key)) {
+        setValidationError('keyAlreadyExists');
+      } else {
+        setValidationError('');
+      }
+    },
+    [existingKeys],
+  );
+
+  const updateNewStringContext = React.useCallback((context: string) => {
+    setNewStringData(prev => ({ ...prev, context }));
+  }, []);
+
+  const updateNewStringTranslation = React.useCallback((locale: string, value: string) => {
+    setNewStringData(prev => ({
+      ...prev,
+      translations: { ...prev.translations, [locale]: value },
+    }));
   }, []);
 
   const updateNewStringKey = React.useCallback(
@@ -192,6 +255,11 @@ function useBulkEditor({
       setValidationError(errorMessage);
       onCreateError?.();
     },
+    onError: error => {
+      const errorMessage = error instanceof Error ? error.message : 'stringCreationFailed';
+      setValidationError(errorMessage);
+      onCreateError?.();
+    },
   });
 
   const handleSave = React.useCallback(() => {
@@ -218,6 +286,16 @@ function useBulkEditor({
       return row.translations[locale] ?? '';
     },
     [dirtyEdits],
+  );
+
+  const getContextValue = React.useCallback(
+    (row: BulkEditorRow): string => {
+      if (dirtyContexts.has(row.stringKey)) {
+        return dirtyContexts.get(row.stringKey) ?? '';
+      }
+      return row.context ?? '';
+    },
+    [dirtyContexts],
   );
 
   const getContextValue = React.useCallback(
