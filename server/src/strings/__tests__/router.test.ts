@@ -288,6 +288,67 @@ describe('Strings API', () => {
       expect(result.updated_count).toBe(6);
     });
 
+    test('should not count unchanged translation values in updated_count', async () => {
+      const project = await setupProject(['en', 'es']);
+
+      const firstUpsert = await helper.upsertTranslations(project.id, [
+        { key: 'GREETING', translations: { en: 'Hello', es: 'Hola' } },
+      ]);
+      expect(firstUpsert.status).toBe(200);
+      const firstResult = UpsertTranslationsResponseSchema.parse(await firstUpsert.json());
+      expect(firstResult.updated_count).toBe(2);
+
+      const secondUpsert = await helper.upsertTranslations(project.id, [
+        { key: 'GREETING', translations: { en: 'Hello', es: 'Hola' } },
+      ]);
+      expect(secondUpsert.status).toBe(200);
+      const secondResult = UpsertTranslationsResponseSchema.parse(await secondUpsert.json());
+      expect(secondResult.updated_count).toBe(0);
+    });
+
+    test('should only count locales whose value actually changed', async () => {
+      const project = await setupProject(['en', 'es', 'fr']);
+
+      await helper.upsertTranslations(project.id, [
+        { key: 'GREETING', translations: { en: 'Hello', es: 'Hola', fr: 'Bonjour' } },
+      ]);
+
+      const upsertResponse = await helper.upsertTranslations(project.id, [
+        { key: 'GREETING', translations: { en: 'Hello', es: 'Hola changed', fr: 'Bonjour' } },
+      ]);
+      expect(upsertResponse.status).toBe(200);
+      const result = UpsertTranslationsResponseSchema.parse(await upsertResponse.json());
+      expect(result.updated_count).toBe(1);
+
+      const strings = await fetchStrings(project.id);
+      expect(findString(strings, 'GREETING').translations).toEqual({
+        en: 'Hello',
+        es: 'Hola changed',
+        fr: 'Bonjour',
+      });
+    });
+
+    test('should preserve translation values when same value is submitted again', async () => {
+      const project = await setupProject(['en', 'es']);
+
+      await helper.upsertTranslations(project.id, [
+        { key: 'STABLE', translations: { en: 'Stable English', es: 'Stable Spanish' } },
+      ]);
+
+      const secondUpsert = await helper.upsertTranslations(project.id, [
+        { key: 'STABLE', translations: { en: 'Stable English', es: 'Stable Spanish' } },
+      ]);
+      expect(secondUpsert.status).toBe(200);
+      const result = UpsertTranslationsResponseSchema.parse(await secondUpsert.json());
+      expect(result.updated_count).toBe(0);
+
+      const strings = await fetchStrings(project.id);
+      expect(findString(strings, 'STABLE').translations).toEqual({
+        en: 'Stable English',
+        es: 'Stable Spanish',
+      });
+    });
+
     test('should reject empty translations array', async () => {
       const project = await setupProject();
       const upsertResponse = await helper.upsertTranslations(project.id, []);
