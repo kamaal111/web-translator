@@ -1,0 +1,54 @@
+{
+  "name": "${localWorkspaceFolderBasename}",
+  "dockerComposeFile": ["../docker-compose.yml", "docker-compose.code.yml"],
+  "service": "code",
+  "runServices": ["code", "wt_db"],
+  "workspaceFolder": "/workspaces/${localWorkspaceFolderBasename}",
+  "initializeCommand": "bash .devcontainer/prepare-github-copilot-auth.sh",
+  "remoteUser": "node",
+  "updateRemoteUserUID": true,
+  "remoteEnv": {
+    "BUN_INSTALL": "/home/node/.bun",
+    "PATH": "/home/node/.bun/bin:${containerEnv:PATH}"
+  },
+  "postCreateCommand": "bash .devcontainer/post-create.sh",
+  "forwardPorts": [3000, 5173, 5432],
+  "portsAttributes": {
+    "3000": {
+      "label": "server"
+    },
+    "5173": {
+      "label": "web"
+    },
+    "5432": {
+      "label": "postgres"
+    }
+  },
+  "mounts": [
+    "source=${localEnv:HOME}/.codex,target=/home/node/.codex,type=bind,consistency=cached",
+    "source=${localEnv:HOME}/.copilot,target=/home/node/.copilot,type=bind,consistency=cached",
+    "source=${localEnv:HOME}/.config/gh,target=/home/node/.config/gh,type=bind,consistency=cached"
+  ],
+  "customizations": {
+    "vscode": {
+      "settings": {
+        "terminal.integrated.defaultProfile.linux": "zsh"
+      },
+      "extensions": [
+        "streetsidesoftware.code-spell-checker",
+        "ms-azuretools.vscode-docker",
+        "eamodio.gitlens",
+        "aaron-bond.better-comments",
+        "esbenp.prettier-vscode",
+        "github.copilot",
+        "dbaeumer.vscode-eslint",
+        "oven.bun-vscode",
+        "github.vscode-github-actions",
+        "github.vscode-pull-request-github"
+      ]
+    }
+  },
+  "features": {
+    "ghcr.io/devcontainers/features/docker-outside-of-docker:1": {}
+  }
+}

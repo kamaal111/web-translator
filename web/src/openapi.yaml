@@ -893,6 +893,83 @@ paths:
           application/json:
             schema:
               $ref: '#/components/schemas/UpsertTranslationsPayload'
+  '/app-api/v1/s/{projectId}/strings/{stringKey}':
+    delete:
+      operationId: deleteApp-apiV1S:projectIdStrings:stringKey
+      description: Delete a string and all of its draft translations for a project
+      tags:
+        - String
+      responses:
+        '200':
+          description: String deleted successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DeleteStringResponse'
+        '400':
+          description: Bad request - Invalid path parameters
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    description: Error message
+                  code:
+                    description: Error code
+                    type: string
+                required:
+                  - message
+                description: Error response containing error message and optional error code
+                title: Error Response
+        '401':
+          description: Not authenticated
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    description: Error message
+                  code:
+                    description: Error code
+                    type: string
+                required:
+                  - message
+                description: Error response containing error message and optional error code
+                title: Error Response
+        '404':
+          description: Project or string not found
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    description: Error message
+                  code:
+                    description: Error code
+                    type: string
+                required:
+                  - message
+                description: Error response containing error message and optional error code
+                title: Error Response
+      parameters:
+        - in: header
+          name: authorization
+          schema:
+            type: string
+            example: Bearer f21wcpz7Aokmlh2MB632MZpTgfruPc62
+          description: Bearer token for authentication
+        - $ref: '#/components/parameters/DeleteStringParams'
+        - schema:
+            type: string
+          in: path
+          name: stringKey
+          required: true
   '/app-api/v1/s/{projectId}/translations/{locale}/publish':
     post:
       operationId: postApp-apiV1S:projectIdTranslations:localePublish
@@ -1722,6 +1799,35 @@ components:
           - key: HOME.SUBTITLE
             translations:
               en: Your personal dashboard
+    DeleteStringResponse:
+      type: object
+      properties:
+        deleted:
+          type: object
+          properties:
+            key:
+              type: string
+              minLength: 1
+              description: Translation key that was deleted
+              example: HOME.TITLE
+            deletedAt:
+              type: string
+              format: date-time
+              pattern: "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d(?::[0-5]\\d(?:\\.\\d+)?)?(?:Z|([+-](?:[01]\\d|2[0-3]):[0-5]\\d)))$"
+              description: ISO 8601 timestamp when the string was deleted
+              example: 2026-02-15T14:53:00Z
+          required:
+            - key
+            - deletedAt
+          description: Deleted string metadata
+      required:
+        - deleted
+      description: Response returned after deleting a translation string
+      title: Delete String Response
+      example:
+        deleted:
+          key: HOME.TITLE
+          deletedAt: 2026-02-15T14:53:00Z
     PublishLocaleSnapshotResponse:
       type: object
       properties:
@@ -1760,6 +1866,16 @@ components:
       required: true
       description: ID of the project
     UpsertTranslationsParams:
+      in: path
+      name: projectId
+      schema:
+        type: string
+        format: uuid
+        pattern: '^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$'
+        example: proj_1234567890abcdef
+      required: true
+      description: ID of the project
+    DeleteStringParams:
       in: path
       name: projectId
       schema:

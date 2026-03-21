@@ -3,7 +3,7 @@ import assert from 'node:assert';
 import z from 'zod';
 import { generateSpecs } from 'hono-openapi';
 
-import app from '../src';
+import { createApp } from '../src';
 import { jsonSpecToYaml } from '../src/docs/handlers/yaml-spec';
 
 const ArgsSchema = z.tuple([
@@ -29,7 +29,7 @@ try {
   process.exit(1);
 }
 
-const specs = await generateSpecs(app, {});
+const specs = await generateSpecs(createApp(), {});
 const yamlSpec = jsonSpecToYaml(specs);
 const file = Bun.file(outputFile);
 await file.write(yamlSpec);

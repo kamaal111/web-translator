@@ -43,6 +43,7 @@ export function convertDirtyEditsToPayload(dirtyEdits: DirtyEdits, dirtyContexts
 
 interface UseBulkEditorParams {
   projectId: string;
+  rows: BulkEditorRow[];
   existingKeys: string[];
   onSaveSuccess?: () => void;
   onSaveError?: () => void;
@@ -52,12 +53,18 @@ interface UseBulkEditorParams {
 
 function useBulkEditor({
   projectId,
+  rows,
   existingKeys,
   onSaveSuccess,
   onSaveError,
   onCreateSuccess,
   onCreateError,
 }: UseBulkEditorParams) {
+  const rowsRef = React.useRef<BulkEditorRow[]>(rows);
+  React.useEffect(() => {
+    rowsRef.current = rows;
+  }, [rows]);
+
   const [dirtyEdits, setDirtyEdits] = React.useState<DirtyEdits>(new Map());
   const [dirtyContexts, setDirtyContexts] = React.useState<Map<string, string | null>>(new Map());
   const [isCreating, setIsCreating] = React.useState(false);
@@ -82,17 +89,42 @@ function useBulkEditor({
 
   const updateCell = React.useCallback((stringKey: string, locale: string, value: string) => {
     setDirtyEdits(prev => {
+      const originalRow = rowsRef.current.find(r => r.stringKey === stringKey);
+      const originalValue = originalRow?.translations[locale] ?? '';
+
       const next = new Map(prev);
-      const existing = next.get(stringKey) ?? {};
-      next.set(stringKey, { ...existing, [locale]: value });
+      const existing = { ...(next.get(stringKey) ?? {}) };
+
+      if (value === originalValue) {
+        delete existing[locale];
+      } else {
+        existing[locale] = value;
+      }
+
+      if (Object.keys(existing).length === 0) {
+        next.delete(stringKey);
+      } else {
+        next.set(stringKey, existing);
+      }
+
       return next;
     });
   }, []);
 
   const updateContext = React.useCallback((stringKey: string, value: string) => {
     setDirtyContexts(prev => {
+      const originalRow = rowsRef.current.find(r => r.stringKey === stringKey);
+      const originalContext = originalRow?.context ?? null;
+      const normalizedValue = value || null;
+
       const next = new Map(prev);
-      next.set(stringKey, value || null);
+
+      if (normalizedValue === originalContext) {
+        next.delete(stringKey);
+      } else {
+        next.set(stringKey, normalizedValue);
+      }
+
       return next;
     });
   }, []);

@@ -76,7 +76,17 @@ class StringsRepositoryImpl implements StringsRepository {
     );
     await persistStrings(drizzle, stringsToInsert, stringsToUpdate, now);
 
-    const translationsToUpsert = buildTranslationInserts(entries, keyToIdMap, now);
+    const stringIds = Array.from(keyToIdMap.values());
+    const existingTranslations =
+      stringIds.length > 0
+        ? await drizzle
+            .select({ stringId: translations.stringId, locale: translations.locale, value: translations.value })
+            .from(translations)
+            .where(inArray(translations.stringId, stringIds))
+        : [];
+    const existingTranslationMap = new Map(existingTranslations.map(t => [`${t.stringId}:${t.locale}`, t.value]));
+
+    const translationsToUpsert = buildTranslationInserts(entries, keyToIdMap, existingTranslationMap, now);
     await upsertTranslationsBatch(drizzle, translationsToUpsert);
 
     return { updatedCount: translationsToUpsert.length };
@@ -94,6 +104,18 @@ class StringsRepositoryImpl implements StringsRepository {
     }
 
     return newString(stringRecord);
+  };
+
+  deleteByKey = async (project: Project, key: string): Promise<boolean> => {
+    const session = await verifySessionIsSet(this.context);
+    assert(project.userId === session.user.id, 'Project should belong to the user');
+
+    const deletedStrings = await getDrizzle(this.context)
+      .delete(strings)
+      .where(and(eq(strings.projectId, project.id), eq(strings.key, key)))
+      .returning({ id: strings.id });
+
+    return deletedStrings.length > 0;
   };
 
   getDraftTranslationsLocales = async (str: StringModel, locale?: string): Promise<Set<string>> => {
@@ -303,6 +325,7 @@ async function persistStrings(
 function buildTranslationInserts(
   entries: TranslationEntry[],
   keyToIdMap: Map<string, string>,
+  existingTranslationMap: Map<string, string>,
   now: Date,
 ): Translation[] {
   const translationsToUpsert: Translation[] = [];
@@ -311,6 +334,10 @@ function buildTranslationInserts(
     assert(stringId, 'String ID should exist at this point');
 
     for (const [locale, value] of Object.entries(entry.translations)) {
+      const existingValue = existingTranslationMap.get(`${stringId}:${locale}`);
+      if (existingValue === value) {
+        continue;
+      }
       const translation = newTranslation({ stringId, locale, value, createdAt: now, updatedAt: now, id: null });
       translationsToUpsert.push(translation);
     }
