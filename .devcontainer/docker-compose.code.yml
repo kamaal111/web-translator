@@ -1,0 +1,27 @@
+services:
+  code:
+    build:
+      context: ..
+      dockerfile: .devcontainer/Dockerfile
+    container_name: web-translator-code
+    init: true
+    env_file:
+      - ${HOME}/.copilot/devcontainer/copilot.env
+    environment:
+      DATABASE_URL: postgresql://wt_user:wt_password@wt_db:5432/wt
+      BETTER_AUTH_SECRET: secret
+    volumes:
+      - ..:/workspaces/web-translator:cached
+      - bun-install-cache:/home/node/.bun/install/cache
+      - web-translator-root-node-modules:/workspaces/web-translator/node_modules
+      - web-translator-server-node-modules:/workspaces/web-translator/server/node_modules
+      - web-translator-web-node-modules:/workspaces/web-translator/web/node_modules
+      - web-translator-modules-schemas-node-modules:/workspaces/web-translator/modules/schemas/node_modules
+    command: sleep infinity
+
+volumes:
+  bun-install-cache:
+  web-translator-root-node-modules:
+  web-translator-server-node-modules:
+  web-translator-web-node-modules:
+  web-translator-modules-schemas-node-modules:
