@@ -1,0 +1,36 @@
+server/src/index.ts
+  2aad9932be6543c2 17,44
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.1.17",
+  "base_commit_sha": "14068319876f371ca0adb1cbd7c3c5be5f387a61",
+  "prompts": {
+    "1847e19f18dcba7d": {
+      "agent_id": {
+        "tool": "github-copilot",
+        "id": "8e8521a7-0e37-4e10-8218-90ea6b88111b",
+        "model": "copilot/gpt-5.4"
+      },
+      "human_author": "Kamaal Farah <kamaal.f1@gmail.com>",
+      "messages": [],
+      "total_additions": 57,
+      "total_deletions": 108,
+      "accepted_lines": 57,
+      "overriden_lines": 0
+    },
+    "2aad9932be6543c2": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "019d1147-42a4-7300-8712-e7c8cbca94ef",
+        "model": "gpt-5.4"
+      },
+      "human_author": "Kamaal Farah <kamaal.f1@gmail.com>",
+      "messages": [],
+      "total_additions": 2,
+      "total_deletions": 2,
+      "accepted_lines": 2,
+      "overriden_lines": 0
+    }
+  }
+}
