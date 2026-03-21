@@ -1,0 +1,23 @@
+.devcontainer/post-create.sh
+  d986bfe73ca212a1 1-22
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.1.17",
+  "base_commit_sha": "c23226336dfbfeb0b7b274ac900a984a1e4dce12",
+  "prompts": {
+    "d986bfe73ca212a1": {
+      "agent_id": {
+        "tool": "github-copilot",
+        "id": "a4fb7cec-a0c1-4d6c-b833-c2afe9cbc5f8",
+        "model": "copilot/gpt-5.4"
+      },
+      "human_author": "Kamaal Farah <kamaal.f1@gmail.com>",
+      "messages": [],
+      "total_additions": 22,
+      "total_deletions": 0,
+      "accepted_lines": 22,
+      "overriden_lines": 0
+    }
+  }
+}
