@@ -10,7 +10,6 @@ type ExtractedMessages = Record<string, MessageDescriptor>;
 
 const NAME = 'build-locales';
 const ROOT = 'src';
-const MESSAGES_FILES_PATTERN = '**/messages.ts';
 const GENERATED_CONSTANTS_FILE_PATH = 'src/translations/messages/constants.ts';
 
 function buildLocales(): PluginOption {
@@ -52,12 +51,10 @@ async function config() {
 }
 
 async function getMessageFilePaths() {
-  const messagesFilesPaths: string[] = [];
-  for await (const file of fs.glob(MESSAGES_FILES_PATTERN, { cwd: ROOT })) {
-    messagesFilesPaths.push(path.join(ROOT, file));
-  }
-
-  return messagesFilesPaths;
+  const allFiles = await fs.readdir(ROOT, { recursive: true });
+  return allFiles
+    .filter(file => path.basename(file as string) === 'messages.ts')
+    .map(file => path.join(ROOT, file as string));
 }
 
 export default buildLocales;
