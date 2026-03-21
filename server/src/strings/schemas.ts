@@ -1,3 +1,4 @@
+import { ApiCommonDatetimeShape } from '@wt/schemas';
 import z from 'zod';
 
 export type StringResponse = z.infer<typeof StringResponseSchema>;
@@ -7,6 +8,10 @@ export type CreateStringPayload = z.infer<typeof CreateStringPayloadSchema>;
 export type ListStringsResponse = z.infer<typeof ListStringsResponseSchema>;
 
 export type ListStringsParams = z.infer<typeof ListStringsParamsSchema>;
+
+export type DeleteStringParams = z.infer<typeof DeleteStringParamsSchema>;
+
+export type DeleteStringResponse = z.infer<typeof DeleteStringResponseSchema>;
 
 export const StringResponseSchema = z
   .object({
@@ -228,3 +233,51 @@ export const UpsertTranslationsResponseSchema = z
 export type UpsertTranslationsPayload = z.infer<typeof UpsertTranslationsPayloadSchema>;
 export type UpsertTranslationsParams = z.infer<typeof UpsertTranslationsParamsSchema>;
 export type UpsertTranslationsResponse = z.infer<typeof UpsertTranslationsResponseSchema>;
+
+export const DeleteStringParamsSchema = z
+  .object({
+    projectId: z.uuid().meta({
+      description: 'ID of the project',
+      example: 'proj_1234567890abcdef',
+    }),
+    stringKey: z.string().trim().min(1).meta({
+      description: 'Translation key to delete (e.g., HOME.TITLE)',
+      example: 'HOME.TITLE',
+    }),
+  })
+  .describe('Delete string path parameters')
+  .meta({
+    ref: 'DeleteStringParams',
+    title: 'Delete String Parameters',
+    description: 'Path parameters for deleting a translation string from a project',
+  });
+
+export const DeleteStringResponseSchema = z
+  .object({
+    deleted: z
+      .object({
+        key: z.string().min(1).meta({
+          description: 'Translation key that was deleted',
+          example: 'HOME.TITLE',
+        }),
+        deletedAt: ApiCommonDatetimeShape.meta({
+          description: 'ISO 8601 timestamp when the string was deleted',
+          example: '2026-02-15T14:53:00Z',
+        }),
+      })
+      .meta({
+        description: 'Deleted string metadata',
+      }),
+  })
+  .describe('Delete string response')
+  .meta({
+    ref: 'DeleteStringResponse',
+    title: 'Delete String Response',
+    description: 'Response returned after deleting a translation string',
+    example: {
+      deleted: {
+        key: 'HOME.TITLE',
+        deletedAt: '2026-02-15T14:53:00Z',
+      },
+    },
+  });

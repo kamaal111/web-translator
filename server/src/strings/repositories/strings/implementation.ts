@@ -106,6 +106,18 @@ class StringsRepositoryImpl implements StringsRepository {
     return newString(stringRecord);
   };
 
+  deleteByKey = async (project: Project, key: string): Promise<boolean> => {
+    const session = await verifySessionIsSet(this.context);
+    assert(project.userId === session.user.id, 'Project should belong to the user');
+
+    const deletedStrings = await getDrizzle(this.context)
+      .delete(strings)
+      .where(and(eq(strings.projectId, project.id), eq(strings.key, key)))
+      .returning({ id: strings.id });
+
+    return deletedStrings.length > 0;
+  };
+
   getDraftTranslationsLocales = async (str: StringModel, locale?: string): Promise<Set<string>> => {
     await verifySessionIsSet(this.context);
     const conditions = [eq(translations.stringId, str.id)];

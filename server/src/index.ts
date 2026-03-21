@@ -14,7 +14,7 @@ import { APP_API_BASE_PATH } from './constants/common';
 import { appApiRouter } from './app-api';
 import { PUBLIC_API_BASE_PATH, publicApiRouter } from './public-api';
 
-const { DEBUG } = env;
+const { DEBUG, PORT } = env;
 const REQUEST_ID_HEADER_NAME = 'wt-request-id';
 
 export function createApp(overrides?: Partial<InjectedContext>) {
@@ -41,4 +41,4 @@ export function createApp(overrides?: Partial<InjectedContext>) {
 
 const app = createApp();
 
-export default app;
+export default { fetch: app.fetch, port: PORT };

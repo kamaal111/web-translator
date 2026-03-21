@@ -88,13 +88,13 @@ This is a monorepo web application:
 
 ### Backend - Delete String Endpoint (NEW)
 
-- [ ] T048 [P] [US6] Create DELETE endpoint schema in server/src/strings/schemas.ts (DeleteStringParamsSchema, DeleteStringResponseSchema)
-- [ ] T049 [US6] Create DELETE endpoint route handler at server/src/strings/routes/delete-string.ts
-- [ ] T050 [P] [US6] Add deleteByKey method signature to server/src/strings/repositories/strings/types.ts
-- [ ] T051 [P] [US6] Implement deleteByKey in server/src/strings/repositories/strings/implementation.ts (delete from strings table, cascade handles translations)
-- [ ] T052 [US6] Register DELETE route in server/src/strings/router.ts
-- [ ] T053 [P] [US6] Create comprehensive tests in server/src/strings/**tests**/delete-string.test.ts (success, not found, cascade behavior, auth checks)
-- [ ] T054 [US6] Run `just download-spec` to update OpenAPI spec with new DELETE endpoint
+- [x] T048 [P] [US6] Create DELETE endpoint schema in server/src/strings/schemas.ts (DeleteStringParamsSchema, DeleteStringResponseSchema)
+- [x] T049 [US6] Create DELETE endpoint route handler at server/src/strings/routes/delete-string.ts
+- [x] T050 [P] [US6] Add deleteByKey method signature to server/src/strings/repositories/strings/types.ts
+- [x] T051 [P] [US6] Implement deleteByKey in server/src/strings/repositories/strings/implementation.ts (delete from strings table, cascade handles translations)
+- [x] T052 [US6] Register DELETE route in server/src/strings/router.ts
+- [x] T053 [P] [US6] Create comprehensive tests in server/src/strings/**tests**/delete-string.test.ts (success, not found, cascade behavior, auth checks)
+- [x] T054 [US6] Run `just download-spec` to update OpenAPI spec with new DELETE endpoint
 
 ### Tests for User Story 5 (String Creation)
 
@@ -150,13 +150,13 @@ This is a monorepo web application:
 
 ### Backend - Delete String Endpoint (NEW)
 
-- [ ] T048 [P] [US6] Create DELETE endpoint schema in server/src/strings/schemas.ts (DeleteStringParamsSchema, DeleteStringResponseSchema)
-- [ ] T049 [US6] Create DELETE endpoint route handler at server/src/strings/routes/delete-string.ts
-- [ ] T050 [P] [US6] Add deleteByKey method signature to server/src/strings/repositories/strings/types.ts
-- [ ] T051 [P] [US6] Implement deleteByKey in server/src/strings/repositories/strings/implementation.ts (delete from strings table, cascade handles translations)
-- [ ] T052 [US6] Register DELETE route in server/src/strings/router.ts
-- [ ] T053 [P] [US6] Create comprehensive tests in server/src/strings/**tests**/delete-string.test.ts (success, not found, cascade behavior, auth checks)
-- [ ] T054 [US6] Run `just download-spec` to update OpenAPI spec with new DELETE endpoint
+- [x] T048 [P] [US6] Create DELETE endpoint schema in server/src/strings/schemas.ts (DeleteStringParamsSchema, DeleteStringResponseSchema)
+- [x] T049 [US6] Create DELETE endpoint route handler at server/src/strings/routes/delete-string.ts
+- [x] T050 [P] [US6] Add deleteByKey method signature to server/src/strings/repositories/strings/types.ts
+- [x] T051 [P] [US6] Implement deleteByKey in server/src/strings/repositories/strings/implementation.ts (delete from strings table, cascade handles translations)
+- [x] T052 [US6] Register DELETE route in server/src/strings/router.ts
+- [x] T053 [P] [US6] Create comprehensive tests in server/src/strings/**tests**/delete-string.test.ts (success, not found, cascade behavior, auth checks)
+- [x] T054 [US6] Run `just download-spec` to update OpenAPI spec with new DELETE endpoint
 
 ### Tests for User Story 5 (String Creation)
 
